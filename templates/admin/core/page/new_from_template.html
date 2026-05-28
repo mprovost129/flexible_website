@@ -1,14 +1,14 @@
 {% extends 'admin/base_site.html' %}
 {% load i18n %}
 
-{#
+<!--
   New page from template — admin picker page.
 
   Shows a card grid of available page templates. Clicking a card marks it as
   selected. Below the grid are Title and Slug fields. Submitting the form
   calls new_from_template_view (POST) which creates the page and redirects
   to the change form.
-#}
+-->
 
 {% block title %}New page from template | {{ site_header|default:"Django administration" }}{% endblock %}
 
@@ -16,7 +16,7 @@
 
 {% block content %}
 
-{# ── Breadcrumbs ────────────────────────────────────────────────────────── #}
+<!-- ── Breadcrumbs ────────────────────────────────────────────────────────── -->
 <div class="breadcrumbs">
     <a href="{% url 'admin:index' %}">{% trans "Home" %}</a> ›
     <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_label|capfirst }}</a> ›
@@ -24,7 +24,7 @@
     New from template
 </div>
 
-{# ── Django messages ────────────────────────────────────────────────────── #}
+<!-- ── Django messages ────────────────────────────────────────────────────── -->
 {% if messages %}
 <ul class="messagelist">
     {% for message in messages %}
@@ -35,10 +35,10 @@
 
 <form method="post" id="template-form" novalidate>
     {% csrf_token %}
-    {# Hidden: set by card click #}
+    <!-- Hidden: set by card click -->
     <input type="hidden" name="template_key" id="id_template_key" value="{{ posted_key }}">
 
-    {# ── Template cards ─────────────────────────────────────────────────── #}
+    <!-- ── Template cards ─────────────────────────────────────────────────── -->
     <p class="help" style="margin-bottom:1rem;">
         Choose a starting layout. You can add, remove, or rearrange sections
         after the page is created.
@@ -71,7 +71,7 @@
         {% endfor %}
     </div>
 
-    {# ── Page details ───────────────────────────────────────────────────── #}
+    <!-- ── Page details ───────────────────────────────────────────────────── -->
     <div id="page-details" class="{% if not posted_key %}hidden{% endif %}">
         <fieldset class="module aligned">
             <h2>Page details</h2>
@@ -119,7 +119,7 @@
 </form>
 
 
-{# ── Styles ─────────────────────────────────────────────────────────────── #}
+<!-- ── Styles ─────────────────────────────────────────────────────────────── -->
 <style>
   /* Bootstrap Icons — same CDN the public site uses */
   @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
@@ -230,7 +230,7 @@
   }
 </style>
 
-{# ── Script ─────────────────────────────────────────────────────────────── #}
+<!-- ── Script ─────────────────────────────────────────────────────────────── -->
 <script>
 (function () {
   'use strict';

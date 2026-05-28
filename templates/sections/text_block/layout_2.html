@@ -1,0 +1,23 @@
+<!-- Text block layout 2: heading in a left column, body text in a right column. -->
+<!-- Good for "About" or editorial sections where the heading anchors the side. -->
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        <div class="row g-4 g-lg-5">
+            <div class="col-lg-4">
+                {% if section.heading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                        <h2 class="fw-bold edit-content">{{ section.heading }}</h2>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-8">
+                {% if section.subheading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                        <div class="text-body-secondary fs-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|linebreaks }}</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>

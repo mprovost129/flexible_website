@@ -1,5 +1,5 @@
 {% load core_extras %}
-{#
+<!--
   Video Embed -- responsive iframe embed for YouTube or Vimeo.
 
   The |video_embed_url filter (in core_extras) converts watch URLs to embed
@@ -18,7 +18,7 @@
     columns_desktop -- for multiple videos, how many per row (default 1)
     aspect_ratio    -- Bootstrap ratio class suffix: "16x9" (default), "4x3", "21x9", "1x1"
     autoplay        -- "true" to add ?autoplay=1 to embed URL (default false)
-#}
+-->
 <section class="py-5"
          {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
     <div class="container">

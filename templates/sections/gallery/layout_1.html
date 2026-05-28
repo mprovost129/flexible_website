@@ -1,4 +1,4 @@
-{#
+<!--
   Gallery -- uniform grid with Bootstrap modal lightbox.
 
   Clicking any thumbnail opens a full-size modal. No extra JS libraries needed --
@@ -14,7 +14,7 @@
 
   Config (Section.config JSON):
     columns_desktop -- columns in the grid (default 3)
-#}
+-->
 <section class="py-5"
          {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
     <div class="container">
@@ -51,7 +51,7 @@
                                 <span class="text-body-secondary small">No image</span>
                             </div>
                         {% endif %}
-                        {# Hover overlay #}
+                        <!-- Hover overlay -->
                         <div class="position-absolute inset-0 d-flex align-items-center justify-content-center gallery-overlay"
                              style="top:0;left:0;right:0;bottom:0;
                                     background: rgba(0,0,0,0); transition: background 0.2s;">
@@ -70,7 +70,7 @@
     </div>
 </section>
 
-{# Single modal shared across all items in this gallery section #}
+<!-- Single modal shared across all items in this gallery section -->
 <div class="modal fade" id="galleryModal{{ section.id }}" tabindex="-1"
      aria-label="Gallery image" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">

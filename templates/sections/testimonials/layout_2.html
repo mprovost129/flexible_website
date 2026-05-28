@@ -1,5 +1,5 @@
 {% load core_extras %}
-{#
+<!--
   Testimonials -- large featured quote, one at a time with prev/next navigation.
 
   Each SectionItem is one testimonial shown in a large, centered presentation.
@@ -15,7 +15,7 @@
 
   Config (Section.config JSON):
     show_indicators -- "true" to show dot indicators (default true)
-#}
+-->
 <section class="py-5"
          {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
     <div class="container">
@@ -31,7 +31,7 @@
         {% endif %}
     </div>
 
-    {# Bootstrap carousel for quotes -- full width, constrained content #}
+    <!-- Bootstrap carousel for quotes -- full width, constrained content -->
     <div id="testimonialCarousel{{ section.id }}"
          class="carousel slide"
          data-bs-ride="false">
@@ -54,7 +54,7 @@
                     <div class="container">
                         <div class="row justify-content-center">
                             <div class="col-lg-8 text-center">
-                                {# Large decorative quote mark #}
+                                <!-- Large decorative quote mark -->
                                 <i class="bi bi-quote display-1 text-primary opacity-25 d-block mb-3"></i>
 
                                 <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">

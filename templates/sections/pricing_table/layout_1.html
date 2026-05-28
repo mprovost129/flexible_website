@@ -1,5 +1,5 @@
 {% load core_extras %}
-{#
+<!--
   Pricing Table -- side-by-side plan cards.
 
   Each SectionItem is one pricing plan. Convention for SectionItem fields:
@@ -23,7 +23,7 @@
                         Set to 0 to disable highlighting entirely.
     cta_label        -- text for all CTA buttons (default "Get started")
     show_period      -- "false" to hide the billing period line (default shown)
-#}
+-->
 <section class="py-5"
          {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
     <div class="container">
@@ -56,17 +56,17 @@
                         {% endif %}
 
                         <div class="card-body p-4 {% if is_hi %}pt-5{% endif %}">
-                            {# Plan name #}
+                            <!-- Plan name -->
                             <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
                                 <h3 class="fw-bold mb-1 edit-content">{{ item.title }}</h3>
                             </div>
 
-                            {# Price #}
+                            <!-- Price -->
                             <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">
                                 <div class="display-5 fw-bold text-primary my-3 edit-content">{{ item.link_text }}</div>
                             </div>
 
-                            {# Billing period (first line of item.text) #}
+                            <!-- Billing period (first line of item.text) -->
                             {% if section.config.show_period != "false" %}
                                 {% with period=item.text|first_line %}
                                 {% if period %}
@@ -75,7 +75,7 @@
                                 {% endwith %}
                             {% endif %}
 
-                            {# Feature checklist (remaining lines of item.text) #}
+                            <!-- Feature checklist (remaining lines of item.text) -->
                             <ul class="list-unstyled mb-4">
                                 {% for feature in item.text|remaining_lines|feature_lines %}
                                     <li class="d-flex align-items-start gap-2 mb-2">
@@ -86,7 +86,7 @@
                             </ul>
                         </div>
 
-                        {# CTA button pinned to card bottom #}
+                        <!-- CTA button pinned to card bottom -->
                         <div class="card-footer bg-transparent border-0 p-4 pt-0">
                             <a href="{{ item.link_url|default:'#' }}"
                                class="btn w-100 btn-lg

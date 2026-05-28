@@ -1,4 +1,4 @@
-{#
+<!--
   Feature List layout 2 -- alternating rows (image/icon left + text right, then flip).
 
   Great for "how it works" sections or feature deep-dives. Each item gets
@@ -17,7 +17,7 @@
   Config (Section.config JSON):
     icon_size        -- Bootstrap display class suffix for icon (default "1" = display-1)
     show_step_number -- "true" to show 01, 02, 03... step numbers (default false)
-#}
+-->
 <section class="py-5"
          {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
     <div class="container">
@@ -36,7 +36,7 @@
             <div class="row align-items-center g-4 g-lg-5 mb-5
                         {% if forloop.counter|divisibleby:2 %}flex-md-row-reverse{% endif %}">
 
-                {# Visual column: image or icon #}
+                <!-- Visual column: image or icon -->
                 <div class="col-md-5 text-center">
                     {% if item.image %}
                         <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="image" data-edit-type="image">
@@ -46,7 +46,7 @@
                     {% elif item.icon %}
                         <i class="bi bi-{{ item.icon }} display-{{ section.config.icon_size|default:'1' }} text-primary"></i>
                     {% else %}
-                        {# Step number circle as fallback visual #}
+                        <!-- Step number circle as fallback visual -->
                         <div class="mx-auto d-flex align-items-center justify-content-center bg-primary text-white rounded-circle fw-bold"
                              style="width: 7rem; height: 7rem; font-size: 2.5rem;">
                             {{ forloop.counter }}
@@ -54,7 +54,7 @@
                     {% endif %}
                 </div>
 
-                {# Content column #}
+                <!-- Content column -->
                 <div class="col-md-7">
                     {% if section.config.show_step_number == "true" %}
                         <span class="text-primary fw-bold fs-5 d-block mb-2">
@@ -82,7 +82,7 @@
                 </div>
             </div>
 
-            {# Divider between items, except after the last one #}
+            <!-- Divider between items, except after the last one -->
             {% if not forloop.last %}
                 <hr class="my-3 border-0">
             {% endif %}

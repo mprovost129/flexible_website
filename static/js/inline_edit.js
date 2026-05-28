@@ -56,9 +56,22 @@
   function init() {
     if (!document.body.classList.contains('edit-mode')) return;
 
-    document.querySelectorAll('.edit-wrap').forEach(setupWrap);
+    wireUnwiredWraps();
     renderToolbar();
   }
+
+  // Wire up any .edit-wrap that doesn't already have a pencil button.
+  // Safe to call repeatedly (after new markup is injected by structural_edit.js).
+  function wireUnwiredWraps() {
+    document.querySelectorAll('.edit-wrap').forEach(function (wrap) {
+      if (wrap.dataset.editWired === '1') return;
+      setupWrap(wrap);
+      wrap.dataset.editWired = '1';
+    });
+  }
+
+  // Exposed so structural_edit.js can re-wire freshly injected sections/items.
+  window.reinitInlineEdit = wireUnwiredWraps;
 
   // -------------------------------------------------------------------------
   // Wire up a single editable wrapper

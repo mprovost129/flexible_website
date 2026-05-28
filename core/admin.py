@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
-from django.urls import path
+from django.urls import path, reverse
 from django.utils.html import format_html
 
 from .models import Site, Page, Section, SectionItem, Theme
@@ -80,16 +80,40 @@ def _duplicate_page(original):
 class SectionItemInline(admin.TabularInline):
     model = SectionItem
     extra = 0
-    fields = ('order', 'title', 'text', 'image', 'icon', 'link_text', 'link_url')
+    fields = ('drag_handle', 'order', 'title', 'text', 'image', 'icon', 'link_text', 'link_url')
+    readonly_fields = ('drag_handle',)
     ordering = ('order',)
+
+    def drag_handle(self, obj):
+        if obj.pk:
+            return format_html(
+                '<span class="drag-handle" data-pk="{}" data-reorder-url="{}"'
+                ' title="Drag to reorder">⠿</span>',
+                obj.pk,
+                reverse('core:reorder_items'),
+            )
+        return ''
+    drag_handle.short_description = ''
 
 
 class SectionInline(admin.TabularInline):
     model = Section
     extra = 0
-    fields = ('section_type', 'layout', 'order', 'is_visible', 'heading')
+    fields = ('drag_handle', 'section_type', 'layout', 'order', 'is_visible', 'heading')
+    readonly_fields = ('drag_handle',)
     ordering = ('order',)
     show_change_link = True
+
+    def drag_handle(self, obj):
+        if obj.pk:
+            return format_html(
+                '<span class="drag-handle" data-pk="{}" data-reorder-url="{}"'
+                ' title="Drag to reorder">⠿</span>',
+                obj.pk,
+                reverse('core:reorder_sections'),
+            )
+        return ''
+    drag_handle.short_description = ''
 
 
 # ---------------------------------------------------------------------------
@@ -285,6 +309,7 @@ class PageAdmin(admin.ModelAdmin):
 
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
+    change_form_template = 'admin/core/section/change_form.html'
     list_display  = ('page', 'section_type', 'layout', 'order', 'is_visible')
     list_editable = ('order', 'is_visible')
     list_filter   = ('section_type', 'page')

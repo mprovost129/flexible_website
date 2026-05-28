@@ -16,10 +16,26 @@ class PageView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         slug = self.kwargs.get('slug', 'home')
-        page = get_object_or_404(Page, slug=slug, is_enabled=True)
+
+        # Staff can view a disabled page (to edit it before publishing);
+        # the public gets a 404 for disabled pages.
+        if self.request.user.is_authenticated and self.request.user.is_staff:
+            page = get_object_or_404(Page, slug=slug)
+            sections = page.sections.all().prefetch_related('items')
+        else:
+            page = get_object_or_404(Page, slug=slug, is_enabled=True)
+            sections = page.sections.filter(is_visible=True).prefetch_related('items')
+
         ctx['page'] = page
-        # Only visible sections, with items prefetched for performance
-        ctx['sections'] = page.sections.filter(is_visible=True).prefetch_related('items')
+        ctx['sections'] = sections
+
+        # For staff, attach the list of available layouts per section so the
+        # live layout switcher can offer exactly the templates that exist.
+        if self.request.user.is_authenticated and self.request.user.is_staff:
+            from .edit_views import get_available_layouts
+            for s in sections:
+                s.available_layouts = get_available_layouts(s.section_type)
+
         return ctx
 
 

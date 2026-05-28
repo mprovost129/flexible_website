@@ -169,6 +169,21 @@ class Page(models.Model):
         return f'pages/{self.page_type}/{self.variant}.html'
 
 
+class SoftDeleteManager(models.Manager):
+    """Default manager that hides soft-deleted rows (deleted_at is not null)."""
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+
+class AllObjectsManager(models.Manager):
+    """Manager that returns every row, including soft-deleted ones.
+
+    Used by admin, the undo endpoint, and the purge command.
+    """
+    def get_queryset(self):
+        return super().get_queryset()
+
+
 class Section(models.Model):
     SECTION_TYPES = [
         ('hero', 'Hero'),
@@ -194,6 +209,10 @@ class Section(models.Model):
     order = models.IntegerField(default=0)
     is_visible = models.BooleanField(default=True)
 
+    # Soft delete: when set, the row is hidden everywhere but recoverable via
+    # the live "Undo" toast until a purge removes it for good.
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
     # Section-level fields (heading/subheading apply to most section types)
     heading = models.CharField(max_length=200, blank=True)
     subheading = models.TextField(blank=True)
@@ -205,8 +224,33 @@ class Section(models.Model):
     # Configuration as JSON for flexible per-type settings
     config = models.JSONField(default=dict, blank=True)
 
+    objects = SoftDeleteManager()      # default: hides soft-deleted rows
+    all_objects = AllObjectsManager()  # includes soft-deleted rows
+
     class Meta:
         ordering = ['order']
+        # Related lookups (page.sections) use the base manager; point it at the
+        # soft-delete manager so deleted sections are hidden there too.
+        base_manager_name = 'objects'
+
+    def soft_delete(self):
+        """Mark just this section row as deleted. Returns the cascaded item PKs.
+
+        The caller (delete endpoint) is responsible for cascading to items and
+        remembering which ones it touched, so a later restore brings back
+        exactly those items and not ones deleted individually beforehand.
+        """
+        from django.utils import timezone
+        live_item_pks = list(
+            SectionItem.all_objects.filter(
+                section=self, deleted_at__isnull=True
+            ).values_list('pk', flat=True)
+        )
+        now = timezone.now()
+        self.deleted_at = now
+        self.save(update_fields=['deleted_at'])
+        SectionItem.all_objects.filter(pk__in=live_item_pks).update(deleted_at=now)
+        return live_item_pks
 
     @property
     def template_path(self):
@@ -229,6 +273,9 @@ class SectionItem(models.Model):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='items')
     order = models.IntegerField(default=0)
 
+    # Soft delete (see Section.deleted_at).
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
     # Universal fields, used based on what the section needs
     title = models.CharField(max_length=200, blank=True)
     text = models.TextField(blank=True)
@@ -237,5 +284,9 @@ class SectionItem(models.Model):
     link_url = models.CharField(max_length=500, blank=True)
     link_text = models.CharField(max_length=100, blank=True)
 
+    objects = SoftDeleteManager()
+    all_objects = AllObjectsManager()
+
     class Meta:
         ordering = ['order']
+        base_manager_name = 'objects'

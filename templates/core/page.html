@@ -3,16 +3,43 @@
 {% block title %}{{ page.title|default:site.name }}{% endblock %}
 
 {% block content %}
-    {% for section in sections %}
-        {% include section.template_path %}
-    {% endfor %}
-
-    {% if not sections %}
-        <div class="container py-5">
-            <div class="alert alert-info">
-                <h4>This page has no sections yet.</h4>
-                <p class="mb-0">Add sections through the admin to start building this page.</p>
-            </div>
+    {% if user.is_authenticated and user.is_staff %}
+        <!-- Edit-mode wrapper: structural controls (add/delete/config) live here. -->
+        <div id="page-sections"
+             data-page-id="{{ page.id }}"
+             data-page-slug="{{ page.slug }}">
+            {% for section in sections %}
+                <div class="section-wrap{% if not section.is_visible %} section-hidden{% endif %}"
+                     data-section-id="{{ section.id }}"
+                     data-section-type="{{ section.section_type }}"
+                     data-section-layout="{{ section.layout }}"
+                     data-section-layouts="{{ section.available_layouts|join:',' }}"
+                     data-section-columns="{{ section.config.columns_desktop|default:'' }}"
+                     data-section-bg="{{ section.background_color }}"
+                     data-section-visible="{{ section.is_visible|yesno:'1,0' }}">
+                    {% include section.template_path %}
+                </div>
+            {% endfor %}
         </div>
+
+        <!-- Add-section control, only rendered for staff -->
+        <div id="add-section-bar" data-add-url="{% url 'core:add_section' page.id %}">
+            <button type="button" id="add-section-btn" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Add section
+            </button>
+        </div>
+    {% else %}
+        {% for section in sections %}
+            {% include section.template_path %}
+        {% endfor %}
+
+        {% if not sections %}
+            <div class="container py-5">
+                <div class="alert alert-info">
+                    <h4>This page has no sections yet.</h4>
+                    <p class="mb-0">Add sections through the admin to start building this page.</p>
+                </div>
+            </div>
+        {% endif %}
     {% endif %}
 {% endblock %}

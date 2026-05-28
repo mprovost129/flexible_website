@@ -244,35 +244,105 @@ Customer's first deploy: clicks Blueprint, links GitHub repo, pastes Cloudinary 
 
 ## What's Already Built
 
-- Site model with all global settings
+- Site model with all global settings (logo, favicon, OG image, robots.txt, social links, newsletter)
 - Theme model with 8 seeded themes
-- Page model
+- Page model with SEO/OG override fields
 - Section + SectionItem with `bootstrap_col_class` helper
 - 5 navbars (nav_1 through nav_5)
 - 5 footers (footer_1 through footer_5)
-- 6 section templates: hero/layout_1, hero/layout_2, image_grid/layout_1, feature_list/layout_1, cta_banner/layout_1, text_block/layout_1
+- Section templates across many types (hero, image_grid, feature_list, cta_banner, text_block, testimonials, gallery, contact_form, video_embed, pricing_table)
 - Universal `core/page.html` that renders any page from its sections
 - `setup_site` interactive command with `--non-interactive` flag
 - `seed_site` non-interactive command (for dev/CI)
-- Admin with color preview, fieldsets, nested inlines (Section inline on Page, SectionItem inline on Section)
-- Context processor making `{{ site }}` available everywhere
+- Admin with color preview, fieldsets, nested inlines, drag-handle reordering, "duplicate page" action, "new from template" picker
+- Context processor making `{{ site }}`/`{{ cms_site }}` available everywhere
 - Custom User model with email login, with proper migration
 - AUTH_USER_MODEL configured
 - DATABASE_URL support with fallback to individual DB_ vars
 - Render blueprint with auto-provisioned database
-- Customer-facing README
-- `.env.example` template
+- Customer-facing README, `.env.example`, 404/500 pages, robots.txt, sitemap.xml
+- **Inline content editing** (edit_views.py + inline_edit.js): staff edit text and swap images live on the page via pencil/camera buttons. Whitelisted fields, staff-only, returns JSON. Drag-and-drop reorder for sections and items.
+- **Structural editing** (add/delete sections and items live): see dedicated section below.
+
+## Inline + Structural Editing System (important)
+
+This is the heart of the "edit on the live site" experience. Two JS files power it, both loaded only for staff and only when `<body class="edit-mode">` is present:
+
+**inline_edit.js** -- editing existing content:
+- Any element wrapped in `.edit-wrap` with `data-edit-model` (section|item), `data-edit-id`, `data-edit-field`, and optional `data-edit-type` (text|textarea|image) gets a pencil or camera button on hover.
+- Text edits POST to `/edit/{model}/{id}/field/{field}/`; images POST to `/edit/{model}/{id}/image/`.
+- Exposes `window.reinitInlineEdit()` to wire up freshly injected markup. Wraps are marked `data-edit-wired="1"` so re-running never double-binds.
+
+**structural_edit.js** -- adding/deleting structure:
+- "Add section" button (`#add-section-btn`) shows a section-type picker, POSTs to `/edit/page/{page_pk}/section/add/`, injects the returned rendered HTML, then calls `reinitInlineEdit()`.
+- Each `.section-wrap` gets a toolbar (on hover) with "Add item" and "Delete section".
+- Each item gets a delete button. Items are detected by grouping `.edit-wrap[data-edit-model="item"]` by `data-edit-id` and finding their shared container column (`findItemContainer`).
+- Add/delete item POST to `/edit/section/{pk}/item/add/` and `/edit/item/{pk}/delete/`. Both return the **re-rendered parent section HTML** so grids/lists reflow with correct column widths. `swapSectionHtml` replaces the section content while preserving the toolbar.
+
+**Backend (edit_views.py):**
+- All endpoints use `_staff_check` (returns JSON 403 for non-staff).
+- `ADDABLE_SECTION_TYPES` whitelists what can be added; `SECTION_DEFAULTS` gives each new section starter content + items so it's visible immediately.
+- `_render_section_html(section, request)` renders a single section with `render_to_string` passing `request` so context processors supply `site`/`cms_site`.
+
+**Template wiring (core/page.html):**
+- For staff: sections are wrapped in `#page-sections[data-page-id]` > `.section-wrap[data-section-id]`, plus an `#add-section-bar`. Hidden sections get `.section-hidden`.
+- For public: plain section rendering, no wrappers, no edit JS.
+- **PageView shows ALL sections to staff** (including `is_visible=False`) so they can manage hidden ones; the public sees only visible sections on enabled pages. Staff can also view disabled pages.
+
+**To add structural editing support to a NEW section template:** just use the standard `.edit-wrap` markup for items with `data-edit-model="item"` and `data-edit-id="{{ item.id }}"`. The JS finds items automatically; no per-template delete wiring needed.
+
+## Live Config + Page Delete (structural_edit.js, edit_views.py)
+
+Beyond add/delete of sections and items, staff can change section settings and delete whole pages live:
+
+**Section toolbar (per section, on hover):** Add item, Settings (gear), Show/Hide (eye), Delete section.
+
+**Settings gear panel** opens per section and offers:
+- Layout switcher (only shown if `AVAILABLE_LAYOUTS[type]` has more than one). Applies immediately, POSTs to `/edit/section/{pk}/layout/`.
+- Column count (only for grid-like types in `COLUMN_SECTION_TYPES`: image_grid, feature_list, testimonials, gallery, pricing_table). Choices restricted to divisors of 12 (1,2,3,4,6).
+- Background color (hex/named/rgb). Validated server-side by `_looks_like_color` to prevent style-attribute injection.
+- "Apply" POSTs to `/edit/section/{pk}/config/` and re-renders the section.
+
+**Visibility toggle** POSTs to `/edit/section/{pk}/visibility/`, flips `is_visible`, updates the eye icon and `.section-hidden` dimming without a reload.
+
+**Delete page** button is injected into the floating `#edit-toolbar` (polls for it since inline_edit.js builds the toolbar on the same DOMContentLoaded). Double-confirms, POSTs to `/edit/page/{pk}/delete/`, redirects to `/`. The home page is never deletable (hidden client-side, refused server-side with 400).
+
+**Server endpoints** (all in edit_views.py, all `_staff_check`-gated):
+- `delete_page(pk)` — refuses home page
+- `set_section_layout(pk)` — validates against `AVAILABLE_LAYOUTS`
+- `set_section_config(pk)` — validates columns against `ALLOWED_COLUMN_COUNTS`, color against `_looks_like_color`; mutates JSONField by copy-mutate-reassign so Django detects the change
+- `toggle_section_visibility(pk)`
+
+**The section wrapper in page.html exposes** `data-section-type`, `data-section-layout`, `data-section-columns`, `data-section-bg`, `data-section-visible`, and `data-page-slug` so the JS can pre-fill the gear panel and know whether the page is the home page.
+
+**Keep client/server lists in sync:** `AVAILABLE_LAYOUTS`, `COLUMN_SECTION_TYPES`/`ALLOWED_COLUMNS` exist in BOTH structural_edit.js and edit_views.py. When you add a real layout_2 template for a section type, update `AVAILABLE_LAYOUTS` in both places.
+
+## Soft Delete + Undo (important)
+
+Sections and items are **soft-deleted**, not hard-deleted, so the live "Undo" toast can restore them.
+
+- Both `Section` and `SectionItem` have a `deleted_at` timestamp field.
+- Two managers on each: `objects` (default, hides soft-deleted rows via `SoftDeleteManager`) and `all_objects` (sees everything). `Meta.base_manager_name = 'objects'` so related lookups (`section.items`, `page.sections`) also hide deleted rows. This means **templates and the public view automatically exclude soft-deleted content** with no query changes.
+- Delete endpoints set `deleted_at` and return an `undo` payload. `delete_section` returns the list of item PKs it cascaded so undo restores exactly those (not items the user had deleted individually beforehand).
+- Undo endpoints (`/edit/section/<pk>/undo/`, `/edit/item/<pk>/undo/`) clear `deleted_at`.
+
+**CRITICAL Django gotcha:** because `base_manager_name='objects'` filters soft-deleted rows, calling `instance.save(update_fields=['deleted_at'])` on an *already-soft-deleted* instance raises `NotUpdated` (the UPDATE matches zero rows). Undo therefore uses `Model.all_objects.filter(pk=...).update(deleted_at=None)` instead of fetch-then-save. If you add more restore logic, follow the same pattern.
+
+- The JS `showUndoToast(message, onUndo)` renders a transient bar (bottom center) with an Undo button; auto-dismisses after 7 seconds. Item deletes skip the confirm dialog (undo makes them low-risk); section deletes keep a light confirm.
+- `purge_deleted` management command permanently removes rows soft-deleted more than N days ago (default 30). Run on a schedule: `python manage.py purge_deleted --days 30`.
+
+## Section Layouts Are Auto-Detected (no more sync list)
+
+The old hand-maintained `AVAILABLE_LAYOUTS` dict is gone. `edit_views.get_available_layouts(section_type)` scans `templates/sections/<type>/layout_*.html` (cached via `lru_cache`) and returns the layouts that actually exist. PageView attaches the list to each section; page.html emits it as `data-section-layouts`; structural_edit.js reads that attribute to populate the layout switcher.
+
+**To add a new layout for any section type: just create the template file** (e.g. `templates/sections/image_grid/layout_3.html`). It appears in the live switcher automatically. No code changes in edit_views.py or structural_edit.js. (Restart the server so the lru_cache repopulates.)
 
 ## What's NOT Built Yet (TODO List)
 
 In rough priority order:
 
-### 1. Inline edit UI (HIGH PRIORITY)
-The "Facebook-style pencil icon" pattern. When a logged-in admin views the site, each text and image shows a small edit icon on hover. Clicking opens an inline editor (textarea for text, file picker for images). Saves via AJAX/HTMX, no page reload. This is what makes the product feel modern vs. "just another Django template that uses /admin/."
-
-Likely uses HTMX (simpler than full SPA) with small endpoints like `/edit/section/<id>/heading/` returning the updated HTML fragment.
-
-### 2. More section templates and layouts
+### 1. More layout variety
+Every section type now has at least layout_1 and layout_2 (hero has three). Adding a third layout to the most-used types (image_grid, feature_list, pricing_table) would give users more range. Just drop in the template file; it auto-registers.
 - `testimonials` section (no template exists, only the choice)
 - `gallery` section with lightbox (no template exists)
 - `contact_form` section type

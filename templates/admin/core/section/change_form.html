@@ -2,26 +2,11 @@
 {% load i18n static %}
 
 <!--
-  Custom change form for the Page model.
+  Custom change form for the Section model.
 
-  Adds:
-  1. A "Duplicate page" button to the object-tools toolbar (editing existing pages only).
-  2. SortableJS + admin_sortable.js so the Section inline rows can be drag-reordered.
-     Saving the new order is instant (AJAX) -- no form submit needed.
+  Adds SortableJS + admin_sortable.js so the SectionItem inline rows can be
+  drag-reordered. Saving the new order is instant (AJAX) -- no form submit needed.
 -->
-
-{% block object-tools-items %}
-    {% if original %}
-    <li>
-        <a href="/admin/core/page/{{ original.pk }}/duplicate/"
-           class="historylink"
-           title="Create a copy of this page with all its sections and items">
-            {% trans "Duplicate page" %}
-        </a>
-    </li>
-    {% endif %}
-    {{ block.super }}
-{% endblock %}
 
 {% block extrahead %}
 {{ block.super }}

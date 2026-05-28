@@ -1,5 +1,5 @@
 {% load core_extras %}
-{#
+<!--
   Testimonials -- card grid.
 
   Section fields:
@@ -17,7 +17,7 @@
   Config (Section.config JSON):
     columns_desktop -- number of columns (default 3)
     bg_quote_color  -- Bootstrap bg class for the card (default "bg-light")
-#}
+-->
 <section class="py-5"
          {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
     <div class="container">
@@ -36,7 +36,7 @@
             {% for item in section.items.all %}
                 <div class="{{ section.bootstrap_col_class }}">
                     <div class="card h-100 border-0 {{ section.config.bg_quote_color|default:'bg-light' }} p-4">
-                        {# Optional decorative icons (e.g. star rating) #}
+                        <!-- Optional decorative icons (e.g. star rating) -->
                         {% if item.icon %}
                             <div class="mb-3 text-warning">
                                 <i class="bi bi-{{ item.icon }}"></i>
@@ -47,14 +47,14 @@
                             </div>
                         {% endif %}
 
-                        {# Quote text #}
+                        <!-- Quote text -->
                         <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
                             <blockquote class="mb-4 fst-italic edit-content" data-edit-value="{{ item.text }}">
                                 &ldquo;{{ item.text }}&rdquo;
                             </blockquote>
                         </div>
 
-                        {# Attribution row #}
+                        <!-- Attribution row -->
                         <div class="d-flex align-items-center gap-3 mt-auto">
                             {% if item.image %}
                                 <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="image" data-edit-type="image">
@@ -63,7 +63,7 @@
                                          style="width: 3rem; height: 3rem; object-fit: cover;">
                                 </div>
                             {% else %}
-                                {# Initials avatar fallback #}
+                                <!-- Initials avatar fallback -->
                                 <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
                                      style="width: 3rem; height: 3rem; font-size: 1.1rem;">
                                     {{ item.title|first|upper }}

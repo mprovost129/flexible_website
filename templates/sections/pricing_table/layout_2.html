@@ -1,5 +1,5 @@
 {% load core_extras %}
-{#
+<!--
   Pricing Table -- stacked comparison layout.
 
   Best for 2 plans or a minimal look. Plans are shown as two large colored
@@ -16,7 +16,7 @@
     highlighted_plan -- 1-based index of the plan to highlight (default: 2)
     cta_label        -- button label (default "Get started")
     show_period      -- "false" to hide billing period line (default shown)
-#}
+-->
 <section class="py-5"
          {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
     <div class="container">
@@ -39,7 +39,7 @@
                     <div class="p-4 rounded-4 h-100
                                 {% if is_hi %}bg-primary text-white shadow-lg{% else %}bg-light border{% endif %}">
 
-                        {# Plan header #}
+                        <!-- Plan header -->
                         <div class="d-flex justify-content-between align-items-start mb-4">
                             <div>
                                 <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
@@ -62,12 +62,12 @@
                             {% endif %}
                         </div>
 
-                        {# Price #}
+                        <!-- Price -->
                         <div class="edit-wrap mb-4" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">
                             <div class="display-6 fw-bold edit-content">{{ item.link_text }}</div>
                         </div>
 
-                        {# Feature list #}
+                        <!-- Feature list -->
                         <ul class="list-unstyled mb-5">
                             {% for feature in item.text|remaining_lines|feature_lines %}
                                 <li class="d-flex align-items-start gap-2 mb-3">
@@ -78,7 +78,7 @@
                             {% endfor %}
                         </ul>
 
-                        {# CTA #}
+                        <!-- CTA -->
                         <a href="{{ item.link_url|default:'#' }}"
                            class="btn w-100 btn-lg
                                   {% if is_hi %}btn-light text-primary fw-semibold{% else %}btn-primary{% endif %}">

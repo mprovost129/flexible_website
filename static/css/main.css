@@ -267,3 +267,186 @@ body.edit-mode .edit-wrap.is-uploading::after {
     border-radius: 4px;
     z-index: 50;
 }
+
+/* =============================================================================
+   Structural Edit Mode (add / delete sections and items)
+   Only visible when <body class="edit-mode"> is present.
+   ============================================================================= */
+
+/* Section wrapper: outline on hover so staff can see section boundaries */
+body.edit-mode .section-wrap {
+    position: relative;
+}
+
+body.edit-mode .section-wrap:hover {
+    outline: 2px dashed rgba(var(--bs-primary-rgb), 0.4);
+    outline-offset: -2px;
+}
+
+/* Hidden sections (is_visible=False) appear dimmed to staff */
+body.edit-mode .section-wrap.section-hidden {
+    opacity: 0.45;
+}
+
+body.edit-mode .section-wrap.section-hidden::before {
+    content: "Hidden";
+    position: absolute;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 30;
+    background: #6c757d;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+}
+
+/* Per-section toolbar: appears top-right of a section on hover */
+body.edit-mode .section-toolbar {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 40;
+    display: flex;
+    gap: 0.4rem;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+}
+
+body.edit-mode .section-wrap:hover > .section-toolbar {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Item wrapper highlight + delete button */
+body.edit-mode .item-editable {
+    position: relative;
+}
+
+body.edit-mode .item-editable:hover {
+    outline: 1px dashed rgba(var(--bs-danger-rgb), 0.4);
+    outline-offset: 2px;
+}
+
+body.edit-mode .item-delete-btn {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    z-index: 35;
+    padding: 0.1rem 0.4rem;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+body.edit-mode .item-editable:hover > .item-delete-btn {
+    opacity: 1;
+}
+
+/* Add-section bar at the bottom of the page */
+body.edit-mode #add-section-bar {
+    text-align: center;
+    padding: 2rem 1rem 3rem;
+}
+
+/* Section type picker that drops down from the Add section button */
+body.edit-mode .section-type-picker {
+    max-width: 640px;
+    margin: 1rem auto 0;
+    padding: 1rem;
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide all structural controls when NOT in edit mode (safety) */
+body:not(.edit-mode) .section-toolbar,
+body:not(.edit-mode) .item-delete-btn,
+body:not(.edit-mode) #add-section-bar {
+    display: none !important;
+}
+
+/* Section config panel (gear menu) */
+body.edit-mode .section-config-panel {
+    position: absolute;
+    top: 3rem;
+    right: 0.5rem;
+    z-index: 50;
+    width: 260px;
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+    padding: 0.85rem;
+    text-align: left;
+}
+
+body.edit-mode .section-config-panel .scp-row {
+    margin-bottom: 0.6rem;
+}
+
+body.edit-mode .section-config-panel .scp-row:last-child {
+    margin-bottom: 0;
+}
+
+body.edit-mode .section-config-panel label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin-bottom: 0.2rem;
+}
+
+body.edit-mode .section-config-panel .scp-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* The toolbar now holds several icon buttons; keep them tidy */
+body.edit-mode .section-toolbar .btn {
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+
+/* Delete-page button sits in the floating toolbar */
+#edit-toolbar .delete-page-btn {
+    padding: 0.25rem 0.6rem;
+}
+
+/* Undo toast (soft-delete) */
+.undo-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #212529;
+    color: #fff;
+    padding: 0.6rem 0.75rem 0.6rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+    font-size: 0.9rem;
+    animation: undo-toast-in 0.2s ease;
+}
+
+.undo-toast-out {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+@keyframes undo-toast-in {
+    from { opacity: 0; transform: translate(-50%, 0.5rem); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.undo-toast .undo-toast-btn {
+    font-weight: 600;
+}

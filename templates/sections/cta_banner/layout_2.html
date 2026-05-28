@@ -1,0 +1,32 @@
+<!-- CTA banner layout 2: text on the left, buttons stacked on the right. -->
+<section class="py-5 {% if not section.background_color %}bg-dark text-white{% endif %}"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container py-4">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                {% if section.heading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                        <h2 class="display-6 fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+                    </div>
+                {% endif %}
+                {% if section.subheading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                        <p class="lead mb-0 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="d-grid gap-2 d-lg-inline-flex flex-lg-column">
+                    {% for item in section.items.all %}
+                        {% if item.link_text %}
+                            <a href="{{ item.link_url|default:'#' }}"
+                               class="btn btn-lg {% if forloop.first %}btn-primary{% else %}btn-outline-light{% endif %}">
+                                {{ item.link_text }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

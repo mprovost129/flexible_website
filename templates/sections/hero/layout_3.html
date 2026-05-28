@@ -1,4 +1,4 @@
-{#
+<!--
   Hero layout 3 -- full-viewport, image as background with overlay.
 
   The section primary_image fills the entire hero background. A dark overlay
@@ -20,7 +20,7 @@
     text_color      -- CSS color for text (default "#ffffff")
     cta_style       -- Bootstrap button class for primary CTA (default "btn-light")
     cta_style_2     -- Bootstrap button class for secondary CTA (default "btn-outline-light")
-#}
+-->
 <section style="
     position: relative;
     min-height: {{ section.config.min_height|default:'90vh' }};
@@ -36,7 +36,7 @@
         background: #212529;
     {% endif %}
 ">
-    {# Dark overlay for text contrast #}
+    <!-- Dark overlay for text contrast -->
     <div style="
         position: absolute;
         inset: 0;
@@ -44,7 +44,7 @@
         pointer-events: none;
     "></div>
 
-    {# Edit wrap for the background image -- camera button appears bottom-right of section #}
+    <!-- Edit wrap for the background image -- camera button appears bottom-right of section -->
     {% if request.user.is_staff %}
     <div class="edit-wrap position-absolute bottom-0 start-0 m-3"
          data-edit-model="section"
@@ -74,7 +74,7 @@
                     </div>
                 {% endif %}
 
-                {# CTA buttons (first two items) #}
+                <!-- CTA buttons (first two items) -->
                 {% with items=section.items.all %}
                 {% if items %}
                 <div class="d-flex flex-wrap justify-content-center gap-3 mt-5">
@@ -93,7 +93,7 @@
         </div>
     </div>
 
-    {# Scroll-down chevron -- purely decorative #}
+    <!-- Scroll-down chevron -- purely decorative -->
     {% if section.config.show_scroll_hint != "false" %}
     <a href="#" class="position-absolute bottom-0 start-50 translate-middle-x mb-4"
        style="color: rgba(255,255,255,0.6); z-index: 1;"

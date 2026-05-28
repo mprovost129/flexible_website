@@ -1,0 +1,52 @@
+{% load core_extras %}
+<!--
+  Video Embed layout 2 -- one feature video on the left, heading/description
+  text on the right. Uses only the FIRST item's video; extra items are ignored
+  in this layout (switch to layout_1 for a grid/playlist).
+
+  Same config options as layout_1 (aspect_ratio, autoplay).
+-->
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% with ratio=section.config.aspect_ratio|default:"16x9" autoplay=section.config.autoplay first=section.items.first %}
+        <div class="row align-items-center g-4 g-lg-5">
+            <div class="col-lg-7">
+                {% if first and first.link_url %}
+                    <div class="ratio ratio-{{ ratio }} rounded overflow-hidden shadow-sm">
+                        <iframe
+                            src="{{ first.link_url|video_embed_url }}{% if autoplay == 'true' %}?autoplay=1&mute=1{% endif %}"
+                            title="{{ first.title|default:section.heading }}"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen
+                            loading="lazy"
+                            class="rounded">
+                        </iframe>
+                    </div>
+                {% else %}
+                    <div class="ratio ratio-{{ ratio }} bg-secondary-subtle rounded d-flex align-items-center justify-content-center">
+                        <span class="text-body-secondary small">Add a SectionItem with a YouTube or Vimeo URL in link_url.</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-5">
+                {% if section.heading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                        <h2 class="fw-bold mb-3 edit-content">{{ section.heading }}</h2>
+                    </div>
+                {% endif %}
+                {% if section.subheading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                        <div class="text-body-secondary fs-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|linebreaks }}</div>
+                    </div>
+                {% endif %}
+                {% if first and first.title %}
+                    <div class="edit-wrap mt-3" data-edit-model="item" data-edit-id="{{ first.id }}" data-edit-field="title">
+                        <h5 class="fw-semibold edit-content">{{ first.title }}</h5>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endwith %}
+    </div>
+</section>
