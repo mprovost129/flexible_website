@@ -1,0 +1,106 @@
+{#
+  Contact Form -- centered single-column form.
+
+  Section fields:
+    heading    -- form title, e.g. "Get in touch"
+    subheading -- subtitle / instructions
+
+  Config (Section.config JSON):
+    to_email        -- email address that receives submissions. If blank,
+                       falls back to settings.DEFAULT_FROM_EMAIL. Set via
+                       the admin JSON field: {"to_email": "you@example.com"}
+    show_subject    -- "false" to hide the subject field (default: shown)
+    submit_label    -- text on the submit button (default: "Send Message")
+    success_msg     -- overrides the default success Django message (not used
+                       here, handled in the view)
+
+  The form POSTs to /contact/submit/ which handles validation, spam filtering
+  (honeypot field), email sending, and Django messages for success/error.
+  The page_slug hidden field ensures the user is redirected back to this page.
+#}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-md-9">
+                {% if section.heading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                        <h2 class="fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+                    </div>
+                {% endif %}
+                {% if section.subheading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                        <p class="text-body-secondary mb-4 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+                    </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'core:contact_submit' %}" novalidate>
+                    {% csrf_token %}
+                    {# Page to redirect back to after submission #}
+                    <input type="hidden" name="page_slug" value="{{ page.slug }}">
+                    {# Recipient -- set in section config or falls back to DEFAULT_FROM_EMAIL #}
+                    <input type="hidden" name="to_email" value="{{ section.config.to_email|default:'' }}">
+                    {# Honeypot: must stay empty. Bots fill everything; humans don't see this. #}
+                    <div style="position:absolute;left:-9999px;opacity:0;" aria-hidden="true">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="contact-name-{{ section.id }}" class="form-label fw-semibold">
+                            Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text"
+                               id="contact-name-{{ section.id }}"
+                               name="name"
+                               class="form-control"
+                               placeholder="Your name"
+                               required
+                               autocomplete="name">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="contact-email-{{ section.id }}" class="form-label fw-semibold">
+                            Email <span class="text-danger">*</span>
+                        </label>
+                        <input type="email"
+                               id="contact-email-{{ section.id }}"
+                               name="email"
+                               class="form-control"
+                               placeholder="you@example.com"
+                               required
+                               autocomplete="email">
+                    </div>
+
+                    {% if section.config.show_subject != "false" %}
+                    <div class="mb-3">
+                        <label for="contact-subject-{{ section.id }}" class="form-label fw-semibold">
+                            Subject
+                        </label>
+                        <input type="text"
+                               id="contact-subject-{{ section.id }}"
+                               name="subject"
+                               class="form-control"
+                               placeholder="What is this about?">
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <label for="contact-message-{{ section.id }}" class="form-label fw-semibold">
+                            Message <span class="text-danger">*</span>
+                        </label>
+                        <textarea id="contact-message-{{ section.id }}"
+                                  name="message"
+                                  class="form-control"
+                                  rows="6"
+                                  placeholder="Your message..."
+                                  required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        {{ section.config.submit_label|default:'Send Message' }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

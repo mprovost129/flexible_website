@@ -1,0 +1,105 @@
+{#
+  Hero layout 3 -- full-viewport, image as background with overlay.
+
+  The section primary_image fills the entire hero background. A dark overlay
+  (configurable opacity) makes the text legible. Text is centered vertically.
+
+  Section fields:
+    heading        -- main headline
+    subheading     -- subtitle
+    primary_image  -- background image (required for this layout)
+    background_color -- if set, used as solid fallback when no image is present
+
+  SectionItem fields (first item = primary CTA, second item = secondary CTA):
+    link_text -- button label
+    link_url  -- button href
+
+  Config (Section.config JSON):
+    overlay_opacity -- 0.0 to 1.0, darkness of the overlay (default 0.5)
+    min_height      -- CSS value for section min-height (default "90vh")
+    text_color      -- CSS color for text (default "#ffffff")
+    cta_style       -- Bootstrap button class for primary CTA (default "btn-light")
+    cta_style_2     -- Bootstrap button class for secondary CTA (default "btn-outline-light")
+#}
+<section style="
+    position: relative;
+    min-height: {{ section.config.min_height|default:'90vh' }};
+    display: flex;
+    align-items: center;
+    {% if section.primary_image %}
+        background-image: url('{{ section.primary_image.url }}');
+        background-size: cover;
+        background-position: center;
+    {% elif section.background_color %}
+        background: {{ section.background_color }};
+    {% else %}
+        background: #212529;
+    {% endif %}
+">
+    {# Dark overlay for text contrast #}
+    <div style="
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, {{ section.config.overlay_opacity|default:'0.5' }});
+        pointer-events: none;
+    "></div>
+
+    {# Edit wrap for the background image -- camera button appears bottom-right of section #}
+    {% if request.user.is_staff %}
+    <div class="edit-wrap position-absolute bottom-0 start-0 m-3"
+         data-edit-model="section"
+         data-edit-id="{{ section.id }}"
+         data-edit-field="primary_image"
+         data-edit-type="image"
+         style="z-index: 10;">
+        <span class="badge bg-dark bg-opacity-75 text-white small">
+            <i class="bi bi-image me-1"></i>Background image
+        </span>
+    </div>
+    {% endif %}
+
+    <div class="container position-relative py-5" style="z-index: 1; color: {{ section.config.text_color|default:'#ffffff' }};">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                {% if section.heading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                        <h1 class="display-3 fw-bold edit-content" style="color: inherit;">{{ section.heading }}</h1>
+                    </div>
+                {% endif %}
+                {% if section.subheading %}
+                    <div class="edit-wrap mt-3" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                        <p class="lead edit-content" style="color: inherit; opacity: 0.9;" data-edit-value="{{ section.subheading }}">
+                            {{ section.subheading }}
+                        </p>
+                    </div>
+                {% endif %}
+
+                {# CTA buttons (first two items) #}
+                {% with items=section.items.all %}
+                {% if items %}
+                <div class="d-flex flex-wrap justify-content-center gap-3 mt-5">
+                    {% for item in items %}
+                        {% if forloop.counter <= 2 and item.link_text %}
+                            <a href="{{ item.link_url|default:'#' }}"
+                               class="btn btn-lg {% if forloop.first %}{{ section.config.cta_style|default:'btn-light' }}{% else %}{{ section.config.cta_style_2|default:'btn-outline-light' }}{% endif %}">
+                                {{ item.link_text }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    {# Scroll-down chevron -- purely decorative #}
+    {% if section.config.show_scroll_hint != "false" %}
+    <a href="#" class="position-absolute bottom-0 start-50 translate-middle-x mb-4"
+       style="color: rgba(255,255,255,0.6); z-index: 1;"
+       aria-hidden="true"
+       onclick="event.preventDefault(); window.scrollBy({top: window.innerHeight * 0.8, behavior: 'smooth'});">
+        <i class="bi bi-chevron-down fs-4"></i>
+    </a>
+    {% endif %}
+</section>

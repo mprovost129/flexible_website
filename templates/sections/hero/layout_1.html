@@ -1,0 +1,23 @@
+{# Hero: centered text with optional CTA button. Uses first SectionItem for the CTA. #}
+<section class="py-5 {% if section.background_color %}{% else %}bg-light{% endif %}"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container text-center py-5">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h1 class="display-4 fw-bold edit-content">{{ section.heading }}</h1>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="lead text-body-secondary mt-3 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+        {% with cta=section.items.first %}
+            {% if cta and cta.link_text %}
+                <a href="{{ cta.link_url|default:'#' }}" class="btn btn-primary btn-lg mt-3">
+                    {{ cta.link_text }}
+                </a>
+            {% endif %}
+        {% endwith %}
+    </div>
+</section>

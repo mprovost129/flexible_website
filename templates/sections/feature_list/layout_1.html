@@ -1,0 +1,35 @@
+{# Feature list: each item has an icon, title, and description. #}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+        <div class="row g-4">
+            {% for item in section.items.all %}
+                <div class="{{ section.bootstrap_col_class }} text-center">
+                    {% if item.icon %}
+                        <i class="bi bi-{{ item.icon }} display-4 text-primary mb-3 d-block"></i>
+                    {% endif %}
+                    {% if item.title %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                            <h4 class="fw-semibold edit-content">{{ item.title }}</h4>
+                        </div>
+                    {% endif %}
+                    {% if item.text %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                            <p class="text-body-secondary edit-content" data-edit-value="{{ item.text }}">{{ item.text }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>

@@ -1,0 +1,28 @@
+{% load static %}
+<div class="container">
+    <header class="d-flex justify-content-center py-3 mb-4 border-bottom">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a href="{% url 'core:home' %}"
+                   class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    {{ site.name }}
+                </a>
+            </li>
+            {% for p in site.pages.all %}
+                {% if p.is_enabled and p.page_type != 'home' %}
+                    <li class="nav-item">
+                        <a href="{% url 'core:page' p.slug %}"
+                           class="nav-link {% if request.resolver_match.kwargs.slug == p.slug %}active{% endif %}">
+                            {{ p.title }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if user.is_authenticated %}
+                <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link">Logout</a></li>
+            {% else %}
+                <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+            {% endif %}
+        </ul>
+    </header>
+</div>

@@ -1,0 +1,353 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+
+{#
+  New page from template — admin picker page.
+
+  Shows a card grid of available page templates. Clicking a card marks it as
+  selected. Below the grid are Title and Slug fields. Submitting the form
+  calls new_from_template_view (POST) which creates the page and redirects
+  to the change form.
+#}
+
+{% block title %}New page from template | {{ site_header|default:"Django administration" }}{% endblock %}
+
+{% block content_title %}<h1>New page from template</h1>{% endblock %}
+
+{% block content %}
+
+{# ── Breadcrumbs ────────────────────────────────────────────────────────── #}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans "Home" %}</a> ›
+    <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_label|capfirst }}</a> ›
+    <a href="{% url 'admin:core_page_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a> ›
+    New from template
+</div>
+
+{# ── Django messages ────────────────────────────────────────────────────── #}
+{% if messages %}
+<ul class="messagelist">
+    {% for message in messages %}
+    <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<form method="post" id="template-form" novalidate>
+    {% csrf_token %}
+    {# Hidden: set by card click #}
+    <input type="hidden" name="template_key" id="id_template_key" value="{{ posted_key }}">
+
+    {# ── Template cards ─────────────────────────────────────────────────── #}
+    <p class="help" style="margin-bottom:1rem;">
+        Choose a starting layout. You can add, remove, or rearrange sections
+        after the page is created.
+    </p>
+
+    <div id="template-grid">
+        {% for tpl in page_templates %}
+        <div class="template-card{% if posted_key == tpl.key %} selected{% endif %}"
+             data-key="{{ tpl.key }}"
+             data-slug="{{ tpl.suggested_slug }}"
+             tabindex="0"
+             role="button"
+             aria-pressed="{% if posted_key == tpl.key %}true{% else %}false{% endif %}">
+
+            <div class="template-card__icon">
+                <i class="bi bi-{{ tpl.icon }}"></i>
+            </div>
+            <div class="template-card__body">
+                <strong class="template-card__name">{{ tpl.name }}</strong>
+                <p class="template-card__desc">{{ tpl.description }}</p>
+                {% if tpl.sections %}
+                <small class="template-card__meta">
+                    {{ tpl.sections|length }} section{{ tpl.sections|length|pluralize }}
+                </small>
+                {% else %}
+                <small class="template-card__meta">Blank — build from scratch</small>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# ── Page details ───────────────────────────────────────────────────── #}
+    <div id="page-details" class="{% if not posted_key %}hidden{% endif %}">
+        <fieldset class="module aligned">
+            <h2>Page details</h2>
+
+            <div class="form-row">
+                <label for="id_title">Title:</label>
+                <input type="text"
+                       name="title"
+                       id="id_title"
+                       value="{{ posted_title }}"
+                       maxlength="200"
+                       placeholder="e.g. Home, About Us, Our Services"
+                       autocomplete="off">
+                <p class="help">
+                    Shown in the admin list and used as the default for browser tab / social share title.
+                </p>
+            </div>
+
+            <div class="form-row">
+                <label for="id_slug" class="required">Slug:</label>
+                <input type="text"
+                       name="slug"
+                       id="id_slug"
+                       value="{{ posted_slug }}"
+                       maxlength="50"
+                       pattern="[a-z0-9-]+"
+                       required
+                       placeholder="e.g. home, about-us, services"
+                       autocomplete="off">
+                <p class="help">
+                    URL-friendly identifier. Used in the page address: <em>/your-slug/</em>.
+                    Only lowercase letters, numbers, and hyphens.
+                </p>
+            </div>
+        </fieldset>
+
+        <div class="submit-row">
+            <input type="submit"
+                   value="Create page →"
+                   class="default"
+                   id="submit-btn">
+            <a href="{% url 'admin:core_page_changelist' %}" class="cancel-link">Cancel</a>
+        </div>
+    </div>
+</form>
+
+
+{# ── Styles ─────────────────────────────────────────────────────────────── #}
+<style>
+  /* Bootstrap Icons — same CDN the public site uses */
+  @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+
+  /* ── Grid ── */
+  #template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  /* ── Card ── */
+  .template-card {
+    border: 2px solid var(--border-color, #ddd);
+    border-radius: 6px;
+    padding: 1.25rem 1rem 1rem;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .5rem;
+    background: var(--darkened-bg, #f8f8f8);
+    user-select: none;
+  }
+  .template-card:hover {
+    border-color: var(--link-fg, #417690);
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+  .template-card.selected {
+    border-color: var(--link-fg, #417690);
+    background: color-mix(in srgb, var(--link-fg, #417690) 8%, white);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--link-fg, #417690) 25%, transparent);
+  }
+  .template-card:focus-visible {
+    outline: 2px solid var(--link-fg, #417690);
+    outline-offset: 2px;
+  }
+
+  /* ── Icon ── */
+  .template-card__icon {
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--link-fg, #417690);
+  }
+  .template-card.selected .template-card__icon {
+    color: var(--link-fg, #417690);
+  }
+
+  /* ── Text ── */
+  .template-card__body { width: 100%; }
+  .template-card__name { display: block; margin-bottom: .25rem; font-size: 1rem; }
+  .template-card__desc { margin: 0 0 .35rem; font-size: .8rem; color: var(--body-quiet-color, #666); line-height: 1.4; }
+  .template-card__meta { color: var(--body-quiet-color, #888); font-size: .75rem; }
+
+  /* ── Details panel ── */
+  #page-details {
+    border-top: 1px solid var(--border-color, #ddd);
+    padding-top: 1.5rem;
+    animation: slideDown .2s ease;
+  }
+  #page-details.hidden { display: none; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Form rows ── */
+  #page-details .form-row {
+    padding: .75rem 1rem .75rem 9rem;
+    position: relative;
+  }
+  #page-details .form-row label {
+    position: absolute;
+    left: 1rem;
+    top: .9rem;
+    font-weight: bold;
+  }
+  #page-details .form-row label.required::after {
+    content: " *";
+    color: var(--error-fg, #ba2121);
+  }
+  #page-details input[type=text] {
+    width: 100%;
+    max-width: 420px;
+    padding: .4rem .5rem;
+    font-size: .9rem;
+    border: 1px solid var(--border-color, #ccc);
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  #page-details input[type=text]:focus {
+    outline: none;
+    border-color: var(--link-fg, #417690);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--link-fg, #417690) 20%, transparent);
+  }
+  #page-details .help {
+    margin-top: .35rem;
+    font-size: .8rem;
+    color: var(--body-quiet-color, #666);
+  }
+
+  .cancel-link {
+    margin-left: 1rem;
+    font-size: .9rem;
+    color: var(--body-quiet-color, #666);
+  }
+</style>
+
+{# ── Script ─────────────────────────────────────────────────────────────── #}
+<script>
+(function () {
+  'use strict';
+
+  const grid      = document.getElementById('template-grid');
+  const details   = document.getElementById('page-details');
+  const keyInput  = document.getElementById('id_template_key');
+  const slugInput = document.getElementById('id_slug');
+  const titleInput = document.getElementById('id_title');
+
+  // Tracks the suggested slug from the currently selected template.
+  let templateSlug = '{{ posted_slug }}';
+
+  // ----- Card selection -------------------------------------------------------
+
+  function selectCard(card) {
+    // Deselect all
+    grid.querySelectorAll('.template-card').forEach(c => {
+      c.classList.remove('selected');
+      c.setAttribute('aria-pressed', 'false');
+    });
+
+    card.classList.add('selected');
+    card.setAttribute('aria-pressed', 'true');
+
+    const key  = card.dataset.key;
+    const slug = card.dataset.slug;
+
+    keyInput.value = key;
+    templateSlug   = slug;
+
+    // Pre-fill slug if it's empty or still equals a previous template's suggestion.
+    if (!slugInput.value || slugInput.dataset.userEdited !== 'true') {
+      slugInput.value = slug;
+      slugInput.dataset.userEdited = 'false';
+    }
+
+    // Show the details panel
+    details.classList.remove('hidden');
+    titleInput.focus();
+  }
+
+  grid.addEventListener('click', e => {
+    const card = e.target.closest('.template-card');
+    if (card) selectCard(card);
+  });
+
+  grid.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      const card = e.target.closest('.template-card');
+      if (card) { e.preventDefault(); selectCard(card); }
+    }
+  });
+
+  // ----- Slug auto-generation from title ----------------------------------------
+
+  function slugify(str) {
+    return str
+      .toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')  // remove diacritics
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/[\s_]+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 50);
+  }
+
+  titleInput.addEventListener('input', () => {
+    // Only auto-generate slug if user hasn't manually edited it.
+    if (slugInput.dataset.userEdited !== 'true') {
+      const generated = slugify(titleInput.value);
+      slugInput.value = generated || templateSlug;
+    }
+  });
+
+  slugInput.addEventListener('input', () => {
+    // Sanitise as they type (lowercase + hyphens only)
+    const pos    = slugInput.selectionStart;
+    const raw    = slugInput.value;
+    const clean  = raw.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+    if (clean !== raw) {
+      slugInput.value = clean;
+      slugInput.setSelectionRange(pos, pos);
+    }
+    slugInput.dataset.userEdited = slugInput.value !== templateSlug ? 'true' : 'false';
+  });
+
+  // ----- Form validation -------------------------------------------------------
+
+  document.getElementById('template-form').addEventListener('submit', e => {
+    if (!keyInput.value) {
+      e.preventDefault();
+      alert('Please choose a template first.');
+      grid.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    if (!slugInput.value) {
+      e.preventDefault();
+      slugInput.focus();
+      slugInput.setCustomValidity('A slug is required.');
+      slugInput.reportValidity();
+      return;
+    }
+  });
+
+  // ----- Restore selection on validation error (page re-rendered) -------------
+  const preselected = keyInput.value;
+  if (preselected) {
+    const card = grid.querySelector(`[data-key="${preselected}"]`);
+    if (card && !card.classList.contains('selected')) {
+      card.classList.add('selected');
+      card.setAttribute('aria-pressed', 'true');
+      details.classList.remove('hidden');
+    }
+  }
+
+}());
+</script>
+
+{% endblock %}

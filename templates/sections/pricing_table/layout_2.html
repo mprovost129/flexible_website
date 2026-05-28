@@ -1,0 +1,96 @@
+{% load core_extras %}
+{#
+  Pricing Table -- stacked comparison layout.
+
+  Best for 2 plans or a minimal look. Plans are shown as two large colored
+  blocks side by side. One is highlighted with the primary color background.
+
+  SectionItem fields -- same convention as layout_1:
+    title      -- plan name
+    link_text  -- price display ("$29", "Free", etc.)
+    link_url   -- CTA URL
+    text       -- first line = billing note; remaining lines = features (one per line)
+    icon       -- Bootstrap Icons name shown on the "Popular" badge
+
+  Config (Section.config JSON):
+    highlighted_plan -- 1-based index of the plan to highlight (default: 2)
+    cta_label        -- button label (default "Get started")
+    show_period      -- "false" to hide billing period line (default shown)
+#}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+
+        {% with highlighted=section.config.highlighted_plan|default:2 %}
+        <div class="row justify-content-center g-4">
+            {% for item in section.items.all %}
+                {% with is_hi=forloop.counter|intequal:highlighted %}
+                <div class="col-12 col-md-6 col-lg-5">
+                    <div class="p-4 rounded-4 h-100
+                                {% if is_hi %}bg-primary text-white shadow-lg{% else %}bg-light border{% endif %}">
+
+                        {# Plan header #}
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                                    <h4 class="fw-bold mb-1 edit-content">{{ item.title }}</h4>
+                                </div>
+                                {% if section.config.show_period != "false" %}
+                                    {% with period=item.text|first_line %}
+                                    {% if period %}
+                                        <small class="{% if is_hi %}text-white-50{% else %}text-body-secondary{% endif %}">
+                                            {{ period }}
+                                        </small>
+                                    {% endif %}
+                                    {% endwith %}
+                                {% endif %}
+                            </div>
+                            {% if is_hi and item.icon %}
+                                <span class="badge bg-white text-primary px-2 py-1 rounded-pill">
+                                    <i class="bi bi-{{ item.icon }} me-1"></i>Popular
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {# Price #}
+                        <div class="edit-wrap mb-4" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">
+                            <div class="display-6 fw-bold edit-content">{{ item.link_text }}</div>
+                        </div>
+
+                        {# Feature list #}
+                        <ul class="list-unstyled mb-5">
+                            {% for feature in item.text|remaining_lines|feature_lines %}
+                                <li class="d-flex align-items-start gap-2 mb-3">
+                                    <i class="bi bi-check-lg flex-shrink-0 mt-1
+                                              {% if is_hi %}text-white{% else %}text-success{% endif %}"></i>
+                                    <span>{{ feature }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                        {# CTA #}
+                        <a href="{{ item.link_url|default:'#' }}"
+                           class="btn w-100 btn-lg
+                                  {% if is_hi %}btn-light text-primary fw-semibold{% else %}btn-primary{% endif %}">
+                            {{ section.config.cta_label|default:'Get started' }}
+                        </a>
+                    </div>
+                </div>
+                {% endwith %}
+            {% empty %}
+                <div class="col-12 text-center text-body-secondary">No pricing plans yet.</div>
+            {% endfor %}
+        </div>
+        {% endwith %}
+    </div>
+</section>

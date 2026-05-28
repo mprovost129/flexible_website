@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {# ------------------------------------------------------------------ #}
+    {# Title                                                               #}
+    {# Priority: page og_title > page title > site name                   #}
+    {# ------------------------------------------------------------------ #}
+    {% if page %}
+        {% with page_title=page.og_title|default:page.title %}
+        <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{{ cms_site.name|default:'My Site' }}{% endblock %}</title>
+        {% endwith %}
+    {% else %}
+        <title>{% block title_fallback %}{{ cms_site.name|default:'My Site' }}{% endblock %}</title>
+    {% endif %}
+
+    {# ------------------------------------------------------------------ #}
+    {# Primary meta                                                        #}
+    {# ------------------------------------------------------------------ #}
+    {% if page %}
+        <meta name="description" content="{{ page.og_description|default:cms_site.tagline|default:'' }}">
+    {% else %}
+        <meta name="description" content="{% block meta_description %}{{ cms_site.tagline|default:'' }}{% endblock %}">
+    {% endif %}
+    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+    {# ------------------------------------------------------------------ #}
+    {# Favicon                                                             #}
+    {# ------------------------------------------------------------------ #}
+    {% if cms_site and cms_site.favicon %}
+    <link rel="icon" href="{{ cms_site.favicon.url }}">
+    <link rel="apple-touch-icon" href="{{ cms_site.favicon.url }}">
+    {% endif %}
+
+    {# ------------------------------------------------------------------ #}
+    {# Open Graph                                                          #}
+    {# ------------------------------------------------------------------ #}
+    {% if cms_site %}
+    <meta property="og:type"        content="website">
+    <meta property="og:site_name"   content="{{ cms_site.name }}">
+    <meta property="og:url"         content="{{ request.build_absolute_uri }}">
+    {% if page %}
+    <meta property="og:title"       content="{{ page.og_title|default:page.title|default:cms_site.name }}">
+    <meta property="og:description" content="{{ page.og_description|default:cms_site.tagline|default:'' }}">
+    {% if page.og_image %}
+    <meta property="og:image"       content="{{ page.og_image.url }}">
+    {% elif cms_site.og_image %}
+    <meta property="og:image"       content="{{ cms_site.og_image.url }}">
+    {% endif %}
+    {% else %}
+    <meta property="og:title"       content="{{ cms_site.name }}">
+    <meta property="og:description" content="{{ cms_site.tagline|default:'' }}">
+    {% if cms_site.og_image %}
+    <meta property="og:image"       content="{{ cms_site.og_image.url }}">
+    {% endif %}
+    {% endif %}
+    {% endif %}
+
+    {# ------------------------------------------------------------------ #}
+    {# Twitter / X Card                                                    #}
+    {# ------------------------------------------------------------------ #}
+    <meta name="twitter:card" content="summary_large_image">
+    {% if page %}
+    <meta name="twitter:title"       content="{{ page.og_title|default:page.title|default:cms_site.name }}">
+    <meta name="twitter:description" content="{{ page.og_description|default:cms_site.tagline|default:'' }}">
+    {% if page.og_image %}
+    <meta name="twitter:image"       content="{{ page.og_image.url }}">
+    {% elif cms_site.og_image %}
+    <meta name="twitter:image"       content="{{ cms_site.og_image.url }}">
+    {% endif %}
+    {% else %}
+    <meta name="twitter:title"       content="{{ cms_site.name }}">
+    <meta name="twitter:description" content="{{ cms_site.tagline|default:'' }}">
+    {% if cms_site.og_image %}
+    <meta name="twitter:image"       content="{{ cms_site.og_image.url }}">
+    {% endif %}
+    {% endif %}
+
+    {# ------------------------------------------------------------------ #}
+    {# Stylesheets                                                         #}
+    {# ------------------------------------------------------------------ #}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    {# ------------------------------------------------------------------ #}
+    {# Theme CSS variables                                                 #}
+    {# ------------------------------------------------------------------ #}
+    {% if cms_site and cms_site.theme %}
+    <style>
+        :root {
+            --bs-primary: {{ cms_site.theme.primary }};
+            --bs-primary-rgb: {{ cms_site.theme.primary_rgb }};
+            --bs-secondary: {{ cms_site.theme.secondary }};
+            --bs-secondary-rgb: {{ cms_site.theme.secondary_rgb }};
+            --bs-success: {{ cms_site.theme.success }};
+            --bs-danger: {{ cms_site.theme.danger }};
+            --bs-warning: {{ cms_site.theme.warning }};
+            --bs-info: {{ cms_site.theme.info }};
+            --bs-body-bg: {{ cms_site.theme.body_bg }};
+            --bs-body-bg-rgb: {{ cms_site.theme.body_bg_rgb }};
+            --bs-body-color: {{ cms_site.theme.body_color }};
+            {% if cms_site.theme.heading_color %}--bs-heading-color: {{ cms_site.theme.heading_color }};{% endif %}
+            {% if cms_site.theme.link_color %}--bs-link-color: {{ cms_site.theme.link_color }};{% endif %}
+            --bs-body-font-family: {{ cms_site.theme.font_family|safe }};
+        }
+        {% if cms_site.theme.heading_font_family %}
+        h1, h2, h3, h4, h5, h6,
+        .display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+            font-family: {{ cms_site.theme.heading_font_family|safe }};
+        }
+        {% endif %}
+        /* Recompute primary button hover/active states that Bootstrap derives from --bs-primary */
+        .btn-primary {
+            --bs-btn-bg: var(--bs-primary);
+            --bs-btn-border-color: var(--bs-primary);
+            --bs-btn-hover-bg: var(--bs-primary);
+            --bs-btn-hover-border-color: var(--bs-primary);
+            --bs-btn-active-bg: var(--bs-primary);
+            --bs-btn-active-border-color: var(--bs-primary);
+            filter: none;
+        }
+        .btn-primary:hover  { filter: brightness(0.92); }
+        .btn-primary:active { filter: brightness(0.85); }
+    </style>
+    {% endif %}
+
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body{% if request.user.is_staff %} class="edit-mode"{% endif %}>
+
+    {% if cms_site %}
+        {% include "navbars/"|add:cms_site.navbar_variant|add:".html" with site=cms_site %}
+    {% endif %}
+
+    <main>
+        {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {% if cms_site %}
+        {% include "footers/"|add:cms_site.footer_variant|add:".html" with site=cms_site %}
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    {% if request.user.is_staff %}
+    <script src="{% static 'js/inline_edit.js' %}"></script>
+    {% endif %}
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

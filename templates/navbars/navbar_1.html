@@ -1,0 +1,29 @@
+{% load static %}
+<div class="container">
+    <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+        <a href="{% url 'core:home' %}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+            {% if site.logo %}
+                <img src="{{ site.logo.url }}" alt="{{ site.name }}" height="32" class="me-2">
+            {% endif %}
+            <span class="fs-4">{{ site.name }}</span>
+        </a>
+        <ul class="nav nav-pills">
+            {% for p in site.pages.all %}
+                {% if p.is_enabled %}
+                    <li class="nav-item">
+                        <a href="{% url 'core:page' p.slug %}"
+                           class="nav-link {% if request.resolver_match.kwargs.slug == p.slug or p.slug == 'home' and request.path == '/' %}active{% endif %}"
+                           {% if request.resolver_match.kwargs.slug == p.slug %}aria-current="page"{% endif %}>
+                            {{ p.title }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if user.is_authenticated %}
+                <li class="nav-item"><a href="{% url 'logout' %}" class="nav-link">Logout</a></li>
+            {% else %}
+                <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+            {% endif %}
+        </ul>
+    </header>
+</div>

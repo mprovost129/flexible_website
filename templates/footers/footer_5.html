@@ -1,0 +1,54 @@
+{% load static %}
+
+<div class="container">
+    <footer class="py-5">
+        <div class="row">
+            <div class="col-6 col-md-3 mb-3">
+                <h5>Navigate</h5>
+                <ul class="nav flex-column">
+                    {% for p in site.pages.all %}
+                        {% if p.is_enabled %}
+                            <li class="nav-item mb-2">
+                                <a href="{% url 'core:page' p.slug %}" class="nav-link p-0 text-body-secondary">{{ p.title }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-6 col-md-3 mb-3">
+                <h5>Connect</h5>
+                <ul class="nav flex-column">
+                    {% if site.facebook_url %}<li class="nav-item mb-2"><a href="{{ site.facebook_url }}" class="nav-link p-0 text-body-secondary" target="_blank" rel="noopener">Facebook</a></li>{% endif %}
+                    {% if site.instagram_url %}<li class="nav-item mb-2"><a href="{{ site.instagram_url }}" class="nav-link p-0 text-body-secondary" target="_blank" rel="noopener">Instagram</a></li>{% endif %}
+                    {% if site.twitter_url %}<li class="nav-item mb-2"><a href="{{ site.twitter_url }}" class="nav-link p-0 text-body-secondary" target="_blank" rel="noopener">Twitter</a></li>{% endif %}
+                    {% if site.linkedin_url %}<li class="nav-item mb-2"><a href="{{ site.linkedin_url }}" class="nav-link p-0 text-body-secondary" target="_blank" rel="noopener">LinkedIn</a></li>{% endif %}
+                </ul>
+            </div>
+            {% if site.newsletter_enabled %}
+                <div class="col-md-5 offset-md-1 mb-3">
+                    <form method="post" action="#">
+                        {% csrf_token %}
+                        <h5>{{ site.newsletter_heading }}</h5>
+                        <p>{{ site.newsletter_blurb }}</p>
+                        <div class="d-flex flex-column flex-sm-row w-100 gap-2">
+                            <label for="newsletter_email" class="visually-hidden">Email address</label>
+                            <input id="newsletter_email" name="email" type="email" class="form-control" placeholder="Email address" required>
+                            <button class="btn btn-primary" type="submit">Subscribe</button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+        <div class="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
+            <p class="text-body-secondary">© {% now "Y" %} {{ site.copyright_text }}</p>
+            <ul class="list-unstyled d-flex mb-0">
+                {% if site.instagram_url %}
+                    <li class="ms-3"><a class="link-body-emphasis" href="{{ site.instagram_url }}" aria-label="Instagram" target="_blank" rel="noopener"><i class="bi bi-instagram fs-5"></i></a></li>
+                {% endif %}
+                {% if site.facebook_url %}
+                    <li class="ms-3"><a class="link-body-emphasis" href="{{ site.facebook_url }}" aria-label="Facebook" target="_blank" rel="noopener"><i class="bi bi-facebook fs-5"></i></a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </footer>
+</div>

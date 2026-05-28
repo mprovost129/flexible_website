@@ -1,0 +1,56 @@
+{% load static %}
+
+<div class="container">
+    <footer class="row row-cols-1 row-cols-sm-2 row-cols-md-4 py-5 my-5 border-top">
+        <div class="col mb-3">
+            <a href="{% url 'core:home' %}" class="d-flex align-items-center mb-3 link-body-emphasis text-decoration-none">
+                {% if site.logo %}
+                    <img src="{{ site.logo.url }}" alt="{{ site.name }}" height="32">
+                {% else %}
+                    <span class="fs-4 fw-bold">{{ site.name }}</span>
+                {% endif %}
+            </a>
+            <p class="text-body-secondary">© {% now "Y" %} {{ site.copyright_text }}</p>
+        </div>
+        <div class="col mb-3">
+            <h5>Navigate</h5>
+            <ul class="nav flex-column">
+                {% for p in site.pages.all %}
+                    {% if p.is_enabled %}
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'core:page' p.slug %}" class="nav-link p-0 text-body-secondary">{{ p.title }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col mb-3">
+            <h5>Connect</h5>
+            <ul class="nav flex-column">
+                {% if site.facebook_url %}
+                    <li class="nav-item mb-2"><a href="{{ site.facebook_url }}" class="nav-link p-0 text-body-secondary" target="_blank" rel="noopener">Facebook</a></li>
+                {% endif %}
+                {% if site.instagram_url %}
+                    <li class="nav-item mb-2"><a href="{{ site.instagram_url }}" class="nav-link p-0 text-body-secondary" target="_blank" rel="noopener">Instagram</a></li>
+                {% endif %}
+                {% if site.twitter_url %}
+                    <li class="nav-item mb-2"><a href="{{ site.twitter_url }}" class="nav-link p-0 text-body-secondary" target="_blank" rel="noopener">Twitter</a></li>
+                {% endif %}
+                {% if site.linkedin_url %}
+                    <li class="nav-item mb-2"><a href="{{ site.linkedin_url }}" class="nav-link p-0 text-body-secondary" target="_blank" rel="noopener">LinkedIn</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="col mb-3">
+            <h5>Account</h5>
+            <ul class="nav flex-column">
+                {% if user.is_authenticated %}
+                    <li class="nav-item mb-2"><a href="{% url 'logout' %}" class="nav-link p-0 text-body-secondary">Logout</a></li>
+                {% else %}
+                    <li class="nav-item mb-2"><a href="{% url 'login' %}" class="nav-link p-0 text-body-secondary">Login</a></li>
+                    <li class="nav-item mb-2"><a href="{% url 'password_reset' %}" class="nav-link p-0 text-body-secondary">Reset Password</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </footer>
+</div>

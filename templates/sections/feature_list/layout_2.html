@@ -1,0 +1,93 @@
+{#
+  Feature List layout 2 -- alternating rows (image/icon left + text right, then flip).
+
+  Great for "how it works" sections or feature deep-dives. Each item gets
+  its own full-width row. Odd items: content left, visual right.
+  Even items: visual left, content right (reversed via Bootstrap flex utilities).
+
+  SectionItem fields:
+    image      -- illustration or photo for this feature (recommended)
+    icon       -- Bootstrap Icons name -- shown when no image is uploaded
+                  (e.g. "lightning-charge-fill")
+    title      -- feature name / step title
+    text       -- description (multiline supported)
+    link_text  -- optional CTA link label
+    link_url   -- optional CTA link href
+
+  Config (Section.config JSON):
+    icon_size        -- Bootstrap display class suffix for icon (default "1" = display-1)
+    show_step_number -- "true" to show 01, 02, 03... step numbers (default false)
+#}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+
+        {% for item in section.items.all %}
+            <div class="row align-items-center g-4 g-lg-5 mb-5
+                        {% if forloop.counter|divisibleby:2 %}flex-md-row-reverse{% endif %}">
+
+                {# Visual column: image or icon #}
+                <div class="col-md-5 text-center">
+                    {% if item.image %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="image" data-edit-type="image">
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}"
+                                 class="img-fluid rounded shadow-sm">
+                        </div>
+                    {% elif item.icon %}
+                        <i class="bi bi-{{ item.icon }} display-{{ section.config.icon_size|default:'1' }} text-primary"></i>
+                    {% else %}
+                        {# Step number circle as fallback visual #}
+                        <div class="mx-auto d-flex align-items-center justify-content-center bg-primary text-white rounded-circle fw-bold"
+                             style="width: 7rem; height: 7rem; font-size: 2.5rem;">
+                            {{ forloop.counter }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                {# Content column #}
+                <div class="col-md-7">
+                    {% if section.config.show_step_number == "true" %}
+                        <span class="text-primary fw-bold fs-5 d-block mb-2">
+                            {{ forloop.counter|stringformat:"02d" }}
+                        </span>
+                    {% endif %}
+
+                    {% if item.title %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                            <h3 class="fw-bold mb-3 edit-content">{{ item.title }}</h3>
+                        </div>
+                    {% endif %}
+
+                    {% if item.text %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                            <div class="text-body-secondary edit-content" data-edit-value="{{ item.text }}">{{ item.text|linebreaks }}</div>
+                        </div>
+                    {% endif %}
+
+                    {% if item.link_text and item.link_url %}
+                        <a href="{{ item.link_url }}" class="btn btn-outline-primary mt-3">
+                            {{ item.link_text }} <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Divider between items, except after the last one #}
+            {% if not forloop.last %}
+                <hr class="my-3 border-0">
+            {% endif %}
+        {% empty %}
+            <div class="text-center text-body-secondary">No features yet.</div>
+        {% endfor %}
+    </div>
+</section>

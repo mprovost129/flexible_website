@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container text-center py-5">
+        <h1 class="display-4 fw-bold">{{ blocks.hero_title.text_content }}</h1>
+        <p class="lead text-muted mt-3">{{ blocks.hero_subtitle.text_content }}</p>
+        <a href="#" class="btn btn-primary btn-lg mt-3">{{ blocks.hero_cta_text.text_content }}</a>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <h3>{{ blocks.feature_1_title.text_content }}</h3>
+                <p>{{ blocks.feature_1_text.text_content }}</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <h3>{{ blocks.feature_2_title.text_content }}</h3>
+                <p>{{ blocks.feature_2_text.text_content }}</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <h3>{{ blocks.feature_3_title.text_content }}</h3>
+                <p>{{ blocks.feature_3_text.text_content }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% load core_extras %}
+{#
+  Video Embed -- responsive iframe embed for YouTube or Vimeo.
+
+  The |video_embed_url filter (in core_extras) converts watch URLs to embed
+  URLs automatically, so users can paste any standard YouTube or Vimeo URL.
+
+  Section fields:
+    heading    -- optional title above the video
+    subheading -- optional description below the title
+
+  SectionItem fields (one item = one video; multiple items = video playlist grid):
+    link_url  -- YouTube or Vimeo URL (watch URL or share URL, either works)
+    title     -- optional caption below the video
+    text      -- optional description below the caption
+
+  Config (Section.config JSON):
+    columns_desktop -- for multiple videos, how many per row (default 1)
+    aspect_ratio    -- Bootstrap ratio class suffix: "16x9" (default), "4x3", "21x9", "1x1"
+    autoplay        -- "true" to add ?autoplay=1 to embed URL (default false)
+#}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+
+        {% with ratio=section.config.aspect_ratio|default:"16x9" autoplay=section.config.autoplay %}
+        <div class="row g-4">
+            {% for item in section.items.all %}
+                {% if item.link_url %}
+                    <div class="{{ section.bootstrap_col_class }}">
+                        <div class="ratio ratio-{{ ratio }} rounded overflow-hidden shadow-sm">
+                            <iframe
+                                src="{{ item.link_url|video_embed_url }}{% if autoplay == 'true' %}?autoplay=1&mute=1{% endif %}"
+                                title="{{ item.title|default:section.heading }}"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowfullscreen
+                                loading="lazy"
+                                class="rounded">
+                            </iframe>
+                        </div>
+                        {% if item.title %}
+                            <div class="edit-wrap mt-3" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                                <h5 class="fw-semibold edit-content">{{ item.title }}</h5>
+                            </div>
+                        {% endif %}
+                        {% if item.text %}
+                            <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                                <p class="text-body-secondary edit-content" data-edit-value="{{ item.text }}">{{ item.text }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% empty %}
+                <div class="col-12 text-center text-body-secondary">
+                    No video added yet. Add a SectionItem with a YouTube or Vimeo URL in the link_url field.
+                </div>
+            {% endfor %}
+        </div>
+        {% endwith %}
+    </div>
+</section>

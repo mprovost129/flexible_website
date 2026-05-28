@@ -1,0 +1,26 @@
+{# CTA banner: full-width attention-grabbing section with one or two buttons. #}
+<section class="py-5 {% if not section.background_color %}bg-primary text-white{% endif %}"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container text-center py-4">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="display-6 fw-bold edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="lead mt-3 mb-4 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            {% for item in section.items.all %}
+                {% if item.link_text %}
+                    <a href="{{ item.link_url|default:'#' }}"
+                       class="btn btn-lg {% if forloop.first %}btn-light{% else %}btn-outline-light{% endif %}">
+                        {{ item.link_text }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>

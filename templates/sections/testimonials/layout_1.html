@@ -1,0 +1,94 @@
+{% load core_extras %}
+{#
+  Testimonials -- card grid.
+
+  Section fields:
+    heading    -- section title, e.g. "What our customers say"
+    subheading -- optional intro sentence
+
+  SectionItem fields (one item = one testimonial):
+    text       -- the quote text
+    title      -- person's name
+    link_text  -- person's role / company, e.g. "CEO, Acme Corp"
+    link_url   -- optional link on the person's name (e.g. LinkedIn)
+    image      -- avatar photo (optional; falls back to initials avatar)
+    icon       -- Bootstrap Icons name for decorative stars, e.g. "star-fill"
+
+  Config (Section.config JSON):
+    columns_desktop -- number of columns (default 3)
+    bg_quote_color  -- Bootstrap bg class for the card (default "bg-light")
+#}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+
+        <div class="row g-4">
+            {% for item in section.items.all %}
+                <div class="{{ section.bootstrap_col_class }}">
+                    <div class="card h-100 border-0 {{ section.config.bg_quote_color|default:'bg-light' }} p-4">
+                        {# Optional decorative icons (e.g. star rating) #}
+                        {% if item.icon %}
+                            <div class="mb-3 text-warning">
+                                <i class="bi bi-{{ item.icon }}"></i>
+                                <i class="bi bi-{{ item.icon }}"></i>
+                                <i class="bi bi-{{ item.icon }}"></i>
+                                <i class="bi bi-{{ item.icon }}"></i>
+                                <i class="bi bi-{{ item.icon }}"></i>
+                            </div>
+                        {% endif %}
+
+                        {# Quote text #}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                            <blockquote class="mb-4 fst-italic edit-content" data-edit-value="{{ item.text }}">
+                                &ldquo;{{ item.text }}&rdquo;
+                            </blockquote>
+                        </div>
+
+                        {# Attribution row #}
+                        <div class="d-flex align-items-center gap-3 mt-auto">
+                            {% if item.image %}
+                                <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="image" data-edit-type="image">
+                                    <img src="{{ item.image.url }}" alt="{{ item.title }}"
+                                         class="rounded-circle"
+                                         style="width: 3rem; height: 3rem; object-fit: cover;">
+                                </div>
+                            {% else %}
+                                {# Initials avatar fallback #}
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                                     style="width: 3rem; height: 3rem; font-size: 1.1rem;">
+                                    {{ item.title|first|upper }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                                    {% if item.link_url %}
+                                        <a href="{{ item.link_url }}" class="fw-semibold text-decoration-none text-body edit-content">{{ item.title }}</a>
+                                    {% else %}
+                                        <span class="fw-semibold edit-content">{{ item.title }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if item.link_text %}
+                                    <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">
+                                        <small class="text-body-secondary edit-content">{{ item.link_text }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center text-body-secondary">No testimonials yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>

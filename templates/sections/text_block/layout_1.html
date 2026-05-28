@@ -1,0 +1,25 @@
+{# Text block: heading + body text. Good for "About us" or content sections. #}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                {% if section.heading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                        <h2 class="fw-bold mb-3 edit-content">{{ section.heading }}</h2>
+                    </div>
+                {% endif %}
+                {% if section.subheading %}
+                    {#
+                      The subheading here uses |linebreaks which turns \n\n into <p> tags.
+                      We store the raw text in data-edit-value so the textarea gets the
+                      unrendered version, then the server returns rendered HTML on save.
+                    #}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                        <div class="lead text-body-secondary edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|linebreaks }}</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>

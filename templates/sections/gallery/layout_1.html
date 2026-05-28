@@ -1,0 +1,126 @@
+{#
+  Gallery -- uniform grid with Bootstrap modal lightbox.
+
+  Clicking any thumbnail opens a full-size modal. No extra JS libraries needed --
+  Bootstrap's modal handles it, and a small inline script updates the image src
+  when the modal is triggered.
+
+  SectionItem fields (one item = one image):
+    image      -- the photo
+    title      -- caption shown in modal footer
+    text       -- optional longer description shown below caption
+    link_url   -- optional external link shown in modal (e.g. "View project")
+    link_text  -- text for the external link (default "View")
+
+  Config (Section.config JSON):
+    columns_desktop -- columns in the grid (default 3)
+#}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+
+        <div class="row g-3">
+            {% for item in section.items.all %}
+                <div class="{{ section.bootstrap_col_class }}">
+                    <div class="position-relative overflow-hidden rounded gallery-thumb-wrap"
+                         style="cursor: pointer;"
+                         data-bs-toggle="modal"
+                         data-bs-target="#galleryModal{{ section.id }}"
+                         data-img-src="{% if item.image %}{{ item.image.url }}{% endif %}"
+                         data-caption="{{ item.title }}"
+                         data-description="{{ item.text }}"
+                         data-link-url="{{ item.link_url }}"
+                         data-link-text="{{ item.link_text|default:'View' }}">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}"
+                                 class="img-fluid w-100 gallery-thumb"
+                                 style="aspect-ratio: 1; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-secondary-subtle d-flex align-items-center justify-content-center"
+                                 style="aspect-ratio: 1;">
+                                <span class="text-body-secondary small">No image</span>
+                            </div>
+                        {% endif %}
+                        {# Hover overlay #}
+                        <div class="position-absolute inset-0 d-flex align-items-center justify-content-center gallery-overlay"
+                             style="top:0;left:0;right:0;bottom:0;
+                                    background: rgba(0,0,0,0); transition: background 0.2s;">
+                            <i class="bi bi-zoom-in text-white fs-2 opacity-0 gallery-zoom-icon"
+                               style="transition: opacity 0.2s;"></i>
+                        </div>
+                    </div>
+                    {% if item.title %}
+                        <p class="small text-body-secondary mt-2 mb-0">{{ item.title }}</p>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div class="col-12 text-center text-body-secondary">No images yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{# Single modal shared across all items in this gallery section #}
+<div class="modal fade" id="galleryModal{{ section.id }}" tabindex="-1"
+     aria-label="Gallery image" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-body p-0 position-relative bg-black">
+                <button type="button"
+                        class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                        style="z-index:1;"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                <img id="galleryModalImg{{ section.id }}"
+                     src="" alt=""
+                     class="img-fluid w-100 rounded-top">
+            </div>
+            <div class="modal-footer flex-column align-items-start gap-1 py-3"
+                 id="galleryModalFooter{{ section.id }}">
+                <p class="mb-0 fw-semibold" id="galleryModalCaption{{ section.id }}"></p>
+                <p class="mb-0 small text-body-secondary" id="galleryModalDesc{{ section.id }}"></p>
+                <a href="#" target="_blank" rel="noopener"
+                   class="btn btn-sm btn-outline-primary mt-1 d-none"
+                   id="galleryModalLink{{ section.id }}"></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.gallery-thumb-wrap:hover .gallery-overlay { background: rgba(0,0,0,0.35) !important; }
+.gallery-thumb-wrap:hover .gallery-zoom-icon { opacity: 1 !important; }
+.gallery-thumb { transition: transform 0.25s ease; }
+.gallery-thumb-wrap:hover .gallery-thumb { transform: scale(1.04); }
+</style>
+
+<script>
+(function () {
+    var modal = document.getElementById('galleryModal{{ section.id }}');
+    if (!modal) return;
+    modal.addEventListener('show.bs.modal', function (e) {
+        var trigger = e.relatedTarget;
+        document.getElementById('galleryModalImg{{ section.id }}').src       = trigger.dataset.imgSrc || '';
+        document.getElementById('galleryModalCaption{{ section.id }}').textContent = trigger.dataset.caption || '';
+        document.getElementById('galleryModalDesc{{ section.id }}').textContent    = trigger.dataset.description || '';
+        var link = document.getElementById('galleryModalLink{{ section.id }}');
+        if (trigger.dataset.linkUrl) {
+            link.href        = trigger.dataset.linkUrl;
+            link.textContent = trigger.dataset.linkText || 'View';
+            link.classList.remove('d-none');
+        } else {
+            link.classList.add('d-none');
+        }
+    });
+}());
+</script>

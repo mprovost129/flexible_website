@@ -1,0 +1,108 @@
+{% load core_extras %}
+{#
+  Testimonials -- large featured quote, one at a time with prev/next navigation.
+
+  Each SectionItem is one testimonial shown in a large, centered presentation.
+  Bootstrap carousel handles the prev/next without custom JS.
+
+  SectionItem fields (one item = one testimonial):
+    text       -- the quote text
+    title      -- person's name
+    link_text  -- person's role / company
+    link_url   -- optional link on the name
+    image      -- avatar photo (optional)
+    icon       -- decorative icon name (e.g. "quote" for a large quote mark)
+
+  Config (Section.config JSON):
+    show_indicators -- "true" to show dot indicators (default true)
+#}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Bootstrap carousel for quotes -- full width, constrained content #}
+    <div id="testimonialCarousel{{ section.id }}"
+         class="carousel slide"
+         data-bs-ride="false">
+
+        {% if section.config.show_indicators != "false" %}
+        <div class="carousel-indicators">
+            {% for item in section.items.all %}
+                <button type="button"
+                        data-bs-target="#testimonialCarousel{{ section.id }}"
+                        data-bs-slide-to="{{ forloop.counter0 }}"
+                        {% if forloop.first %}class="active" aria-current="true"{% endif %}
+                        aria-label="Testimonial {{ forloop.counter }}"></button>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="carousel-inner">
+            {% for item in section.items.all %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %} py-4">
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-8 text-center">
+                                {# Large decorative quote mark #}
+                                <i class="bi bi-quote display-1 text-primary opacity-25 d-block mb-3"></i>
+
+                                <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                                    <p class="fs-4 fst-italic mb-4 edit-content" data-edit-value="{{ item.text }}">
+                                        {{ item.text }}
+                                    </p>
+                                </div>
+
+                                {% if item.image %}
+                                    <div class="edit-wrap d-inline-block mb-3" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="image" data-edit-type="image">
+                                        <img src="{{ item.image.url }}" alt="{{ item.title }}"
+                                             class="rounded-circle mx-auto d-block"
+                                             style="width: 4.5rem; height: 4.5rem; object-fit: cover;">
+                                    </div>
+                                {% endif %}
+
+                                <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                                    <p class="fw-semibold mb-0 edit-content">{{ item.title }}</p>
+                                </div>
+                                {% if item.link_text %}
+                                    <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">
+                                        <small class="text-body-secondary edit-content">{{ item.link_text }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="carousel-item active">
+                    <div class="container text-center text-body-secondary py-4">No testimonials yet.</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% with items=section.items.all %}
+        {% if items|length > 1 %}
+        <button class="carousel-control-prev" type="button"
+                data-bs-target="#testimonialCarousel{{ section.id }}" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button"
+                data-bs-target="#testimonialCarousel{{ section.id }}" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+        {% endif %}
+        {% endwith %}
+    </div>
+</section>

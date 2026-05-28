@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!--
+  500.html -- self-contained server error page.
+
+  This template MUST NOT extend base.html or use any Django template tags that
+  touch the database. A 500 error may be caused by a database failure, a broken
+  context processor, or misconfigured settings. If this template tries to query
+  the DB it can trigger a second error and leave the user with a blank screen.
+
+  Keep it: plain HTML, inline styles, zero external requests.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Error</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #212529;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            max-width: 560px;
+            width: 100%;
+            padding: 3rem 2.5rem;
+            text-align: center;
+        }
+        .code {
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1;
+            color: #dc3545;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+        p {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.65rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            background: #0d6efd;
+            color: #fff;
+            transition: filter 0.15s;
+        }
+        .btn:hover { filter: brightness(0.9); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="code">500</div>
+        <h1>Something went wrong</h1>
+        <p>
+            An unexpected error occurred on the server. The site owner has been
+            notified. Please try again in a few minutes.
+        </p>
+        <a href="/" class="btn">Return to home page</a>
+    </div>
+</body>
+</html>

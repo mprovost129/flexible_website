@@ -1,0 +1,22 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n %}
+
+{#
+  Custom change form for the Page model.
+  Adds a "Duplicate page" button to the object-tools toolbar at the top right,
+  next to the History button. Only shown when editing an existing page (not when
+  creating a new one, because there is nothing to duplicate yet).
+#}
+
+{% block object-tools-items %}
+    {% if original %}
+    <li>
+        <a href="/admin/core/page/{{ original.pk }}/duplicate/"
+           class="historylink"
+           title="Create a copy of this page with all its sections and items">
+            {% trans "Duplicate page" %}
+        </a>
+    </li>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

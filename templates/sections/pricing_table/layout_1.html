@@ -1,0 +1,106 @@
+{% load core_extras %}
+{#
+  Pricing Table -- side-by-side plan cards.
+
+  Each SectionItem is one pricing plan. Convention for SectionItem fields:
+
+    title      -- plan name, e.g. "Starter", "Pro", "Enterprise"
+    link_text  -- price display string, e.g. "$29", "Free", "Contact us"
+    link_url   -- CTA URL (sign-up, checkout, etc.)
+    text       -- feature list. First line = billing period / price note
+                  (e.g. "per month"). Remaining lines = individual features
+                  shown as a checklist, one per line.
+                  Example:
+                    per month
+                    Unlimited projects
+                    Priority support
+                    Custom domain
+    icon       -- Bootstrap Icons name shown on the "Popular" badge of the
+                  highlighted plan (e.g. "star-fill"). Only needed on one plan.
+
+  Config (Section.config JSON):
+    highlighted_plan -- 1-based index of the plan to highlight (default: 2)
+                        Set to 0 to disable highlighting entirely.
+    cta_label        -- text for all CTA buttons (default "Get started")
+    show_period      -- "false" to hide the billing period line (default shown)
+#}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+
+        {% with highlighted=section.config.highlighted_plan|default:2 %}
+        <div class="row g-4 align-items-stretch justify-content-center">
+            {% for item in section.items.all %}
+                {% with is_hi=forloop.counter|intequal:highlighted %}
+                <div class="{{ section.bootstrap_col_class }}">
+                    <div class="card h-100 border-2 position-relative
+                                {% if is_hi %}border-primary shadow-lg{% else %}border shadow-sm{% endif %}">
+
+                        {% if is_hi %}
+                            <div class="position-absolute top-0 start-50 translate-middle">
+                                <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm">
+                                    {% if item.icon %}<i class="bi bi-{{ item.icon }} me-1"></i>{% endif %}
+                                    Most popular
+                                </span>
+                            </div>
+                        {% endif %}
+
+                        <div class="card-body p-4 {% if is_hi %}pt-5{% endif %}">
+                            {# Plan name #}
+                            <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                                <h3 class="fw-bold mb-1 edit-content">{{ item.title }}</h3>
+                            </div>
+
+                            {# Price #}
+                            <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">
+                                <div class="display-5 fw-bold text-primary my-3 edit-content">{{ item.link_text }}</div>
+                            </div>
+
+                            {# Billing period (first line of item.text) #}
+                            {% if section.config.show_period != "false" %}
+                                {% with period=item.text|first_line %}
+                                {% if period %}
+                                    <p class="text-body-secondary small mb-4">{{ period }}</p>
+                                {% endif %}
+                                {% endwith %}
+                            {% endif %}
+
+                            {# Feature checklist (remaining lines of item.text) #}
+                            <ul class="list-unstyled mb-4">
+                                {% for feature in item.text|remaining_lines|feature_lines %}
+                                    <li class="d-flex align-items-start gap-2 mb-2">
+                                        <i class="bi bi-check-circle-fill text-success flex-shrink-0 mt-1"></i>
+                                        <span>{{ feature }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        {# CTA button pinned to card bottom #}
+                        <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                            <a href="{{ item.link_url|default:'#' }}"
+                               class="btn w-100 btn-lg
+                                      {% if is_hi %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                                {{ section.config.cta_label|default:'Get started' }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% empty %}
+                <div class="col-12 text-center text-body-secondary">No pricing plans yet.</div>
+            {% endfor %}
+        </div>
+        {% endwith %}
+    </div>
+</section>

@@ -1,0 +1,40 @@
+{# Hero: text left, image right (50/50 split). Uses primary_image and first item as CTA. #}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container py-4">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                {% if section.heading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                        <h1 class="display-5 fw-bold edit-content">{{ section.heading }}</h1>
+                    </div>
+                {% endif %}
+                {% if section.subheading %}
+                    <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                        <p class="lead text-body-secondary mt-3 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+                    </div>
+                {% endif %}
+                {% with cta=section.items.first %}
+                    {% if cta and cta.link_text %}
+                        <a href="{{ cta.link_url|default:'#' }}" class="btn btn-primary btn-lg mt-3">
+                            {{ cta.link_text }}
+                        </a>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <div class="col-lg-6">
+                <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="primary_image" data-edit-type="image">
+                    {% if section.primary_image %}
+                        <img src="{{ section.primary_image.url }}" alt="{{ section.heading }}" class="img-fluid rounded shadow-sm">
+                    {% else %}
+                        <div class="bg-secondary-subtle rounded d-flex align-items-center justify-content-center edit-img-placeholder" style="aspect-ratio: 4/3;">
+                            <span class="text-body-secondary">
+                                {% if request.user.is_staff %}Click camera to add image{% else %}No image yet{% endif %}
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

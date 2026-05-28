@@ -1,0 +1,135 @@
+{#
+  Contact Form -- two-column: contact info left, form right.
+
+  Section fields:
+    heading    -- section title
+    subheading -- subtitle
+
+  SectionItems -- each item is one contact info block shown in the left column:
+    icon       -- Bootstrap Icons name, e.g. "telephone", "envelope", "geo-alt"
+    title      -- label, e.g. "Phone", "Email", "Address"
+    text       -- the actual info, e.g. "+1 555-123-4567"
+    link_url   -- optional link (e.g. "mailto:...", "tel:...")
+    link_text  -- link display text (if different from text)
+
+  Config (Section.config JSON): same as layout_1 plus:
+    to_email       -- recipient address
+    show_subject   -- "false" to hide subject field
+    submit_label   -- button label
+#}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+            </div>
+        {% endif %}
+
+        <div class="row g-5 align-items-start">
+
+            {# Left column: contact info items #}
+            <div class="col-lg-4">
+                {% for item in section.items.all %}
+                    <div class="d-flex gap-3 mb-4">
+                        {% if item.icon %}
+                            <div class="flex-shrink-0 bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center"
+                                 style="width: 3rem; height: 3rem;">
+                                <i class="bi bi-{{ item.icon }} fs-5"></i>
+                            </div>
+                        {% endif %}
+                        <div>
+                            {% if item.title %}
+                                <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                                    <p class="fw-semibold mb-1 edit-content">{{ item.title }}</p>
+                                </div>
+                            {% endif %}
+                            {% if item.link_url %}
+                                <a href="{{ item.link_url }}" class="text-body-secondary text-decoration-none">
+                                    {{ item.link_text|default:item.text }}
+                                </a>
+                            {% elif item.text %}
+                                <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                                    <p class="text-body-secondary mb-0 edit-content" data-edit-value="{{ item.text }}">{{ item.text }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {# Right column: the form #}
+            <div class="col-lg-8">
+                <form method="POST" action="{% url 'core:contact_submit' %}" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" name="page_slug" value="{{ page.slug }}">
+                    <input type="hidden" name="to_email" value="{{ section.config.to_email|default:'' }}">
+                    <div style="position:absolute;left:-9999px;opacity:0;" aria-hidden="true">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off">
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="cf2-name-{{ section.id }}" class="form-label fw-semibold">
+                                Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   id="cf2-name-{{ section.id }}"
+                                   name="name"
+                                   class="form-control"
+                                   placeholder="Your name"
+                                   required
+                                   autocomplete="name">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="cf2-email-{{ section.id }}" class="form-label fw-semibold">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email"
+                                   id="cf2-email-{{ section.id }}"
+                                   name="email"
+                                   class="form-control"
+                                   placeholder="you@example.com"
+                                   required
+                                   autocomplete="email">
+                        </div>
+
+                        {% if section.config.show_subject != "false" %}
+                        <div class="col-12">
+                            <label for="cf2-subject-{{ section.id }}" class="form-label fw-semibold">Subject</label>
+                            <input type="text"
+                                   id="cf2-subject-{{ section.id }}"
+                                   name="subject"
+                                   class="form-control"
+                                   placeholder="What is this about?">
+                        </div>
+                        {% endif %}
+
+                        <div class="col-12">
+                            <label for="cf2-message-{{ section.id }}" class="form-label fw-semibold">
+                                Message <span class="text-danger">*</span>
+                            </label>
+                            <textarea id="cf2-message-{{ section.id }}"
+                                      name="message"
+                                      class="form-control"
+                                      rows="6"
+                                      placeholder="Your message..."
+                                      required></textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                {{ section.config.submit_label|default:'Send Message' }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
