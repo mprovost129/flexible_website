@@ -592,6 +592,20 @@ body.edit-mode .chrome-hover-add-group .chrome-hover-add-extra:focus {
 body.edit-mode .cbl-navbar-shell {
     z-index: 1500;
 }
+body.edit-mode .cbl-navbar-zone {
+    outline: 2px dashed transparent;
+    outline-offset: -2px;
+    transition: outline-color .15s ease;
+    cursor: pointer;
+}
+body.edit-mode .cbl-navbar-zone:hover,
+body.edit-mode .cbl-navbar-zone.cbl-inspector-selected {
+    outline-color: rgba(var(--bs-primary-rgb), 0.45);
+}
+body.edit-mode .cbl-navbar-zone.cbl-inspector-selected {
+    outline-color: rgba(var(--bs-primary-rgb), 0.7);
+    outline-style: solid;
+}
 
 body.edit-mode #edit-sidebar {
     position: fixed;
@@ -1192,15 +1206,15 @@ body:not(.edit-mode) .nav-drag-handle {
 }
 .cbl-navbar-desktop {
     display: none;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: var(--cbl-nav-grid, auto 1fr auto);
     gap: 1rem;
     align-items: center;
 }
 .cbl-nav-zones-center-heavy .cbl-navbar-desktop {
-    grid-template-columns: minmax(0, 1fr) 2fr minmax(0, 1fr);
+    grid-template-columns: var(--cbl-nav-grid, minmax(0, 1fr) 2fr minmax(0, 1fr));
 }
 .cbl-nav-zones-split .cbl-navbar-desktop {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: var(--cbl-nav-grid, 1fr 1fr 1fr);
 }
 
 /* Second-row overflow: center zone drops below brand + right */

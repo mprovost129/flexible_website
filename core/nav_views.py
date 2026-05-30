@@ -244,6 +244,7 @@ NAVBAR_CONFIG_CHOICE_KEYS = {
 NAVBAR_CONFIG_COLOR_KEYS = {
     'bg_color', 'text_color', 'link_color', 'link_hover_bg', 'link_hover_color',
     'body_bg_override',
+    'zone_left_fr', 'zone_center_fr', 'zone_right_fr',
 }
 NAVBAR_CONFIG_ALL_KEYS = (
     NAVBAR_CONFIG_NUMERIC_KEYS | set(NAVBAR_CONFIG_CHOICE_KEYS) | NAVBAR_CONFIG_COLOR_KEYS

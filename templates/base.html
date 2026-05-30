@@ -205,6 +205,9 @@
              data-nav-scroll-effect="{{ nc.scroll_effect|default:'none' }}"
              data-nav-dropdown-style="{{ nc.dropdown_style|default:'default' }}"
              data-nav-overflow="{{ nc.menu_overflow|default:'visible' }}"
+             data-nav-zone-left="{{ nc.zone_left_fr|default:'' }}"
+             data-nav-zone-center="{{ nc.zone_center_fr|default:'' }}"
+             data-nav-zone-right="{{ nc.zone_right_fr|default:'' }}"
              {% endif %}>
             {% if cms_site.show_navbar or edit_mode_active %}
                 {% include "navbars/navbar_dynamic.html" with site=cms_site %}

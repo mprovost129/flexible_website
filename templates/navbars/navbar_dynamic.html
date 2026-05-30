@@ -13,6 +13,7 @@ left, center, or right through Site Settings and NavLink.slot.
         data-overflow-mode="{{ nc.menu_overflow|default:'visible' }}"
         {% if nc.scroll_effect and nc.scroll_effect != 'none' %}data-scroll-effect="{{ nc.scroll_effect }}"{% endif %}
         style="
+        {% if nc.zone_left_fr or nc.zone_center_fr or nc.zone_right_fr %}--cbl-nav-grid: {{ nc.zone_left_fr|default:'auto' }} {{ nc.zone_center_fr|default:'1fr' }} {{ nc.zone_right_fr|default:'auto' }};{% endif %}
         --cbl-nav-bg: {% if nc.bg_color %}{{ nc.bg_color }}{% elif theme == 'dark' %}#111827{% elif theme == 'light' %}#ffffff{% elif theme == 'transparent' %}transparent{% else %}var(--bs-primary){% endif %};
         --cbl-nav-text: {% if nc.text_color %}{{ nc.text_color }}{% elif theme == 'light' %}#212529{% else %}#ffffff{% endif %};
         --cbl-nav-link: {% if nc.link_color %}{{ nc.link_color }}{% else %}currentColor{% endif %};

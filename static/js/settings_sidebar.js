@@ -137,6 +137,16 @@
         return;
       }
 
+      var navZone = event.target.closest('.cbl-navbar-zone');
+      if (navZone && !event.target.closest('.nav-editable, .cbl-nav-block, .brand-editable, .nav-edit-controls, .chrome-hover-add')) {
+        event.preventDefault();
+        event.stopPropagation();
+        var zoneName = navZone.classList.contains('cbl-navbar-left') ? 'left'
+          : navZone.classList.contains('cbl-navbar-right') ? 'right' : 'center';
+        render({ kind: 'nav-zone', el: navZone, zoneName: zoneName });
+        return;
+      }
+
       var navbarRegion = event.target.closest('#navbar-region');
       if (navbarRegion) {
         event.preventDefault();
@@ -204,6 +214,7 @@
     if (selection.kind === 'brand') return renderBrand(selection.el);
     if (selection.kind === 'nav-block') return renderNavBlock(selection.el, selection.blockKind);
     if (selection.kind === 'navbar') return renderNavbar();
+    if (selection.kind === 'nav-zone') return renderNavZone(selection.zoneName);
     if (selection.kind === 'footer') return renderFooter();
     if (selection.kind === 'item') return renderItem(selection.itemId);
     return renderPage(page);
@@ -770,6 +781,11 @@
 
     if (selection.kind === 'navbar') {
       wireNavbar(body);
+      return;
+    }
+
+    if (selection.kind === 'nav-zone') {
+      wireNavZone(body);
       return;
     }
 
@@ -1384,6 +1400,94 @@
     postJson('/edit/site-chrome/update/', { field: field, value: next })
       .then(function () { window.location.reload(); })
       .catch(alertError);
+  }
+
+  function renderNavZone(zoneName) {
+    var r = document.getElementById('navbar-region');
+    var rawL = r ? (r.dataset.navZoneLeft   || '') : '';
+    var rawC = r ? (r.dataset.navZoneCenter || '') : '';
+    var rawR = r ? (r.dataset.navZoneRight  || '') : '';
+
+    function frVal(raw, def) {
+      return raw ? parseFloat(raw) : def;
+    }
+    var leftVal   = frVal(rawL, 1);
+    var centerVal = frVal(rawC, 2);
+    var rightVal  = frVal(rawR, 1);
+    var hasCustom = !!(rawL || rawC || rawR);
+
+    var zoneLabels = { left: 'Left zone', center: 'Center zone', right: 'Right zone' };
+
+    return sectionShell(zoneLabels[zoneName] || 'Zone',
+      '<div class="edit-sidebar-section">' +
+        '<h3>Quick presets</h3>' +
+        '<div class="d-flex gap-1 flex-wrap mb-3">' +
+          '<button type="button" class="btn btn-sm btn-outline-secondary sidebar-zone-preset" data-l="auto" data-c="1fr" data-r="auto">Auto</button>' +
+          '<button type="button" class="btn btn-sm btn-outline-secondary sidebar-zone-preset" data-l="1fr" data-c="2fr" data-r="1fr">Center heavy</button>' +
+          '<button type="button" class="btn btn-sm btn-outline-secondary sidebar-zone-preset" data-l="1fr" data-c="1fr" data-r="1fr">Equal thirds</button>' +
+        '</div>' +
+        '<h3>Custom widths <span class="text-body-secondary">(fr units)</span></h3>' +
+        '<p class="small text-body-secondary mb-2">Higher number = wider zone. All three values are relative to each other.</p>' +
+        '<div class="d-flex gap-2 mb-3">' +
+          '<div class="text-center flex-fill">' +
+            '<label class="form-label small mb-1 d-block fw-semibold' + (zoneName === 'left' ? ' text-primary' : '') + '">Left</label>' +
+            '<input type="number" class="form-control form-control-sm sidebar-zone-left-fr" min="0.5" max="20" step="0.5" value="' + leftVal + '">' +
+          '</div>' +
+          '<div class="text-center flex-fill">' +
+            '<label class="form-label small mb-1 d-block fw-semibold' + (zoneName === 'center' ? ' text-primary' : '') + '">Center</label>' +
+            '<input type="number" class="form-control form-control-sm sidebar-zone-center-fr" min="0.5" max="20" step="0.5" value="' + centerVal + '">' +
+          '</div>' +
+          '<div class="text-center flex-fill">' +
+            '<label class="form-label small mb-1 d-block fw-semibold' + (zoneName === 'right' ? ' text-primary' : '') + '">Right</label>' +
+            '<input type="number" class="form-control form-control-sm sidebar-zone-right-fr" min="0.5" max="20" step="0.5" value="' + rightVal + '">' +
+          '</div>' +
+        '</div>' +
+        '<button type="button" class="btn btn-sm btn-primary w-100 mb-1 sidebar-save-zone">Apply</button>' +
+        (hasCustom ? '<button type="button" class="btn btn-sm btn-link w-100 sidebar-reset-zone">Reset to auto</button>' : '') +
+      '</div>'
+    );
+  }
+
+  function wireNavZone(body) {
+    body.querySelectorAll('.sidebar-zone-preset').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var leftEl   = body.querySelector('.sidebar-zone-left-fr');
+        var centerEl = body.querySelector('.sidebar-zone-center-fr');
+        var rightEl  = body.querySelector('.sidebar-zone-right-fr');
+        var l = btn.dataset.l, c = btn.dataset.c, r = btn.dataset.r;
+        if (leftEl)   leftEl.value   = parseFloat(l)  || l;
+        if (centerEl) centerEl.value = parseFloat(c)  || c;
+        if (rightEl)  rightEl.value  = parseFloat(r)  || r;
+      });
+    });
+
+    var save = body.querySelector('.sidebar-save-zone');
+    if (save) {
+      save.addEventListener('click', function () {
+        var leftEl   = body.querySelector('.sidebar-zone-left-fr');
+        var centerEl = body.querySelector('.sidebar-zone-center-fr');
+        var rightEl  = body.querySelector('.sidebar-zone-right-fr');
+        var l = (leftEl   ? leftEl.value   : '1') + 'fr';
+        var c = (centerEl ? centerEl.value : '2') + 'fr';
+        var r = (rightEl  ? rightEl.value  : '1') + 'fr';
+        postJson('/edit/navbar/config/update/', { key: 'zone_left_fr',   value: l })
+          .then(function () { return postJson('/edit/navbar/config/update/', { key: 'zone_center_fr', value: c }); })
+          .then(function () { return postJson('/edit/navbar/config/update/', { key: 'zone_right_fr',  value: r }); })
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+
+    var reset = body.querySelector('.sidebar-reset-zone');
+    if (reset) {
+      reset.addEventListener('click', function () {
+        postJson('/edit/navbar/config/update/', { key: 'zone_left_fr',   value: '' })
+          .then(function () { return postJson('/edit/navbar/config/update/', { key: 'zone_center_fr', value: '' }); })
+          .then(function () { return postJson('/edit/navbar/config/update/', { key: 'zone_right_fr',  value: '' }); })
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
   }
 
   function renderNavbar() {
