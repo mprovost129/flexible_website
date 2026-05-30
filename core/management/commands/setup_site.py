@@ -23,7 +23,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.non_interactive = options['non_interactive']
 
-        self.stdout.write(self.style.SUCCESS("\nWelcome! Let's set up your site.\n"))
+        self.stdout.write(self.style.SUCCESS("\nWelcome to CBL. Let's set up your site.\n"))
 
         # Make sure themes exist before we ask the user to pick one
         self._ensure_themes()
@@ -37,48 +37,87 @@ class Command(BaseCommand):
             site.tagline or '',
             allow_blank=True,
         )
+        site.save()
 
-        # Step 2: Theme
+        # Step 2: Industry pack (optional). If chosen, it sets theme + navbar +
+        # footer and builds out all the starter pages, then we skip the manual
+        # layout prompts. "Start blank" falls through to the manual flow.
+        pack_applied = self._maybe_apply_pack(site)
+
+        if not pack_applied:
+            self._manual_layout_setup(site)
+
+        # Copyright (always asked; packs do not set this)
+        site.refresh_from_db()
+        site.copyright_text = self._prompt(
+            'Copyright text',
+            site.copyright_text or f'{site.name}. All rights reserved.',
+        )
+        site.onboarding_complete = True
+        site.save()
+        self.stdout.write(self.style.SUCCESS('Site settings saved.'))
+
+        # Ensure there is at least a home page if no pack built one
+        self._ensure_home_page(site)
+
+        # Admin user
+        self._create_admin_user()
+
+        self.stdout.write(self.style.SUCCESS(
+            '\nAll set! Run `python manage.py runserver` and visit /admin/ to start editing.\n'
+        ))
+
+    def _manual_layout_setup(self, site):
+        """The original theme/navbar/footer prompts, used when no pack is chosen."""
+        from core.models import Theme
+
         themes = list(Theme.objects.all())
         site.theme = self._pick_choice(
             'Pick a theme',
             pairs=[(t, t.name) for t in themes],
             current=site.theme or Theme.objects.filter(is_default=True).first(),
         )
-
-        # Step 3: Navbar
         site.navbar_variant = self._pick_choice(
             'Pick a navbar style',
             pairs=Site.NAVBAR_CHOICES,
             current=site.navbar_variant,
         )
-
-        # Step 4: Footer
         site.footer_variant = self._pick_choice(
             'Pick a footer style',
             pairs=Site.FOOTER_CHOICES,
             current=site.footer_variant,
         )
-
-        # Step 5: Copyright text
-        site.copyright_text = self._prompt(
-            'Copyright text',
-            site.copyright_text or 'My Site. All rights reserved.',
-        )
-
-        site.onboarding_complete = True
         site.save()
-        self.stdout.write(self.style.SUCCESS('Site settings saved.'))
 
-        # Step 6: Default home page with sections if empty
-        self._ensure_home_page(site)
+    def _maybe_apply_pack(self, site):
+        """Offer industry packs. Returns True if one was applied."""
+        from core.packs.definitions import list_packs
+        from core.packs.applier import apply_pack
 
-        # Step 7: Admin user
-        self._create_admin_user()
+        packs = list_packs()
+        if not packs:
+            return False
 
+        # Build choices: each pack plus a "Start blank" option (value None)
+        pairs = [(key, f'{name} -- {desc}') for key, name, desc in packs]
+        pairs.append((None, 'Start blank (pick theme/navbar/footer myself)'))
+
+        if self.non_interactive:
+            return False  # blank in automated mode
+
+        choice = self._pick_choice(
+            'Choose an industry starter pack',
+            pairs=pairs,
+            current=None,
+        )
+        if choice is None:
+            return False
+
+        apply_pack(choice, site_name=site.name)
         self.stdout.write(self.style.SUCCESS(
-            '\nAll set! Run `python manage.py runserver` and visit /admin/ to start editing.\n'
+            f'Applied the "{choice}" pack: theme, navigation, and starter pages are ready.'
         ))
+        return True
 
     # Prompt helpers
 

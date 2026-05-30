@@ -3,14 +3,8 @@
 <div class="container">
     <footer class="py-3 my-4">
         <ul class="nav justify-content-center border-bottom pb-3 mb-3">
-            {% for p in site.pages.all %}
-                {% if p.is_enabled %}
-                    <li class="nav-item">
-                        <a href="{% url 'core:page' p.slug %}" class="nav-link px-2 text-body-secondary">{{ p.title }}</a>
-                    </li>
-                {% endif %}
-            {% endfor %}
+            {% include "footers/_footer_links.html" with link_class="px-2 text-body-secondary" %}
         </ul>
-        <p class="text-body-secondary">© {% now "Y" %} {{ site.copyright_text }}</p>
+        <p class="text-body-secondary text-center">&copy; {% now "Y" %} {{ site.copyright_text }}</p>
     </footer>
 </div>

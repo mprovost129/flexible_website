@@ -1,0 +1,364 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.http import require_POST
+
+from .dashboard_forms import (
+    FooterColumnForm,
+    FooterLinkForm,
+    NavLinkForm,
+    PageForm,
+    SectionForm,
+    SiteSettingsForm,
+)
+from .models import FooterColumn, FooterLink, NavLink, Page, Section, Site
+from .site_resolver import get_active_site
+
+
+def staff_required(view_func):
+    return login_required(user_passes_test(lambda u: u.is_staff)(view_func))
+
+
+def _dashboard_context(request, **extra):
+    site = get_active_site(request)
+    base = {
+        'dashboard_site': site,
+        'page_count': Page.objects.filter(site=site).count(),
+        'published_page_count': Page.objects.filter(site=site, is_enabled=True).count(),
+        'draft_page_count': Page.objects.filter(site=site, is_enabled=False).count(),
+        'nav_link_count': NavLink.objects.filter(site=site).count(),
+        'footer_link_count': FooterLink.objects.filter(column__site=site).count(),
+    }
+    base.update(extra)
+    return base
+
+
+@staff_required
+def dashboard_home(request):
+    site = get_active_site(request)
+    pages = Page.objects.filter(site=site).annotate(
+        section_count=Count('sections', filter=Q(sections__deleted_at__isnull=True)),
+    ).order_by('order', 'title')[:8]
+    nav_links = NavLink.objects.filter(site=site, parent__isnull=True).order_by('order', 'label')
+    footer_columns = FooterColumn.objects.filter(site=site).prefetch_related('links').order_by('order')
+    return render(request, 'dashboard/home.html', _dashboard_context(
+        request,
+        pages=pages,
+        nav_links=nav_links,
+        footer_columns=footer_columns,
+    ))
+
+
+@staff_required
+def site_settings(request):
+    site = get_active_site(request)
+    if request.method == 'POST':
+        form = SiteSettingsForm(request.POST, request.FILES, instance=site)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Site settings updated.')
+            return redirect('core:dashboard_settings')
+    else:
+        form = SiteSettingsForm(instance=site)
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request,
+        form=form,
+        title='Site Settings',
+        subtitle='Update branding, layout variants, footer details, social links, SEO defaults, and robots.txt.',
+        back_url=reverse('core:dashboard_home'),
+        submit_label='Save settings',
+    ))
+
+
+@staff_required
+def page_list(request):
+    site = get_active_site(request)
+    pages = Page.objects.filter(site=site).annotate(
+        section_count=Count('sections', filter=Q(sections__deleted_at__isnull=True)),
+    ).order_by('order', 'title')
+    return render(request, 'dashboard/page_list.html', _dashboard_context(request, pages=pages))
+
+
+@staff_required
+def page_create(request):
+    site = get_active_site(request)
+    if request.method == 'POST':
+        form = PageForm(request.POST, request.FILES)
+        if form.is_valid():
+            page = form.save(commit=False)
+            page.site = site
+            page.save()
+            messages.success(request, f'Page “{page.title or page.slug}” created.')
+            return redirect('core:dashboard_page_edit', pk=page.pk)
+    else:
+        next_order = Page.objects.filter(site=site).count()
+        form = PageForm(initial={'page_type': 'about', 'variant': 'page_1', 'order': next_order, 'is_enabled': False})
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request,
+        form=form,
+        title='Add Page',
+        subtitle='Create a new draft or published page.',
+        back_url=reverse('core:dashboard_pages'),
+        submit_label='Create page',
+    ))
+
+
+@staff_required
+def page_edit(request, pk):
+    site = get_active_site(request)
+    page = get_object_or_404(Page, pk=pk, site=site)
+    if request.method == 'POST':
+        form = PageForm(request.POST, request.FILES, instance=page)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Page updated.')
+            return redirect('core:dashboard_page_edit', pk=page.pk)
+    else:
+        form = PageForm(instance=page)
+    sections = page.sections.all().order_by('order')
+    return render(request, 'dashboard/page_edit.html', _dashboard_context(
+        request,
+        page_obj=page,
+        form=form,
+        sections=sections,
+    ))
+
+
+@staff_required
+@require_POST
+def page_delete(request, pk):
+    site = get_active_site(request)
+    page = get_object_or_404(Page, pk=pk, site=site)
+    if page.slug == 'home':
+        messages.error(request, 'The home page cannot be deleted. Unpublish or edit it instead.')
+        return redirect('core:dashboard_pages')
+    label = page.title or page.slug
+    page.delete()
+    messages.success(request, f'Page “{label}” deleted.')
+    return redirect('core:dashboard_pages')
+
+
+@staff_required
+@require_POST
+def page_toggle_publish(request, pk):
+    site = get_active_site(request)
+    page = get_object_or_404(Page, pk=pk, site=site)
+    page.is_enabled = not page.is_enabled
+    page.save(update_fields=['is_enabled'])
+    messages.success(request, f'Page “{page.title or page.slug}” is now {"published" if page.is_enabled else "draft"}.')
+    return redirect(request.POST.get('next') or 'core:dashboard_pages')
+
+
+@staff_required
+def section_create(request, page_pk):
+    site = get_active_site(request)
+    page = get_object_or_404(Page, pk=page_pk, site=site)
+    if request.method == 'POST':
+        form = SectionForm(request.POST, request.FILES)
+        if form.is_valid():
+            section = form.save(commit=False)
+            section.page = page
+            section.save()
+            messages.success(request, 'Section added.')
+            return redirect('core:dashboard_page_edit', pk=page.pk)
+    else:
+        form = SectionForm(initial={'order': page.sections.count(), 'is_visible': True})
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request,
+        form=form,
+        title=f'Add Section to {page.title or page.slug}',
+        subtitle='Add a new visible or hidden section to this page.',
+        back_url=reverse('core:dashboard_page_edit', kwargs={'pk': page.pk}),
+        submit_label='Add section',
+    ))
+
+
+@staff_required
+def section_edit(request, pk):
+    site = get_active_site(request)
+    section = get_object_or_404(Section, pk=pk, page__site=site)
+    if request.method == 'POST':
+        form = SectionForm(request.POST, request.FILES, instance=section)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Section updated.')
+            return redirect('core:dashboard_page_edit', pk=section.page.pk)
+    else:
+        form = SectionForm(instance=section)
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request,
+        form=form,
+        title='Edit Section',
+        subtitle=f'{section.get_section_type_display()} on {section.page.title or section.page.slug}',
+        back_url=reverse('core:dashboard_page_edit', kwargs={'pk': section.page.pk}),
+        submit_label='Save section',
+    ))
+
+
+@staff_required
+@require_POST
+def section_delete(request, pk):
+    site = get_active_site(request)
+    section = get_object_or_404(Section, pk=pk, page__site=site)
+    page_pk = section.page.pk
+    section.soft_delete()
+    messages.success(request, 'Section deleted. It can still be recovered through existing undo endpoints until purged.')
+    return redirect('core:dashboard_page_edit', pk=page_pk)
+
+
+@staff_required
+def nav_list(request):
+    site = get_active_site(request)
+    links = NavLink.objects.filter(site=site).select_related('page', 'parent').order_by('parent_id', 'order', 'label')
+    return render(request, 'dashboard/nav_list.html', _dashboard_context(request, links=links))
+
+
+@staff_required
+def nav_create(request):
+    site = get_active_site(request)
+    if request.method == 'POST':
+        form = NavLinkForm(request.POST, site=site)
+        if form.is_valid():
+            link = form.save(commit=False)
+            link.site = site
+            link.save()
+            messages.success(request, 'Navigation link created.')
+            return redirect('core:dashboard_nav')
+    else:
+        form = NavLinkForm(site=site, initial={'order': NavLink.objects.filter(site=site).count(), 'is_visible': True})
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request, form=form, title='Add Navigation Link', subtitle='Create a top-level link or dropdown item.',
+        back_url=reverse('core:dashboard_nav'), submit_label='Create link'
+    ))
+
+
+@staff_required
+def nav_edit(request, pk):
+    site = get_active_site(request)
+    link = get_object_or_404(NavLink, pk=pk, site=site)
+    if request.method == 'POST':
+        form = NavLinkForm(request.POST, instance=link, site=site)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Navigation link updated.')
+            return redirect('core:dashboard_nav')
+    else:
+        form = NavLinkForm(instance=link, site=site)
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request, form=form, title='Edit Navigation Link', subtitle=link.label,
+        back_url=reverse('core:dashboard_nav'), submit_label='Save link'
+    ))
+
+
+@staff_required
+@require_POST
+def nav_delete(request, pk):
+    site = get_active_site(request)
+    link = get_object_or_404(NavLink, pk=pk, site=site)
+    link.delete()
+    messages.success(request, 'Navigation link deleted.')
+    return redirect('core:dashboard_nav')
+
+
+@staff_required
+def footer_list(request):
+    site = get_active_site(request)
+    columns = FooterColumn.objects.filter(site=site).prefetch_related('links').order_by('order')
+    return render(request, 'dashboard/footer_list.html', _dashboard_context(request, columns=columns))
+
+
+@staff_required
+def footer_column_create(request):
+    site = get_active_site(request)
+    if request.method == 'POST':
+        form = FooterColumnForm(request.POST)
+        if form.is_valid():
+            column = form.save(commit=False)
+            column.site = site
+            column.save()
+            messages.success(request, 'Footer column created.')
+            return redirect('core:dashboard_footer')
+    else:
+        form = FooterColumnForm(initial={'order': FooterColumn.objects.filter(site=site).count(), 'is_visible': True})
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request, form=form, title='Add Footer Column', subtitle='Create a footer group for links.',
+        back_url=reverse('core:dashboard_footer'), submit_label='Create column'
+    ))
+
+
+@staff_required
+def footer_column_edit(request, pk):
+    site = get_active_site(request)
+    column = get_object_or_404(FooterColumn, pk=pk, site=site)
+    if request.method == 'POST':
+        form = FooterColumnForm(request.POST, instance=column)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Footer column updated.')
+            return redirect('core:dashboard_footer')
+    else:
+        form = FooterColumnForm(instance=column)
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request, form=form, title='Edit Footer Column', subtitle=column.heading,
+        back_url=reverse('core:dashboard_footer'), submit_label='Save column'
+    ))
+
+
+@staff_required
+@require_POST
+def footer_column_delete(request, pk):
+    site = get_active_site(request)
+    column = get_object_or_404(FooterColumn, pk=pk, site=site)
+    column.delete()
+    messages.success(request, 'Footer column deleted.')
+    return redirect('core:dashboard_footer')
+
+
+@staff_required
+def footer_link_create(request, column_pk):
+    site = get_active_site(request)
+    column = get_object_or_404(FooterColumn, pk=column_pk, site=site)
+    if request.method == 'POST':
+        form = FooterLinkForm(request.POST, site=site)
+        if form.is_valid():
+            link = form.save(commit=False)
+            link.column = column
+            link.save()
+            messages.success(request, 'Footer link created.')
+            return redirect('core:dashboard_footer')
+    else:
+        form = FooterLinkForm(site=site, initial={'order': column.links.count(), 'is_visible': True})
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request, form=form, title='Add Footer Link', subtitle=f'Column: {column.heading or "Untitled"}',
+        back_url=reverse('core:dashboard_footer'), submit_label='Create link'
+    ))
+
+
+@staff_required
+def footer_link_edit(request, pk):
+    site = get_active_site(request)
+    link = get_object_or_404(FooterLink, pk=pk, column__site=site)
+    if request.method == 'POST':
+        form = FooterLinkForm(request.POST, instance=link, site=site)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Footer link updated.')
+            return redirect('core:dashboard_footer')
+    else:
+        form = FooterLinkForm(instance=link, site=site)
+    return render(request, 'dashboard/form.html', _dashboard_context(
+        request, form=form, title='Edit Footer Link', subtitle=link.label,
+        back_url=reverse('core:dashboard_footer'), submit_label='Save link'
+    ))
+
+
+@staff_required
+@require_POST
+def footer_link_delete(request, pk):
+    site = get_active_site(request)
+    link = get_object_or_404(FooterLink, pk=pk, column__site=site)
+    link.delete()
+    messages.success(request, 'Footer link deleted.')
+    return redirect('core:dashboard_footer')

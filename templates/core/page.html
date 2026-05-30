@@ -1,13 +1,27 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ page.title|default:site.name }}{% endblock %}
+{% block title %}
+    {% if page.title %}
+        {{ page.title }}
+    {% elif cms_site %}
+        {{ cms_site.name }}
+    {% else %}
+        My Site
+    {% endif %}
+{% endblock %}
 
 {% block content %}
-    {% if user.is_authenticated and user.is_staff %}
+    {% if edit_mode_active %}
         <!-- Edit-mode wrapper: structural controls (add/delete/config) live here. -->
         <div id="page-sections"
              data-page-id="{{ page.id }}"
-             data-page-slug="{{ page.slug }}">
+             data-page-slug="{{ page.slug }}"
+             data-page-title="{{ page.title }}"
+             data-page-published="{{ page.is_published|yesno:'1,0' }}"
+             data-page-in-navbar="{{ page.in_navbar|yesno:'1,0' }}"
+             data-page-in-footer="{{ page.in_footer|yesno:'1,0' }}"
+             data-page-og-title="{{ page.og_title|default:'' }}"
+             data-page-og-description="{{ page.og_description|default:'' }}">
             {% for section in sections %}
                 <div class="section-wrap{% if not section.is_visible %} section-hidden{% endif %}"
                      data-section-id="{{ section.id }}"
@@ -16,7 +30,9 @@
                      data-section-layouts="{{ section.available_layouts|join:',' }}"
                      data-section-columns="{{ section.config.columns_desktop|default:'' }}"
                      data-section-bg="{{ section.background_color }}"
-                     data-section-visible="{{ section.is_visible|yesno:'1,0' }}">
+                     data-section-visible="{{ section.is_visible|yesno:'1,0' }}"
+                     data-section-heading="{{ section.heading }}"
+                     data-section-subheading="{{ section.subheading }}">
                     {% include section.template_path %}
                 </div>
             {% endfor %}

@@ -1,0 +1,34 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Navigation | CBL{% endblock %}
+{% block heading %}Universal Navbar Builder{% endblock %}
+{% block content %}
+<div class="cbl-card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-0">Navbar Links</h2>
+            <div class="text-muted small">CBL uses one universal navbar. Add/update/delete links here, then use Site Settings to place logo, search, auth, and CTA features left, center, or right.</div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap"><a href="{% url 'core:dashboard_settings' %}" class="btn btn-outline-secondary"><i class="bi bi-sliders"></i> Navbar Settings</a><a href="{% url 'core:dashboard_nav_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Link</a></div>
+    </div>
+    <div class="table-responsive">
+        <table class="table cbl-table mb-0">
+            <thead><tr><th>Order</th><th>Label</th><th>Slot</th><th>Parent</th><th>Target</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            {% for link in links %}
+            <tr>
+                <td>{{ link.order }}</td>
+                <td><strong>{{ link.label }}</strong>{% if link.is_button %} <span class="badge text-bg-primary">Button</span>{% endif %}</td>
+                <td>{% if link.parent_id %}<span class="text-muted small">inherits</span>{% else %}<span class="badge text-bg-light text-dark">{{ link.get_slot_display }}</span>{% endif %}</td>
+                <td>{{ link.parent.label|default:'Top level' }}</td>
+                <td>{% if link.page %}Page: {{ link.page.title|default:link.page.slug }}{% else %}{{ link.url|default:'#' }}{% endif %}</td>
+                <td>{% if link.is_visible %}<span class="badge text-bg-success">Visible</span>{% else %}<span class="badge text-bg-secondary">Hidden</span>{% endif %}</td>
+                <td><div class="cbl-actions"><a href="{% url 'core:dashboard_nav_edit' link.pk %}" class="btn btn-sm btn-outline-primary">Edit</a><form method="post" action="{% url 'core:dashboard_nav_delete' link.pk %}" onsubmit="return confirm('Delete this navigation link?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete</button></form></div></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-muted">No navigation links yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

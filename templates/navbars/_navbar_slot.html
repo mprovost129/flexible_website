@@ -1,0 +1,82 @@
+{% load core_extras %}
+{% comment %}
+Universal CBL navbar slot renderer.
+
+Expected context:
+- site
+- slot: left, center, or right
+
+Every navbar feature can be enabled/disabled and assigned to a slot from
+Site Settings. All navbar presets use this same slot renderer.
+{% endcomment %}
+
+{% for block in site|slot_block_order:slot %}
+    {% if block == 'brand' %}
+        {% if site.brand_position == slot %}
+            <div class="cbl-nav-block cbl-nav-block-brand" data-nav-block-kind="brand" data-nav-block-slot="{{ slot }}">
+                {% include "navbars/_brand.html" with site=site %}
+            </div>
+        {% endif %}
+    {% elif block == 'search' %}
+        {% if site.show_nav_search and site.nav_search_slot == slot %}
+        <div class="cbl-nav-block cbl-nav-block-search" data-nav-block-kind="search" data-nav-block-slot="{{ slot }}">
+            <form class="cbl-navbar-search d-flex"
+                  data-chrome-slot-field="nav_search_slot"
+                  data-chrome-slot-value="{{ slot }}"
+                  role="search" action="/" method="get">
+                <label class="visually-hidden" for="navbar-search-{{ slot }}">Search</label>
+                <input id="navbar-search-{{ slot }}" class="form-control form-control-sm" type="search" name="q" placeholder="Search" aria-label="Search">
+                <button class="btn btn-sm btn-outline-primary ms-2" type="submit"><i class="bi bi-search"></i></button>
+            </form>
+        </div>
+        {% endif %}
+    {% elif block == 'links' %}
+        <div class="cbl-nav-block cbl-nav-block-links" data-nav-block-kind="links" data-nav-block-slot="{{ slot }}">
+            <ul class="navbar-nav cbl-navbar-links align-items-lg-center flex-row flex-lg-row flex-wrap gap-1 mb-0">
+                {% for link in site.nav_links.all|nav_slot:slot %}
+                    {% include "navbars/_nav_link.html" with link=link %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% elif block == 'cta' %}
+        {% if site.nav_cta_label and site.nav_cta_url and site.nav_cta_slot == slot %}
+        <div class="cbl-nav-block cbl-nav-block-cta" data-nav-block-kind="cta" data-nav-block-slot="{{ slot }}">
+            <a class="btn btn-primary btn-sm cbl-navbar-cta"
+               data-chrome-slot-field="nav_cta_slot"
+               data-chrome-slot-value="{{ slot }}"
+               href="{{ site.nav_cta_url }}">{{ site.nav_cta_label }}</a>
+        </div>
+        {% endif %}
+    {% elif block == 'auth' %}
+        {% if site.nav_auth_slot == slot %}
+        <div class="cbl-nav-block cbl-nav-block-auth" data-nav-block-kind="auth" data-nav-block-slot="{{ slot }}"
+             data-show-login="{{ site.show_nav_login|yesno:'1,0' }}"
+             data-show-register="{{ site.show_nav_register|yesno:'1,0' }}"
+             data-show-profile="{{ site.show_nav_profile|yesno:'1,0' }}">
+            <div class="cbl-navbar-auth d-flex align-items-center gap-2"
+                 data-chrome-slot-field="nav_auth_slot"
+                 data-chrome-slot-value="{{ slot }}">
+                {% if request.user.is_authenticated %}
+                    {% if site.show_nav_profile %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                            {{ request.user.get_full_name|default:request.user.get_username }}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/accounts/profile/">Profile</a></li>
+                            {% if request.user.is_staff %}<li><a class="dropdown-item" href="{% url 'core:dashboard_home' %}">CBL Dashboard</a></li>{% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    {% if site.show_nav_login %}<a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Login</a>{% endif %}
+                    {% if site.show_nav_register %}<a class="btn btn-primary btn-sm" href="/accounts/register/">Register</a>{% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+{% endfor %}

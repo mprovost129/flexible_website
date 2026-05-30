@@ -79,16 +79,16 @@ body {
     font-family: var(--bs-body-font-family);
     font-size: var(--bs-body-font-size);
     line-height: var(--bs-body-line-height);
-    color: var(--bs-body-color);
-    background-color: var(--bs-body-bg);
+    color: var(--cbl-main-text, var(--bs-body-color));
+    background-color: var(--cbl-main-bg, var(--bs-body-bg));
 }
 
 a {
-    color: var(--bs-link-color);
+    color: var(--cbl-main-link, var(--bs-link-color));
 }
 
 a:hover {
-    color: var(--bs-link-hover-color);
+    color: var(--cbl-main-link-hover, var(--bs-link-hover-color));
 }
 
 /* =============================================================================
@@ -97,6 +97,93 @@ a:hover {
 
 header, main, footer {
     padding: 1rem 2rem;
+}
+
+main {
+    background: var(--cbl-main-bg, var(--bs-body-bg));
+    color: var(--cbl-main-text, var(--bs-body-color));
+    min-height: 40vh;
+}
+
+#navbar-region,
+#footer-region {
+    background: var(--cbl-chrome-bg, var(--bs-primary)) !important;
+    color: var(--cbl-chrome-text, #fff) !important;
+}
+
+#footer-region {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+#footer-region .container,
+#footer-region .container-fluid {
+    background: transparent !important;
+}
+
+#footer-region footer {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    background: var(--cbl-chrome-bg, var(--bs-primary)) !important;
+    color: var(--cbl-chrome-text, #fff) !important;
+}
+
+#navbar-region a,
+#footer-region a,
+#footer-region .nav-link,
+#footer-region .text-body-secondary,
+#footer-region .link-body-emphasis {
+    color: var(--cbl-chrome-link, currentColor) !important;
+}
+
+#navbar-region a:hover,
+#footer-region a:hover,
+#footer-region .nav-link:hover {
+    color: var(--cbl-chrome-link-hover, currentColor) !important;
+}
+
+#navbar-region .cbl-navbar-auth .dropdown-menu {
+    --bs-dropdown-bg: color-mix(in srgb, var(--cbl-chrome-bg, var(--bs-primary)) 86%, #000 14%);
+    --bs-dropdown-color: var(--cbl-chrome-text, #fff);
+    --bs-dropdown-link-color: var(--cbl-chrome-text, #fff);
+    --bs-dropdown-link-hover-color: var(--cbl-chrome-text, #fff);
+    --bs-dropdown-link-hover-bg: color-mix(in srgb, var(--cbl-chrome-text, #fff) 16%, transparent);
+    --bs-dropdown-border-color: color-mix(in srgb, var(--cbl-chrome-text, #fff) 24%, transparent);
+    --bs-dropdown-divider-bg: color-mix(in srgb, var(--cbl-chrome-text, #fff) 24%, transparent);
+    background: color-mix(in srgb, var(--cbl-chrome-bg, var(--bs-primary)) 86%, #000 14%);
+    color: var(--cbl-chrome-text, #fff);
+    border: 1px solid color-mix(in srgb, var(--cbl-chrome-text, #fff) 24%, transparent);
+}
+
+#navbar-region .cbl-navbar-auth .dropdown-item {
+    color: var(--cbl-chrome-text, #fff);
+}
+
+#navbar-region .cbl-navbar-auth .dropdown-item:hover,
+#navbar-region .cbl-navbar-auth .dropdown-item:focus {
+    color: var(--cbl-chrome-text, #fff);
+    background: color-mix(in srgb, var(--cbl-chrome-text, #fff) 16%, transparent);
+}
+
+#navbar-region .cbl-navbar-auth .dropdown-divider {
+    border-top-color: color-mix(in srgb, var(--cbl-chrome-text, #fff) 24%, transparent);
+}
+
+#navbar-region .cbl-navbar-auth .btn-outline-primary {
+    --bs-btn-color: var(--cbl-chrome-link, #fff);
+    --bs-btn-border-color: color-mix(in srgb, var(--cbl-chrome-link, #fff) 60%, transparent);
+    --bs-btn-hover-color: var(--cbl-chrome-text, #fff);
+    --bs-btn-hover-bg: color-mix(in srgb, var(--cbl-chrome-text, #fff) 14%, transparent);
+    --bs-btn-hover-border-color: var(--cbl-chrome-link, #fff);
+    --bs-btn-active-color: var(--cbl-chrome-text, #fff);
+    --bs-btn-active-bg: color-mix(in srgb, var(--cbl-chrome-text, #fff) 20%, transparent);
+    --bs-btn-active-border-color: var(--cbl-chrome-link, #fff);
+    --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+}
+
+#footer-region .border-top,
+#footer-region .border-bottom {
+    border-color: color-mix(in srgb, var(--cbl-chrome-text, #fff) 22%, transparent) !important;
 }
 
 nav {
@@ -167,21 +254,40 @@ button[type="submit"]:hover {
    ============================================================================= */
 
 /* Floating toolbar: fixed badge bottom-right */
-#edit-toolbar {
+#staff-toolbar {
     position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
+    top: 1rem;
+    right: 1rem;
     z-index: 9999;
     background: #212529;
     color: #fff;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.6rem 0.4rem 0.9rem;
     border-radius: 999px;
     font-size: 0.82rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    pointer-events: auto;
+}
+body.staff-user #staff-toolbar {
+    top: 0.6rem;
+}
+body.staff-user .cbl-navbar-shell.sticky-top {
+    top: 3.25rem;
+}
+
+#staff-toolbar .staff-toolbar-label {
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: move;
+    user-select: none;
+}
+
+/* When previewing (edit mode off), tint the toolbar so the state is obvious */
+body:not(.edit-mode) #staff-toolbar {
+    background: #6c757d;
 }
 
 /* Editable wrapper: provides the position context for the pencil button */
@@ -269,6 +375,17 @@ body.edit-mode .edit-wrap.is-uploading::after {
 }
 
 /* =============================================================================
+   Section spacing presets (applied via body class from site navbar_config)
+   ============================================================================= */
+
+body.cbl-spacing-compact .section-wrap {
+    margin-top: -1.5rem;
+}
+body.cbl-spacing-spacious .section-wrap {
+    margin-top: 3rem;
+}
+
+/* =============================================================================
    Structural Edit Mode (add / delete sections and items)
    Only visible when <body class="edit-mode"> is present.
    ============================================================================= */
@@ -319,6 +436,208 @@ body.edit-mode .section-wrap:hover > .section-toolbar {
     pointer-events: auto;
 }
 
+/* Navbar/Footer region controls in edit mode */
+body.edit-mode .chrome-region {
+    position: relative;
+}
+
+body.edit-mode .chrome-hover-add {
+    position: absolute;
+    top: 0.9rem;
+    right: 0.8rem;
+    z-index: 1295;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+body.edit-mode #navbar-region:hover > .chrome-hover-add-navbar,
+body.edit-mode #footer-region:hover > .chrome-hover-add-footer {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+body.edit-mode .chrome-hover-add:hover,
+body.edit-mode .chrome-hover-add:focus-within {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+body.edit-mode .chrome-hover-add .btn {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+}
+
+/* Cluster the "Add item" dropdown with its sibling controls (Settings / Hide /
+   Delete-all). They sit in a pill-shaped group so the user sees them as one
+   floating affordance, not four separate buttons. */
+body.edit-mode .chrome-hover-add-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+    padding: 0.25rem 0.35rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+}
+
+body.edit-mode .chrome-hover-add-extra {
+    padding: 0.2rem 0.55rem;
+    line-height: 1;
+    box-shadow: none !important;
+}
+
+body.edit-mode .chrome-hover-add-group .chrome-hover-add-extra,
+body.edit-mode .chrome-hover-add-group .chrome-hover-add-extra i {
+    color: #212529 !important;
+}
+
+body.edit-mode .chrome-hover-add-group .chrome-hover-add-extra:hover,
+body.edit-mode .chrome-hover-add-group .chrome-hover-add-extra:focus {
+    color: #212529 !important;
+    background: #e9ecef;
+    border-color: #ced4da;
+}
+
+body.edit-mode #edit-sidebar {
+    position: fixed;
+    top: 4.75rem;
+    right: 1rem;
+    width: 19rem;
+    max-height: calc(100vh - 6rem);
+    overflow: auto;
+    z-index: 1400;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+    backdrop-filter: blur(8px);
+}
+
+body.edit-mode .edit-sidebar-header {
+    padding: 0.9rem 1rem 0.75rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.edit-mode .edit-sidebar-kicker {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6c757d;
+}
+
+body.edit-mode .edit-sidebar-title {
+    margin: 0.15rem 0 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+body.edit-mode .edit-sidebar-body {
+    padding: 0.9rem 1rem 1rem;
+}
+
+body.edit-mode .edit-sidebar-section + .edit-sidebar-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+body.edit-mode .edit-sidebar-section h3 {
+    font-size: 0.82rem;
+    margin-bottom: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6c757d;
+}
+
+body.edit-mode .edit-sidebar .form-control,
+body.edit-mode .edit-sidebar .form-select {
+    font-size: 0.9rem;
+}
+
+body.edit-mode .cbl-inspector-selected {
+    outline: 2px solid rgba(var(--bs-primary-rgb), 0.55) !important;
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+@media (min-width: 1200px) {
+    body.edit-mode main {
+        padding-right: calc(2rem + 20rem);
+    }
+}
+
+@media (max-width: 1199.98px) {
+    body.edit-mode #edit-sidebar {
+        display: none;
+    }
+}
+
+/* Template picker cards (new nav link / page creation flow) */
+body.edit-mode .cbl-tpl-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+}
+
+body.edit-mode .cbl-tpl-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    padding: 0.45rem 0.55rem;
+    border: 1.5px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s, background 0.15s;
+    width: 100%;
+}
+
+body.edit-mode .cbl-tpl-card:hover {
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.04);
+}
+
+body.edit-mode .cbl-tpl-card.cbl-tpl-selected {
+    border-color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.08);
+}
+
+body.edit-mode .cbl-tpl-icon {
+    font-size: 1.1rem;
+    color: var(--bs-primary);
+}
+
+body.edit-mode .cbl-tpl-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+body.edit-mode .cbl-tpl-desc {
+    font-size: 0.7rem;
+    color: #6c757d;
+    line-height: 1.2;
+}
+
+/* Inline rename input: appears in-place where label text was; same size + font */
+.cbl-inline-rename {
+    font: inherit;
+    color: inherit;
+    background: #fff;
+    border: 1px solid var(--bs-primary, #0d6efd);
+    border-radius: 4px;
+    padding: 2px 6px;
+    width: auto;
+    min-width: 8ch;
+    max-width: 100%;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
+}
+
 /* Item wrapper highlight + delete button */
 body.edit-mode .item-editable {
     position: relative;
@@ -363,6 +682,7 @@ body.edit-mode .section-type-picker {
 
 /* Hide all structural controls when NOT in edit mode (safety) */
 body:not(.edit-mode) .section-toolbar,
+body:not(.edit-mode) .chrome-hover-add,
 body:not(.edit-mode) .item-delete-btn,
 body:not(.edit-mode) #add-section-bar {
     display: none !important;
@@ -414,7 +734,7 @@ body.edit-mode .section-toolbar .btn {
 }
 
 /* Delete-page button sits in the floating toolbar */
-#edit-toolbar .delete-page-btn {
+#staff-toolbar .delete-page-btn {
     padding: 0.25rem 0.6rem;
 }
 
@@ -449,4 +769,452 @@ body.edit-mode .section-toolbar .btn {
 
 .undo-toast .undo-toast-btn {
     font-weight: 600;
+}
+
+/* =============================================================================
+   Stage 2: Page-status panel + live nav editing
+   ============================================================================= */
+
+/* Page-status panel: floating card, bottom-left */
+#page-status-panel {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 9000;
+    width: 250px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+    padding: 0.85rem;
+    font-size: 0.85rem;
+}
+
+#page-status-panel .psp-header {
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+}
+
+#page-status-panel .psp-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.7rem;
+}
+
+#page-status-panel .psp-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+/* Live nav editing controls */
+body.edit-mode .nav-editable {
+    position: relative;
+}
+body.edit-mode .nav-editable:hover {
+    outline: 2px dashed rgba(var(--bs-primary-rgb), 0.4);
+    outline-offset: 2px;
+}
+body.edit-mode .nav-editable-child:hover {
+    outline: 2px dashed rgba(var(--bs-primary-rgb), 0.4);
+    outline-offset: 1px;
+}
+body.edit-mode .brand-editable {
+    position: relative;
+}
+body.edit-mode .brand-editable:hover {
+    outline: 2px dashed rgba(var(--bs-primary-rgb), 0.4);
+    outline-offset: 2px;
+}
+body.edit-mode .cbl-nav-block:hover {
+    outline: 2px dashed rgba(var(--bs-primary-rgb), 0.4);
+    outline-offset: 2px;
+}
+
+body.edit-mode .nav-edit-controls {
+    display: none;
+    position: absolute;
+    top: -0.6rem;
+    right: -0.6rem;
+    z-index: 60;
+    gap: 2px;
+}
+body.edit-mode .nav-editable-child {
+    position: relative;
+}
+body.edit-mode .nav-edit-controls-child {
+    top: 0.2rem;
+    right: 0.25rem;
+    z-index: 1200;
+}
+body.edit-mode .nav-editable-child:hover > .nav-edit-controls-child,
+body.edit-mode .nav-editable-child:focus-within > .nav-edit-controls-child {
+    display: inline-flex;
+}
+body.edit-mode .nav-editable-child .nav-drag-handle {
+    left: 0.25rem;
+    top: 0.95rem;
+    transform: none;
+}
+
+body.edit-mode .nav-editable:hover > .nav-edit-controls,
+body.edit-mode .nav-editable:focus-within > .nav-edit-controls {
+    display: inline-flex;
+}
+body.edit-mode .brand-editable:hover .brand-edit-controls {
+    display: inline-flex;
+}
+body.edit-mode [data-chrome-slot-field]:hover .chrome-slot-edit-controls {
+    display: inline-flex;
+}
+body.edit-mode .cbl-nav-block {
+    position: relative;
+}
+body.edit-mode .cbl-nav-block:hover > .chrome-slot-edit-controls {
+    display: inline-flex;
+}
+body.edit-mode .cbl-nav-block:focus-within > .chrome-slot-edit-controls {
+    display: inline-flex;
+}
+body.edit-mode .cbl-nav-block > .chrome-slot-edit-controls {
+    display: none;
+    z-index: 1300;
+}
+body.edit-mode .cbl-nav-block:hover > .chrome-slot-edit-controls,
+body.edit-mode .cbl-nav-block:focus-within > .chrome-slot-edit-controls {
+    display: inline-flex;
+}
+
+body.edit-mode .cbl-nav-block-links > .chrome-slot-edit-controls {
+    display: none !important;
+}
+
+
+body.edit-mode .nav-edit-btn {
+    border: none;
+    background: #0d6efd;
+    color: #fff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body.edit-mode .nav-edit-btn.nav-edit-del {
+    background: #dc3545;
+}
+
+body.edit-mode .nav-edit-btn.nav-edit-slot-btn {
+    width: 26px;
+    height: 22px;
+    font-size: 0.95rem;
+    background: #6c757d;
+}
+
+body.edit-mode .nav-edit-btn.nav-edit-slot-active {
+    background: #198754;
+}
+
+body.edit-mode .nav-edit-btn.nav-edit-slot-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+body.edit-mode .nav-add-btn {
+    border: 1px dashed rgba(var(--bs-primary-rgb), 0.6);
+    background: transparent;
+    color: var(--bs-primary, #0d6efd);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.4rem;
+}
+
+body.edit-mode .nav-add-btn:hover {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* Hide all Stage 2 controls when not in edit mode (safety) */
+body:not(.edit-mode) #page-status-panel,
+body:not(.edit-mode) .nav-edit-controls,
+body:not(.edit-mode) .nav-add-link {
+    display: none !important;
+}
+
+/* Nav drag handle (shows on hover, only in edit mode) */
+body.edit-mode .nav-drag-handle {
+    display: none;
+    position: absolute;
+    left: -1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: grab;
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 0.9rem;
+    user-select: none;
+    z-index: 55;
+}
+
+body.edit-mode .nav-editable:hover .nav-drag-handle {
+    display: inline-flex;
+}
+
+body.edit-mode .nav-drag-handle:active {
+    cursor: grabbing;
+}
+
+body.edit-mode .nav-dragging {
+    opacity: 0.5;
+}
+
+/* Footer link/column editing */
+body.edit-mode .footer-link-editable {
+    position: relative;
+}
+body.edit-mode .footer-link-editable:hover {
+    outline: 2px dashed rgba(var(--bs-primary-rgb), 0.4);
+    outline-offset: 2px;
+}
+body.edit-mode .footer-col-editable:hover {
+    outline: 2px dashed rgba(var(--bs-primary-rgb), 0.4);
+    outline-offset: 2px;
+}
+
+body.edit-mode .footer-edit-controls {
+    display: none;
+    position: absolute;
+    top: -0.4rem;
+    right: -0.4rem;
+    z-index: 50;
+    gap: 2px;
+}
+
+body.edit-mode .footer-link-editable:hover .footer-edit-controls {
+    display: inline-flex;
+}
+
+body.edit-mode .footer-add-btn {
+    background: transparent;
+    color: var(--bs-primary, #0d6efd);
+    border: 1px dashed rgba(var(--bs-primary-rgb), 0.5);
+    border-radius: 6px;
+    padding: 0.15rem 0.6rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    margin-top: 0.4rem;
+}
+
+body.edit-mode .footer-add-btn:hover {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+body.edit-mode .footer-add-col-btn {
+    background: transparent;
+    color: var(--bs-primary, #0d6efd);
+    border: 2px dashed rgba(var(--bs-primary-rgb), 0.5);
+    border-radius: 8px;
+    padding: 2rem 1rem;
+    width: 100%;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+body.edit-mode .footer-add-col-btn:hover {
+    background: rgba(var(--bs-primary-rgb), 0.06);
+}
+
+/* Hide footer edit controls outside edit mode */
+body:not(.edit-mode) .footer-edit-controls,
+body:not(.edit-mode) .footer-add-link,
+body:not(.edit-mode) .footer-add-column,
+body:not(.edit-mode) .nav-drag-handle {
+    display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   CBL universal navbar engine
+   -------------------------------------------------------------------------- */
+.cbl-navbar-shell {
+    background: var(--cbl-chrome-bg, var(--bs-body-bg));
+    z-index: 1020;
+    min-height: var(--cbl-nav-height, auto);
+    border-bottom-width: var(--cbl-nav-border-width, 0);
+    border-bottom-style: solid;
+    border-bottom-color: rgba(0, 0, 0, .12);
+    background: var(--cbl-nav-bg, var(--cbl-chrome-bg, var(--bs-body-bg))) !important;
+    color: var(--cbl-nav-text, var(--cbl-chrome-text, inherit)) !important;
+}
+.cbl-navbar-shell .navbar {
+    min-height: var(--cbl-nav-height, auto);
+    background: inherit !important;
+    color: inherit !important;
+}
+.cbl-navbar-shell .navbar > .container,
+.cbl-navbar-shell .navbar > .container-fluid {
+    max-width: var(--cbl-nav-container-max, none);
+    padding-left: var(--cbl-nav-pad-x, 0);
+    padding-right: var(--cbl-nav-pad-x, 0);
+    padding-top: var(--cbl-nav-pad-y, 0);
+    padding-bottom: var(--cbl-nav-pad-y, 0);
+}
+.cbl-navbar-shadow {
+    border-bottom: 1px solid rgba(0, 0, 0, .08);
+    box-shadow: 0 0.25rem 1rem rgba(15, 23, 42, .04);
+}
+.cbl-navbar-dark {
+    background: #111827;
+    color: #fff;
+}
+.cbl-navbar-primary {
+    background: var(--bs-primary);
+    color: #fff;
+}
+.cbl-navbar-transparent {
+    background: transparent;
+    box-shadow: none;
+    border-bottom-color: transparent;
+}
+.cbl-navbar-desktop {
+    display: none;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 1rem;
+}
+.cbl-nav-zones-center-heavy .cbl-navbar-desktop {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 1.8fr) minmax(0, 1fr);
+}
+.cbl-nav-zones-split .cbl-navbar-desktop {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) minmax(0, 1.2fr);
+}
+.cbl-navbar-mobile {
+    display: flex;
+}
+.cbl-navbar-mobile-menu {
+    display: none;
+}
+.cbl-navbar-mobile-menu.show {
+    display: block;
+}
+.cbl-navbar-offcanvas .offcanvas-body .navbar-nav {
+    align-items: stretch !important;
+    flex-direction: column !important;
+}
+.cbl-navbar-offcanvas .offcanvas-body .nav-item,
+.cbl-navbar-offcanvas .offcanvas-body .nav-link,
+.cbl-navbar-offcanvas .offcanvas-body .btn,
+.cbl-navbar-offcanvas .offcanvas-body .cbl-navbar-search {
+    width: 100%;
+}
+.cbl-navbar-zone {
+    display: flex;
+    align-items: center;
+    gap: var(--cbl-nav-gap, 12px);
+    min-width: 0;
+}
+.cbl-navbar-center {
+    text-align: center;
+}
+.cbl-navbar-links {
+    gap: .25rem;
+}
+.cbl-navbar-links .nav-link {
+    border-radius: var(--cbl-nav-radius, 999px);
+    padding: .45rem .75rem;
+    font-size: var(--cbl-nav-link-size, 1rem);
+    color: var(--cbl-nav-link, inherit);
+    text-decoration: none;
+}
+.cbl-nav-links-pill .cbl-navbar-links .nav-link {
+    border: 1px solid transparent;
+}
+.cbl-nav-links-pill .cbl-navbar-links .nav-link:hover,
+.cbl-nav-links-pill .cbl-navbar-links .nav-link.active {
+    background: var(--cbl-nav-link-hover-bg, rgba(15, 23, 42, .08));
+    border-color: color-mix(in srgb, currentColor 18%, transparent);
+}
+.cbl-nav-links-plain .cbl-navbar-links .nav-link {
+    border-radius: 0;
+    padding: .35rem .45rem;
+}
+.cbl-nav-links-underline .cbl-navbar-links .nav-link {
+    border-radius: 0;
+    padding: .35rem .2rem;
+    border-bottom: 2px solid transparent;
+}
+.cbl-nav-links-underline .cbl-navbar-links .nav-link:hover,
+.cbl-nav-links-underline .cbl-navbar-links .nav-link.active {
+    border-bottom-color: currentColor;
+    background: transparent;
+}
+.cbl-navbar-links .nav-link:hover,
+.cbl-navbar-links .nav-link.active {
+    color: var(--cbl-nav-link-hover, inherit);
+    background: var(--cbl-nav-link-hover-bg, transparent);
+}
+.cbl-navbar-search {
+    min-width: min(18rem, 100%);
+}
+.cbl-navbar-mobile .navbar-brand,
+.cbl-navbar-zone .navbar-brand {
+    margin-right: 0;
+    font-size: var(--cbl-nav-brand-size, 1.6rem);
+    font-weight: var(--cbl-nav-brand-weight, 600);
+    color: var(--cbl-nav-text, inherit);
+}
+.cbl-navbar-dark .nav-link,
+.cbl-navbar-primary .nav-link,
+.cbl-navbar-dark .navbar-brand,
+.cbl-navbar-primary .navbar-brand {
+    color: rgba(255, 255, 255, .9);
+}
+.cbl-navbar-dark .nav-link:hover,
+.cbl-navbar-primary .nav-link:hover,
+.cbl-navbar-dark .nav-link.active,
+.cbl-navbar-primary .nav-link.active {
+    color: var(--cbl-nav-link-hover, #fff);
+    background: var(--cbl-nav-link-hover-bg, rgba(255, 255, 255, .12));
+}
+.cbl-navbar-dark.cbl-nav-links-pill .cbl-navbar-links .nav-link:hover,
+.cbl-navbar-dark.cbl-nav-links-pill .cbl-navbar-links .nav-link.active,
+.cbl-navbar-primary.cbl-nav-links-pill .cbl-navbar-links .nav-link:hover,
+.cbl-navbar-primary.cbl-nav-links-pill .cbl-navbar-links .nav-link.active {
+    border-color: color-mix(in srgb, #fff 32%, transparent);
+}
+.cbl-navbar-primary .btn-outline-primary,
+.cbl-navbar-dark .btn-outline-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-border-color: #fff;
+    --bs-btn-hover-bg: rgba(255,255,255,.12);
+    --bs-btn-hover-border-color: #fff;
+}
+@media (max-width: 991.98px) {
+    .cbl-navbar-shell .navbar-nav {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+    .cbl-navbar-shell .nav-item,
+    .cbl-navbar-shell .nav-link,
+    .cbl-navbar-shell .btn,
+    .cbl-navbar-search {
+        width: 100%;
+    }
+}
+@media (min-width: 992px) {
+    .cbl-navbar-desktop {
+        display: grid;
+    }
+    .cbl-navbar-shell .cbl-navbar-mobile,
+    .cbl-navbar-shell .cbl-navbar-mobile-menu {
+        display: none !important;
+    }
 }

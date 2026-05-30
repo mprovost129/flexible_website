@@ -1,0 +1,50 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Footer | CBL{% endblock %}
+{% block heading %}Footer{% endblock %}
+{% block content %}
+<div class="cbl-card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-0">Footer Columns & Links</h2>
+            <div class="text-muted small">Add, update, delete, and organize footer menus.</div>
+        </div>
+        <a href="{% url 'core:dashboard_footer_column_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Column</a>
+    </div>
+    <div class="row g-3">
+        {% for column in columns %}
+        <div class="col-lg-4">
+            <div class="border rounded-4 p-3 h-100">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                    <div>
+                        <h3 class="h6 mb-0">{{ column.heading|default:'Untitled Column' }}</h3>
+                        <span class="text-muted small">Order {{ column.order }}</span>
+                        {% if column.is_visible %}<span class="badge text-bg-success">Visible</span>{% else %}<span class="badge text-bg-secondary">Hidden</span>{% endif %}
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">Actions</button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'core:dashboard_footer_column_edit' column.pk %}">Edit column</a></li>
+                            <li><a class="dropdown-item" href="{% url 'core:dashboard_footer_link_create' column.pk %}">Add link</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><form method="post" action="{% url 'core:dashboard_footer_column_delete' column.pk %}" onsubmit="return confirm('Delete this column and its links?');">{% csrf_token %}<button class="dropdown-item text-danger">Delete column</button></form></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for link in column.links.all %}
+                    <div class="list-group-item px-0 d-flex justify-content-between gap-2 align-items-center">
+                        <div><strong>{{ link.label }}</strong><br><span class="text-muted small">{% if link.page %}{{ link.page.title|default:link.page.slug }}{% else %}{{ link.url|default:'#' }}{% endif %}</span></div>
+                        <div class="cbl-actions"><a href="{% url 'core:dashboard_footer_link_edit' link.pk %}" class="btn btn-sm btn-outline-primary">Edit</a><form method="post" action="{% url 'core:dashboard_footer_link_delete' link.pk %}" onsubmit="return confirm('Delete this footer link?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete</button></form></div>
+                    </div>
+                    {% empty %}
+                    <div class="text-muted small">No links in this column.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12"><div class="text-muted">No footer columns yet.</div></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

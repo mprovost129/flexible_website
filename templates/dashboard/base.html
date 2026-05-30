@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CBL Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <style>
+        body { background: #f5f7fb; }
+        .cbl-shell { min-height: 100vh; display: grid; grid-template-columns: 280px 1fr; }
+        .cbl-sidebar { background: #111827; color: #fff; padding: 1.25rem; position: sticky; top: 0; height: 100vh; }
+        .cbl-sidebar a { color: rgba(255,255,255,.78); text-decoration: none; display: flex; align-items: center; gap: .65rem; padding: .7rem .85rem; border-radius: .8rem; margin-bottom: .25rem; }
+        .cbl-sidebar a:hover, .cbl-sidebar a.active { color: #fff; background: rgba(255,255,255,.1); }
+        .cbl-brand { font-weight: 800; letter-spacing: .04em; font-size: 1.25rem; }
+        .cbl-subbrand { color: rgba(255,255,255,.62); font-size: .82rem; }
+        .cbl-main { padding: 1.5rem; }
+        .cbl-topbar { background: #fff; border: 1px solid rgba(15,23,42,.08); border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 10px 30px rgba(15,23,42,.04); }
+        .cbl-card { background: #fff; border: 1px solid rgba(15,23,42,.08); border-radius: 1rem; box-shadow: 0 10px 30px rgba(15,23,42,.04); }
+        .cbl-stat { padding: 1rem; }
+        .cbl-stat .value { font-size: 1.7rem; font-weight: 800; }
+        .cbl-table td, .cbl-table th { vertical-align: middle; }
+        .cbl-actions { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: flex-end; }
+        .form-help-text, .helptext { color: #6b7280; font-size: .85rem; }
+        @media (max-width: 900px) {
+            .cbl-shell { display: block; }
+            .cbl-sidebar { position: relative; height: auto; }
+            .cbl-main { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="cbl-shell">
+    <aside class="cbl-sidebar">
+        <div class="mb-4">
+            <div class="cbl-brand">CBL</div>
+            <div class="cbl-subbrand">Create • Build • Launch</div>
+        </div>
+        <nav>
+            <a href="{% url 'core:dashboard_home' %}" class="{% if request.resolver_match.url_name == 'dashboard_home' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{% url 'core:dashboard_pages' %}" class="{% if 'dashboard_page' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Pages</a>
+            <a href="{% url 'core:dashboard_nav' %}" class="{% if 'dashboard_nav' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-menu-button-wide"></i> Navigation</a>
+            <a href="{% url 'core:dashboard_footer' %}" class="{% if 'dashboard_footer' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-layout-three-columns"></i> Footer</a>
+            <a href="{% url 'core:dashboard_settings' %}" class="{% if request.resolver_match.url_name == 'dashboard_settings' %}active{% endif %}"><i class="bi bi-sliders"></i> Site Settings</a>
+            <a href="/" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
+            <a href="/admin/" target="_blank" rel="noopener"><i class="bi bi-tools"></i> Advanced Admin</a>
+        </nav>
+    </aside>
+
+    <main class="cbl-main">
+        <div class="cbl-topbar d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <div>
+                <div class="text-muted small">{{ dashboard_site.name|default:'My Site' }}</div>
+                <h1 class="h4 mb-0">{% block heading %}CBL Dashboard{% endblock %}</h1>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'core:dashboard_page_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Add Page</a>
+                <a href="/" class="btn btn-outline-secondary btn-sm">Preview</a>
+            </div>
+        </div>
+
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

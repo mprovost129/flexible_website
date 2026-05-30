@@ -153,25 +153,6 @@ def edit_item_image(request, pk):
 
 
 # ---------------------------------------------------------------------------
-# Page field endpoints
-# ---------------------------------------------------------------------------
-
-@require_POST
-def edit_page_field(request, pk, field):
-    """Save a text field on a Page (title, og_title, og_description)."""
-    err = _staff_check(request)
-    if err:
-        return err
-    if field not in PAGE_TEXT_FIELDS:
-        return JsonResponse({'error': f'Field "{field}" is not editable'}, status=400)
-    page = get_object_or_404(Page, pk=pk)
-    value = request.POST.get('value', '').strip()
-    setattr(page, field, value)
-    page.save(update_fields=[field])
-    return JsonResponse({'success': True, 'field': field, 'value': value})
-
-
-# ---------------------------------------------------------------------------
 # Reorder endpoints (drag-and-drop in admin)
 # ---------------------------------------------------------------------------
 

@@ -1,12 +1,29 @@
 from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
 from .models import Page, Site
+from .site_resolver import get_active_site
+
+
+@require_POST
+def toggle_edit_mode(request):
+    """Flip the staff user's edit-mode preference in their session.
+
+    Staff can always edit (the permission check is is_staff). This toggle just
+    controls whether the in-page edit UI (pencils, toolbars, panels) is visible
+    so a staff user can preview the site the way a visitor sees it without
+    logging out. Persisted in the session, defaults to ON for staff.
+    """
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({'error': 'Staff only'}, status=403)
+    current = request.session.get('edit_mode', True)
+    request.session['edit_mode'] = not current
+    return JsonResponse({'success': True, 'edit_mode': not current})
 
 
 class PageView(TemplateView):
@@ -100,7 +117,7 @@ def robots_txt(request):
     The field ships with a sensible default (allow all, block /admin/).
     Site owners can customise it in the admin without touching code.
     """
-    site = Site.get_current()
+    site = get_active_site(request)
     content = site.robots_txt or 'User-agent: *\nAllow: /\nDisallow: /admin/'
     return HttpResponse(content, content_type='text/plain; charset=utf-8')
 

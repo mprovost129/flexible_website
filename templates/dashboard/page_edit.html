@@ -1,0 +1,76 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Edit Page | CBL{% endblock %}
+{% block heading %}Edit Page{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="cbl-card p-4">
+            <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-3">
+                <div>
+                    <h2 class="h5 mb-1">{{ page_obj.title|default:page_obj.slug }}</h2>
+                    <div class="text-muted small">/{{ page_obj.slug }}/</div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% if page_obj.slug == 'home' %}/{% else %}/{{ page_obj.slug }}/{% endif %}" target="_blank" class="btn btn-outline-secondary btn-sm">Preview</a>
+                    <form method="post" action="{% url 'core:dashboard_page_toggle_publish' page_obj.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{% url 'core:dashboard_page_edit' page_obj.pk %}">
+                        <button class="btn btn-sm btn-outline-warning">{% if page_obj.is_enabled %}Unpublish{% else %}Publish{% endif %}</button>
+                    </form>
+                </div>
+            </div>
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+                <div class="row g-3">
+                    {% for field in form %}
+                    <div class="col-md-{% if field.field.widget.input_type == 'checkbox' %}12{% elif field.name == 'og_description' %}12{% else %}6{% endif %}">
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                        <div class="form-check mt-2">{{ field }} <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>
+                        {% else %}
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+                        {% endif %}
+                        {% if field.help_text %}<div class="form-help-text">{{ field.help_text }}</div>{% endif %}
+                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{% url 'core:dashboard_pages' %}" class="btn btn-outline-secondary">Back</a>
+                    <button class="btn btn-primary">Save Page</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="cbl-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="h5 mb-0">Sections</h2>
+                    <div class="text-muted small">Add, update, hide, delete, and reorder page sections.</div>
+                </div>
+                <a href="{% url 'core:dashboard_section_create' page_obj.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Add</a>
+            </div>
+            <div class="list-group">
+                {% for section in sections %}
+                <div class="list-group-item">
+                    <div class="d-flex justify-content-between gap-3 align-items-start">
+                        <div>
+                            <strong>{{ section.heading|default:section.get_section_type_display }}</strong><br>
+                            <span class="text-muted small">{{ section.get_section_type_display }} · {{ section.layout }} · order {{ section.order }}</span><br>
+                            {% if section.is_visible %}<span class="badge text-bg-success mt-1">Visible</span>{% else %}<span class="badge text-bg-secondary mt-1">Hidden</span>{% endif %}
+                        </div>
+                        <div class="cbl-actions">
+                            <a href="{% url 'core:dashboard_section_edit' section.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form method="post" action="{% url 'core:dashboard_section_delete' section.pk %}" onsubmit="return confirm('Delete this section?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete</button></form>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-muted">No sections yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

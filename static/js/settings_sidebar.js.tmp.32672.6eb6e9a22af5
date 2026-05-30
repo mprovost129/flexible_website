@@ -1,0 +1,959 @@
+(function () {
+  'use strict';
+
+  function getCsrf() {
+    var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  }
+
+  function postJson(url, bodyObj) {
+    var opts = { method: 'POST', headers: { 'X-CSRFToken': getCsrf() } };
+    if (bodyObj) {
+      opts.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+      opts.body = Object.keys(bodyObj)
+        .map(function (k) { return k + '=' + encodeURIComponent(bodyObj[k]); })
+        .join('&');
+    }
+    return fetch(url, opts).then(function (resp) {
+      if (!resp.ok) {
+        return resp.json().catch(function () { return {}; }).then(function (d) {
+          throw new Error(d.error || ('Request failed (' + resp.status + ')'));
+        });
+      }
+      return resp.json();
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  var PAGE_TEMPLATES = [
+    { key: 'landing',   name: 'Landing Page',   icon: 'rocket-takeoff-fill',  description: 'Hero, features, testimonials, call to action.' },
+    { key: 'about',     name: 'About Page',      icon: 'people-fill',          description: 'Your story, values, and team highlights.' },
+    { key: 'contact',   name: 'Contact Page',    icon: 'envelope-fill',        description: 'Working contact form with your details.' },
+    { key: 'services',  name: 'Services Page',   icon: 'briefcase-fill',       description: 'What you offer, how it works, pricing.' },
+    { key: 'portfolio', name: 'Portfolio',        icon: 'images',               description: 'Gallery of your work with CTA.' },
+    { key: 'blank',     name: 'Blank Page',       icon: 'file-earmark-plus',    description: 'Empty page — add exactly what you need.' },
+  ];
+
+  function init() {
+    if (!document.body.classList.contains('edit-mode')) return;
+    var body = document.getElementById('edit-sidebar-body');
+    if (!body) return;
+
+    var state = {
+      current: null,
+      page: readPageState(),
+    };
+
+    function render(selection) {
+      state.current = selection;
+      body.innerHTML = renderSelection(selection, state.page);
+      wireBody(body, selection, state.page);
+      markSelected(selection);
+    }
+
+    function defaultSelection() {
+      render({ kind: 'page' });
+    }
+
+    window.cblShowNewNavLinkPanel = function (isButton) {
+      var title = document.querySelector('.edit-sidebar-title');
+      if (title) title.textContent = isButton ? 'New Button' : 'New Nav Link';
+      body.innerHTML = renderNewNavLink(isButton);
+      wireNewNavLink(body, isButton);
+    };
+
+    document.addEventListener('click', function (event) {
+      if (event.target.closest('#edit-sidebar')) return;
+      if (event.target.closest('.nav-edit-controls, .section-toolbar, .chrome-hover-add, .edit-pencil-btn, .nav-drag-handle, .item-delete-btn, .footer-edit-controls, .brand-edit-controls')) {
+        return;
+      }
+
+      var child = event.target.closest('.nav-editable-child');
+      if (child) {
+        event.preventDefault();
+        event.stopPropagation();
+        render({ kind: 'nav-child', el: child });
+        return;
+      }
+
+      var navLink = event.target.closest('.nav-editable');
+      if (navLink) {
+        event.preventDefault();
+        event.stopPropagation();
+        render({ kind: 'nav-link', el: navLink });
+        return;
+      }
+
+      var footerLink = event.target.closest('.footer-link-editable');
+      if (footerLink) {
+        event.preventDefault();
+        event.stopPropagation();
+        render({ kind: 'footer-link', el: footerLink });
+        return;
+      }
+
+      var footerCol = event.target.closest('.footer-col-editable');
+      if (footerCol) {
+        event.preventDefault();
+        event.stopPropagation();
+        render({ kind: 'footer-column', el: footerCol });
+        return;
+      }
+
+      var brand = event.target.closest('.brand-editable');
+      if (brand) {
+        event.preventDefault();
+        event.stopPropagation();
+        render({ kind: 'brand', el: brand });
+        return;
+      }
+
+      var navBlock = event.target.closest('.cbl-nav-block');
+      if (navBlock && navBlock.dataset.navBlockKind) {
+        event.preventDefault();
+        event.stopPropagation();
+        render({ kind: 'nav-block', el: navBlock, blockKind: navBlock.dataset.navBlockKind });
+        return;
+      }
+
+      var sectionWrap = event.target.closest('.section-wrap');
+      if (sectionWrap) {
+        event.preventDefault();
+        event.stopPropagation();
+        render({ kind: 'section', el: sectionWrap });
+        return;
+      }
+
+      var pageSections = event.target.closest('#page-sections');
+      if (pageSections) {
+        render({ kind: 'page' });
+      }
+    }, true);
+
+    defaultSelection();
+  }
+
+  function readPageState() {
+    var ps = document.getElementById('page-sections');
+    if (!ps) return null;
+    return {
+      id: ps.dataset.pageId || '',
+      slug: ps.dataset.pageSlug || '',
+      title: ps.dataset.pageTitle || '',
+      published: ps.dataset.pagePublished === '1',
+      inNavbar: ps.dataset.pageInNavbar === '1',
+      inFooter: ps.dataset.pageInFooter === '1',
+    };
+  }
+
+  function markSelected(selection) {
+    document.querySelectorAll('.cbl-inspector-selected').forEach(function (el) {
+      el.classList.remove('cbl-inspector-selected');
+    });
+    if (selection && selection.el) {
+      selection.el.classList.add('cbl-inspector-selected');
+    }
+  }
+
+  function renderSelection(selection, page) {
+    if (!selection || selection.kind === 'page') return renderPage(page);
+    if (selection.kind === 'section') return renderSection(selection.el);
+    if (selection.kind === 'nav-link') return renderNavLink(selection.el, false);
+    if (selection.kind === 'nav-child') return renderNavLink(selection.el, true);
+    if (selection.kind === 'footer-link') return renderFooterLink(selection.el);
+    if (selection.kind === 'footer-column') return renderFooterColumn(selection.el);
+    if (selection.kind === 'brand') return renderBrand(selection.el);
+    if (selection.kind === 'nav-block') return renderNavBlock(selection.el, selection.blockKind);
+    return renderPage(page);
+  }
+
+  function renderPage(page) {
+    if (!page) {
+      return '<p class="text-body-secondary mb-0">No page selected.</p>';
+    }
+
+    var rows = [];
+    rows.push(sectionShell('Page',
+      '<div class="mb-3">' +
+        '<div class="fw-semibold mb-1">' + escapeHtml(page.title || page.slug || 'Page') + '</div>' +
+        '<div class="small text-body-secondary">/' + escapeHtml(page.slug || '') + '</div>' +
+      '</div>' +
+      badges([page.published ? ['Published', 'success'] : ['Draft', 'secondary'],
+        page.inNavbar ? ['In navbar', 'primary'] : ['Not in navbar', 'light'],
+        page.inFooter ? ['In footer', 'primary'] : ['Not in footer', 'light']]) +
+      actionRow([
+        page.published ? ['.sidebar-page-action[data-action="unpublish"]', 'Unpublish', 'outline-secondary'] : ['.sidebar-page-action[data-action="publish"]', 'Publish', 'outline-success'],
+        page.inNavbar ? ['.sidebar-page-action[data-action="remove-nav"]', 'Remove navbar', 'outline-danger'] : ['.sidebar-page-action[data-action="add-nav"]', 'Add to navbar', 'outline-primary'],
+        page.inFooter ? null : ['.sidebar-page-action[data-action="add-footer"]', 'Add to footer', 'outline-primary']
+      ])
+    ));
+
+    rows.push('<div class="edit-sidebar-section">' +
+      '<h3>Notes</h3>' +
+      '<p class="small text-body-secondary mb-0">Use the section, nav, and footer selections to edit structure. Text content still uses the inline pencil buttons.</p>' +
+      '</div>');
+
+    return rows.join('');
+  }
+
+  var COLUMN_SECTION_TYPES = ['image_grid', 'feature_list', 'testimonials', 'gallery', 'pricing_table', 'video_embed'];
+  var ALLOWED_COLUMNS = [1, 2, 3, 4, 6];
+
+  function renderSection(sectionEl) {
+    var sectionId = sectionEl.dataset.sectionId || '';
+    var sectionType = sectionEl.dataset.sectionType || '';
+    var layout = sectionEl.dataset.sectionLayout || '';
+    var layouts = (sectionEl.dataset.sectionLayouts || '').split(',').filter(Boolean);
+    var visible = sectionEl.dataset.sectionVisible !== '0';
+    var heading = sectionEl.dataset.sectionHeading || '';
+    var subheading = sectionEl.dataset.sectionSubheading || '';
+    var bg = sectionEl.dataset.sectionBg || '';
+    var columns = sectionEl.dataset.sectionColumns || '';
+    var showColumns = COLUMN_SECTION_TYPES.indexOf(sectionType) !== -1;
+
+    var layoutOptions = layouts.map(function (item) {
+      return '<option value="' + escapeHtml(item) + '"' + (item === layout ? ' selected' : '') + '>' + escapeHtml(item) + '</option>';
+    }).join('');
+
+    var columnsHtml = '';
+    if (showColumns) {
+      columnsHtml = '<label class="form-label small mb-1">Columns</label>' +
+        '<select class="form-select form-select-sm mb-2 sidebar-section-columns">' +
+        ALLOWED_COLUMNS.map(function (n) {
+          return '<option value="' + n + '"' + (String(n) === String(columns) ? ' selected' : '') + '>' + n + ' across</option>';
+        }).join('') +
+        '</select>';
+    }
+
+    return '<div class="mb-2 fw-semibold">' + escapeHtml(sectionType.replace(/_/g, ' ')) + '</div>' +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Content</h3>' +
+        '<label class="form-label small mb-1">Heading</label>' +
+        '<input type="text" class="form-control form-control-sm mb-2 sidebar-section-heading" value="' + escapeHtml(heading) + '">' +
+        '<label class="form-label small mb-1">Subheading</label>' +
+        '<textarea class="form-control form-control-sm mb-2 sidebar-section-subheading" rows="3">' + escapeHtml(subheading) + '</textarea>' +
+        '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-content">Save content</button>' +
+      '</div>' +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Display</h3>' +
+        '<label class="form-label small mb-1">Layout</label>' +
+        '<select class="form-select form-select-sm mb-2 sidebar-section-layout">' + layoutOptions + '</select>' +
+        columnsHtml +
+        '<label class="form-label small mb-1">Background color</label>' +
+        '<input type="text" class="form-control form-control-sm mb-2 sidebar-section-bg" placeholder="#ffffff or empty" value="' + escapeHtml(bg) + '">' +
+        '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-display">Save display</button>' +
+      '</div>' +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Visibility</h3>' +
+        '<button type="button" class="btn btn-sm ' + (visible ? 'btn-outline-danger' : 'btn-outline-success') + ' w-100 sidebar-toggle-section">' +
+          (visible ? 'Hide section' : 'Show section') +
+        '</button>' +
+      '</div>' +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Structure</h3>' +
+        '<button type="button" class="btn btn-sm btn-outline-success w-100 mb-2 sidebar-add-item">Add item</button>' +
+        '<button type="button" class="btn btn-sm btn-outline-danger w-100 sidebar-delete-section">Delete section</button>' +
+      '</div>';
+  }
+
+  function renderNavLink(li, child) {
+    var id = li.dataset.navlinkId || '';
+    var label = li.dataset.navlinkLabel || '';
+    var href = li.dataset.navlinkHref || '';
+    var slot = li.dataset.navlinkSlot || 'left';
+    var button = li.dataset.navlinkButton === '1';
+    var newTab = li.dataset.navlinkNewtab === '1';
+    var visible = li.dataset.navlinkVisible !== '0';
+
+    return sectionShell(child ? 'Dropdown Item' : 'Nav Item',
+      '<div class="edit-sidebar-section">' +
+        '<h3>Content</h3>' +
+        '<label class="form-label small mb-1">Label</label>' +
+        '<input type="text" class="form-control form-control-sm mb-2 sidebar-nav-label" value="' + escapeHtml(label) + '">' +
+        '<label class="form-label small mb-1">Link to</label>' +
+        '<select class="form-select form-select-sm mb-1 sidebar-page-picker"><option value="">Custom URL…</option></select>' +
+        '<input type="text" class="form-control form-control-sm mb-2 sidebar-nav-url" placeholder="/path/ or https://…" value="' + escapeHtml(href) + '">' +
+        '<div class="form-check mb-1">' +
+          '<input class="form-check-input sidebar-nav-newtab" type="checkbox" id="snnt-' + escapeHtml(id) + '"' + (newTab ? ' checked' : '') + '>' +
+          '<label class="form-check-label small" for="snnt-' + escapeHtml(id) + '">Open in new tab</label>' +
+        '</div>' +
+        (!child ?
+          '<div class="form-check mb-1">' +
+            '<input class="form-check-input sidebar-nav-visible" type="checkbox" id="snv-' + escapeHtml(id) + '"' + (visible ? ' checked' : '') + '>' +
+            '<label class="form-check-label small" for="snv-' + escapeHtml(id) + '">Visible in navbar</label>' +
+          '</div>' +
+          '<div class="form-check mb-2">' +
+            '<input class="form-check-input sidebar-nav-button" type="checkbox" id="snb-' + escapeHtml(id) + '"' + (button ? ' checked' : '') + '>' +
+            '<label class="form-check-label small" for="snb-' + escapeHtml(id) + '">Render as button</label>' +
+          '</div>'
+        : '') +
+        '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-nav">Save</button>' +
+      '</div>' +
+      (!child ?
+        '<div class="edit-sidebar-section">' +
+          '<h3>Slot</h3>' +
+          '<div class="d-flex gap-2">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill sidebar-move-left"><i class="bi bi-arrow-left-short"></i></button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill sidebar-move-right"><i class="bi bi-arrow-right-short"></i></button>' +
+          '</div>' +
+          '<div class="small text-body-secondary mt-2">Current: ' + escapeHtml(slot) + '</div>' +
+        '</div>'
+      : '') +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Actions</h3>' +
+        (!child ? '<button type="button" class="btn btn-sm btn-outline-success w-100 mb-2 sidebar-add-child">Add dropdown item</button>' : '') +
+        '<button type="button" class="btn btn-sm btn-outline-danger w-100 sidebar-delete-nav">Delete</button>' +
+      '</div>'
+    );
+  }
+
+  function renderFooterLink(li) {
+    return sectionShell('Footer Link',
+      '<div class="edit-sidebar-section">' +
+        '<h3>Content</h3>' +
+        '<label class="form-label small mb-1">Label</label>' +
+        '<input type="text" class="form-control form-control-sm mb-2 sidebar-footer-label" value="' + escapeHtml(li.dataset.footerlinkLabel || '') + '">' +
+        '<label class="form-label small mb-1">URL</label>' +
+        '<input type="text" class="form-control form-control-sm mb-2 sidebar-footer-url" value="' + escapeHtml((li.querySelector('a') && li.querySelector('a').getAttribute('href')) || '') + '">' +
+        '<div class="form-check mb-2"><input class="form-check-input sidebar-footer-newtab" type="checkbox" id="sidebar-footer-newtab" ' + (li.querySelector('a') && li.querySelector('a').getAttribute('target') === '_blank' ? 'checked' : '') + '><label class="form-check-label small" for="sidebar-footer-newtab">Open in new tab</label></div>' +
+        '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-footer-link">Save</button>' +
+      '</div>' +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Actions</h3>' +
+        '<button type="button" class="btn btn-sm btn-outline-danger w-100 sidebar-delete-footer-link">Delete</button>' +
+      '</div>'
+    );
+  }
+
+  var FOOTER_QUICK_LINKS = [
+    { label: 'Home',            url: '/' },
+    { label: 'About',           url: '/about/' },
+    { label: 'Contact',         url: '/contact/' },
+    { label: 'Services',        url: '/services/' },
+    { label: 'Privacy Policy',  url: '/privacy/' },
+    { label: 'Terms of Service', url: '/terms/' },
+    { label: 'FAQ',             url: '/faq/' },
+    { label: 'Help',            url: '/help/' },
+  ];
+
+  function renderFooterColumn(col) {
+    var quickBtns = FOOTER_QUICK_LINKS.map(function (item) {
+      return '<button type="button" class="btn btn-sm btn-outline-secondary sidebar-quick-footer-link" ' +
+        'data-label="' + escapeHtml(item.label) + '" data-url="' + escapeHtml(item.url) + '">' +
+        escapeHtml(item.label) + '</button>';
+    }).join('');
+
+    return sectionShell('Footer Column',
+      '<div class="edit-sidebar-section">' +
+        '<h3>Column heading</h3>' +
+        '<input type="text" class="form-control form-control-sm mb-2 sidebar-footer-heading" value="' + escapeHtml((col.querySelector('h5, h4, h6') || { textContent: '' }).textContent.trim()) + '">' +
+        '<div class="form-check mb-2"><input class="form-check-input sidebar-footer-visible" type="checkbox" id="sidebar-footer-visible" ' + (col.style.display === 'none' ? '' : 'checked') + '><label class="form-check-label small" for="sidebar-footer-visible">Visible</label></div>' +
+        '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-footer-column">Save</button>' +
+      '</div>' +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Add link</h3>' +
+        '<button type="button" class="btn btn-sm btn-outline-success w-100 mb-2 sidebar-add-footer-link">+ Custom link</button>' +
+        '<div class="small text-body-secondary mb-1">Quick add:</div>' +
+        '<div class="d-flex flex-wrap gap-1 mb-2">' + quickBtns + '</div>' +
+      '</div>' +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Actions</h3>' +
+        '<button type="button" class="btn btn-sm btn-outline-danger w-100 sidebar-delete-footer-column">Delete column</button>' +
+      '</div>'
+    );
+  }
+
+  function renderBrand(brand) {
+    return sectionShell('Brand',
+      '<div class="edit-sidebar-section">' +
+        '<h3>Content</h3>' +
+        '<label class="form-label small mb-1">Brand text</label>' +
+        '<input type="text" class="form-control form-control-sm mb-2 sidebar-brand-name" value="' + escapeHtml(brand.dataset.brandName || '') + '">' +
+        '<label class="form-label small mb-1">Position</label>' +
+        '<select class="form-select form-select-sm mb-2 sidebar-brand-position">' +
+          option('left', 'Left', brand.dataset.brandPosition) +
+          option('center', 'Center', brand.dataset.brandPosition) +
+          option('right', 'Right', brand.dataset.brandPosition) +
+        '</select>' +
+        '<div class="form-check mb-2"><input class="form-check-input sidebar-brand-show-logo" type="checkbox" id="sidebar-brand-show-logo" ' + ((brand.dataset.brandShowLogo || '1') === '1' ? 'checked' : '') + '><label class="form-check-label small" for="sidebar-brand-show-logo">Show logo image</label></div>' +
+        '<div class="form-check mb-2"><input class="form-check-input sidebar-brand-show-name" type="checkbox" id="sidebar-brand-show-name" ' + ((brand.dataset.brandShowName || '1') === '1' ? 'checked' : '') + '><label class="form-check-label small" for="sidebar-brand-show-name">Show brand text</label></div>' +
+        '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-brand">Save</button>' +
+      '</div>'
+    );
+  }
+
+  function renderNavBlock(block, kind) {
+    kind = (kind || '').toLowerCase();
+    var slot = block.dataset.navBlockSlot || 'left';
+    var html = [];
+    html.push('<div class="mb-2 fw-semibold">' + escapeHtml(kind) + '</div>');
+    html.push('<div class="small text-body-secondary mb-3">Block slot: ' + escapeHtml(slot) + '</div>');
+
+    if (kind === 'search') {
+      html.push(sectionShell('Search bar',
+        '<div class="edit-sidebar-section">' +
+          '<h3>Visibility</h3>' +
+          '<button type="button" class="btn btn-sm btn-outline-danger w-100 mb-2 sidebar-toggle-chrome" data-field="show_nav_search">Hide search bar</button>' +
+        '</div>' +
+        '<div class="edit-sidebar-section">' +
+          '<h3>Move</h3>' +
+          '<div class="d-flex gap-2">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill sidebar-move-chrome-left"><i class="bi bi-arrow-left-short"></i></button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill sidebar-move-chrome-right"><i class="bi bi-arrow-right-short"></i></button>' +
+          '</div>' +
+        '</div>'
+      ));
+    } else if (kind === 'cta') {
+      html.push(sectionShell('CTA button',
+        '<div class="edit-sidebar-section">' +
+          '<h3>Content</h3>' +
+          '<label class="form-label small mb-1">Label</label>' +
+          '<input type="text" class="form-control form-control-sm mb-2 sidebar-cta-label" value="' + escapeHtml(block.querySelector('.cbl-navbar-cta') ? block.querySelector('.cbl-navbar-cta').textContent.trim() : '') + '">' +
+          '<label class="form-label small mb-1">URL</label>' +
+          '<input type="text" class="form-control form-control-sm mb-2 sidebar-cta-url" value="' + escapeHtml((block.querySelector('.cbl-navbar-cta') && block.querySelector('.cbl-navbar-cta').getAttribute('href')) || '') + '">' +
+          '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-cta">Save</button>' +
+        '</div>' +
+        '<div class="edit-sidebar-section">' +
+          '<h3>Move</h3>' +
+          '<div class="d-flex gap-2">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill sidebar-move-chrome-left"><i class="bi bi-arrow-left-short"></i></button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill sidebar-move-chrome-right"><i class="bi bi-arrow-right-short"></i></button>' +
+          '</div>' +
+        '</div>'
+      ));
+    } else if (kind === 'auth') {
+      var showLogin    = block.dataset.showLogin    !== '0';
+      var showRegister = block.dataset.showRegister === '1';
+      var showProfile  = block.dataset.showProfile  !== '0';
+      html.push(sectionShell('Login / profile',
+        '<div class="edit-sidebar-section">' +
+          '<h3>Visibility</h3>' +
+          '<div class="form-check mb-2"><input class="form-check-input sidebar-auth-login" type="checkbox" id="sidebar-auth-login" ' + (showLogin ? 'checked' : '') + '><label class="form-check-label small" for="sidebar-auth-login">Show login link</label></div>' +
+          '<div class="form-check mb-2"><input class="form-check-input sidebar-auth-register" type="checkbox" id="sidebar-auth-register" ' + (showRegister ? 'checked' : '') + '><label class="form-check-label small" for="sidebar-auth-register">Show register link</label></div>' +
+          '<div class="form-check mb-2"><input class="form-check-input sidebar-auth-profile" type="checkbox" id="sidebar-auth-profile" ' + (showProfile ? 'checked' : '') + '><label class="form-check-label small" for="sidebar-auth-profile">Show profile / logout menu</label></div>' +
+          '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-auth">Save</button>' +
+        '</div>' +
+        '<div class="edit-sidebar-section">' +
+          '<h3>Move</h3>' +
+          '<div class="d-flex gap-2">' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill sidebar-move-chrome-left"><i class="bi bi-arrow-left-short"></i></button>' +
+            '<button type="button" class="btn btn-sm btn-outline-secondary flex-fill sidebar-move-chrome-right"><i class="bi bi-arrow-right-short"></i></button>' +
+          '</div>' +
+        '</div>'
+      ));
+    } else {
+      html.push(sectionShell('Navigation block', '<p class="text-body-secondary mb-0">This block is selected. Use the move controls to reposition it.</p>'));
+    }
+    return html.join('');
+  }
+
+  function renderNewNavLink(isButton) {
+    var templateCards = PAGE_TEMPLATES.map(function (tpl) {
+      return '<button type="button" class="cbl-tpl-card sidebar-pick-template" data-tpl-key="' + escapeHtml(tpl.key) + '">' +
+        '<i class="bi bi-' + escapeHtml(tpl.icon) + ' cbl-tpl-icon"></i>' +
+        '<span class="cbl-tpl-name">' + escapeHtml(tpl.name) + '</span>' +
+        '<span class="cbl-tpl-desc">' + escapeHtml(tpl.description) + '</span>' +
+      '</button>';
+    }).join('');
+
+    return '<div class="edit-sidebar-section">' +
+        '<h3>Create a new page</h3>' +
+        '<p class="small text-body-secondary mb-2">Pick a template to build a page and add it to the navbar.</p>' +
+        '<div class="mb-2"><label class="form-label small mb-1">Page title</label>' +
+        '<input type="text" class="form-control form-control-sm sidebar-new-page-title" placeholder="e.g. About Us"></div>' +
+        '<div class="cbl-tpl-grid mb-2">' + templateCards + '</div>' +
+        '<div class="mb-2"><label class="form-label small mb-1">Slot</label>' +
+        '<select class="form-select form-select-sm sidebar-new-page-slot">' +
+          '<option value="left">Left</option>' +
+          '<option value="center">Center</option>' +
+          '<option value="right">Right</option>' +
+        '</select></div>' +
+        '<button type="button" class="btn btn-sm btn-primary w-100 mb-2 sidebar-create-page-link" disabled>Create page &amp; add to nav</button>' +
+      '</div>' +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Or link to a URL</h3>' +
+        '<div class="mb-2"><label class="form-label small mb-1">Label</label>' +
+        '<input type="text" class="form-control form-control-sm sidebar-ext-label" placeholder="e.g. Blog"></div>' +
+        '<div class="mb-2"><label class="form-label small mb-1">URL</label>' +
+        '<input type="text" class="form-control form-control-sm sidebar-ext-url" placeholder="https://..."></div>' +
+        '<div class="mb-2"><label class="form-label small mb-1">Slot</label>' +
+        '<select class="form-select form-select-sm sidebar-ext-slot">' +
+          '<option value="left">Left</option>' +
+          '<option value="center">Center</option>' +
+          '<option value="right">Right</option>' +
+        '</select></div>' +
+        '<button type="button" class="btn btn-sm btn-outline-primary w-100 sidebar-add-ext-link">Add link</button>' +
+      '</div>';
+  }
+
+  function wireNewNavLink(body, isButton) {
+    var selectedKey = null;
+
+    body.querySelectorAll('.sidebar-pick-template').forEach(function (card) {
+      card.addEventListener('click', function () {
+        body.querySelectorAll('.sidebar-pick-template').forEach(function (c) { c.classList.remove('cbl-tpl-selected'); });
+        card.classList.add('cbl-tpl-selected');
+        selectedKey = card.dataset.tplKey;
+        var titleInput = body.querySelector('.sidebar-new-page-title');
+        if (titleInput && !titleInput.value.trim()) {
+          var tpl = PAGE_TEMPLATES.find(function (t) { return t.key === selectedKey; });
+          if (tpl) titleInput.value = tpl.name;
+        }
+        var createBtn = body.querySelector('.sidebar-create-page-link');
+        if (createBtn) createBtn.disabled = false;
+      });
+    });
+
+    var createBtn = body.querySelector('.sidebar-create-page-link');
+    if (createBtn) {
+      createBtn.addEventListener('click', function () {
+        if (!selectedKey) return;
+        var titleEl = body.querySelector('.sidebar-new-page-title');
+        var slotEl = body.querySelector('.sidebar-new-page-slot');
+        var title = titleEl ? titleEl.value.trim() : '';
+        var slot = slotEl ? slotEl.value : 'left';
+        createBtn.disabled = true;
+        createBtn.textContent = 'Creating...';
+        postJson('/edit/nav-link/create-page/', {
+          template_key: selectedKey,
+          title: title,
+          slot: slot,
+        }).then(function (resp) {
+          if (window.cblSetFocusHint) {
+            window.cblSetFocusHint({ kind: 'nav-link', id: resp.nav_link_id });
+          }
+          window.location.reload();
+        }).catch(function (err) {
+          createBtn.disabled = false;
+          createBtn.textContent = 'Create page & add to nav';
+          alertError(err);
+        });
+      });
+    }
+
+    var addExtBtn = body.querySelector('.sidebar-add-ext-link');
+    if (addExtBtn) {
+      addExtBtn.addEventListener('click', function () {
+        var labelEl = body.querySelector('.sidebar-ext-label');
+        var urlEl = body.querySelector('.sidebar-ext-url');
+        var slotEl = body.querySelector('.sidebar-ext-slot');
+        var label = labelEl ? labelEl.value.trim() : 'New Link';
+        var url = urlEl ? urlEl.value.trim() : '/';
+        var slot = slotEl ? slotEl.value : 'left';
+        if (!label) label = 'New Link';
+        if (!url) url = '/';
+        addExtBtn.disabled = true;
+        postJson('/edit/nav-link/add/', {
+          label: label, url: url, slot: slot,
+          is_button: isButton ? '1' : '0',
+        }).then(function (resp) {
+          if (window.cblSetFocusHint) {
+            window.cblSetFocusHint({ kind: 'nav-link', id: resp.id });
+          }
+          window.location.reload();
+        }).catch(function (err) {
+          addExtBtn.disabled = false;
+          alertError(err);
+        });
+      });
+    }
+  }
+
+  function sectionShell(title, innerHtml) {
+    return '<div class="edit-sidebar-section"><h3>' + escapeHtml(title) + '</h3>' + innerHtml + '</div>';
+  }
+
+  function badges(items) {
+    return '<div class="mb-3">' + items.filter(Boolean).map(function (item) {
+      return '<span class="badge text-bg-' + escapeHtml(item[1]) + ' me-1">' + escapeHtml(item[0]) + '</span>';
+    }).join('') + '</div>';
+  }
+
+  function actionRow(buttons) {
+    return '<div class="d-grid gap-2">' + buttons.filter(Boolean).map(function (item) {
+      var action = item[0].match(/data-action="([^"]+)"/);
+      return '<button type="button" class="btn btn-sm btn-' + escapeHtml(item[2]) + ' sidebar-page-action" data-action="' + escapeHtml(action ? action[1] : '') + '">' + escapeHtml(item[1]) + '</button>';
+    }).join('') + '</div>';
+  }
+
+  function option(value, label, current) {
+    return '<option value="' + escapeHtml(value) + '"' + (String(value) === String(current) ? ' selected' : '') + '>' + escapeHtml(label) + '</option>';
+  }
+
+  function wireBody(body, selection, page) {
+    if (!selection) return;
+
+    if (selection.kind === 'page') {
+      wirePage(body, page);
+      return;
+    }
+
+    if (selection.kind === 'section') {
+      wireSection(body, selection.el);
+      return;
+    }
+
+    if (selection.kind === 'nav-link' || selection.kind === 'nav-child') {
+      wireNavLink(body, selection.el, selection.kind === 'nav-child');
+      return;
+    }
+
+    if (selection.kind === 'footer-link') {
+      wireFooterLink(body, selection.el);
+      return;
+    }
+
+    if (selection.kind === 'footer-column') {
+      wireFooterColumn(body, selection.el);
+      return;
+    }
+
+    if (selection.kind === 'brand') {
+      wireBrand(body, selection.el);
+      return;
+    }
+
+    if (selection.kind === 'nav-block') {
+      wireNavBlock(body, selection.el, selection.blockKind);
+    }
+  }
+
+  function wirePage(body, page) {
+    var bind = function (selector, fn) {
+      var el = body.querySelector(selector);
+      if (el) el.addEventListener('click', fn);
+    };
+    bind('.sidebar-page-action[data-action="publish"]', function () {
+      postJson('/edit/page/' + page.id + '/publish/').then(function () { window.location.reload(); }).catch(alertError);
+    });
+    bind('.sidebar-page-action[data-action="unpublish"]', function () {
+      postJson('/edit/page/' + page.id + '/unpublish/').then(function () { window.location.reload(); }).catch(alertError);
+    });
+    bind('.sidebar-page-action[data-action="add-nav"]', function () {
+      postJson('/edit/page/' + page.id + '/add-to-navbar/').then(function () { window.location.reload(); }).catch(alertError);
+    });
+    bind('.sidebar-page-action[data-action="remove-nav"]', function () {
+      postJson('/edit/page/' + page.id + '/remove-from-navbar/').then(function () { window.location.reload(); }).catch(alertError);
+    });
+    bind('.sidebar-page-action[data-action="add-footer"]', function () {
+      postJson('/edit/page/' + page.id + '/add-to-footer/').then(function () { window.location.reload(); }).catch(alertError);
+    });
+  }
+
+  function wireSection(body, sectionEl) {
+    var sectionId = sectionEl.dataset.sectionId;
+
+    var saveContent = body.querySelector('.sidebar-save-content');
+    if (saveContent) {
+      saveContent.addEventListener('click', function () {
+        var heading = body.querySelector('.sidebar-section-heading');
+        var subheading = body.querySelector('.sidebar-section-subheading');
+        var req = postJson('/edit/section/' + sectionId + '/field/heading/', { value: heading ? heading.value : '' });
+        if (subheading) {
+          req = req.then(function () {
+            return postJson('/edit/section/' + sectionId + '/field/subheading/', { value: subheading.value });
+          });
+        }
+        req.then(function () {
+          sectionEl.dataset.sectionHeading = heading ? heading.value : '';
+          sectionEl.dataset.sectionSubheading = subheading ? subheading.value : '';
+          window.location.reload();
+        }).catch(alertError);
+      });
+    }
+
+    var saveDisplay = body.querySelector('.sidebar-save-display');
+    if (saveDisplay) {
+      saveDisplay.addEventListener('click', function () {
+        var layout = body.querySelector('.sidebar-section-layout');
+        var columns = body.querySelector('.sidebar-section-columns');
+        var bg = body.querySelector('.sidebar-section-bg');
+        var req = postJson('/edit/section/' + sectionId + '/layout/', { layout: layout ? layout.value : '' });
+        var configPayload = {};
+        if (columns) configPayload.columns_desktop = columns.value;
+        if (bg) configPayload.background_color = bg.value;
+        if (Object.keys(configPayload).length) {
+          req = req.then(function () {
+            return postJson('/edit/section/' + sectionId + '/config/', configPayload);
+          });
+        }
+        req.then(function () { window.location.reload(); }).catch(alertError);
+      });
+    }
+
+    var toggle = body.querySelector('.sidebar-toggle-section');
+    if (toggle) {
+      toggle.addEventListener('click', function () {
+        postJson('/edit/section/' + sectionId + '/visibility/')
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+
+    var addItem = body.querySelector('.sidebar-add-item');
+    if (addItem) {
+      addItem.addEventListener('click', function () {
+        postJson('/edit/section/' + sectionId + '/item/add/')
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+
+    var del = body.querySelector('.sidebar-delete-section');
+    if (del) {
+      del.addEventListener('click', function () {
+        if (!confirm('Delete this section?')) return;
+        postJson('/edit/section/' + sectionId + '/delete/')
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+  }
+
+  function wireNavLink(body, li, child) {
+    var id = li.dataset.navlinkId;
+    var label = body.querySelector('.sidebar-nav-label');
+    var url = body.querySelector('.sidebar-nav-url');
+    var button = body.querySelector('.sidebar-nav-button');
+    var save = body.querySelector('.sidebar-save-nav');
+    var left = body.querySelector('.sidebar-move-left');
+    var right = body.querySelector('.sidebar-move-right');
+    var addChild = body.querySelector('.sidebar-add-child');
+    var del = body.querySelector('.sidebar-delete-nav');
+
+    if (save) {
+      save.addEventListener('click', function () {
+        var req = postJson('/edit/nav-link/' + id + '/update/', { field: 'label', value: label ? label.value : '' })
+          .then(function () { return postJson('/edit/nav-link/' + id + '/update/', { field: 'url', value: url ? url.value : '' }); });
+        if (!child && button) {
+          req = req.then(function () {
+            return postJson('/edit/nav-link/' + id + '/update/', { field: 'is_button', value: button.checked ? '1' : '0' });
+          });
+        }
+        req.then(function () { window.location.reload(); }).catch(alertError);
+      });
+    }
+
+    if (left) {
+      left.addEventListener('click', function () {
+        moveNavLinkBy(id, li, -1);
+      });
+    }
+    if (right) {
+      right.addEventListener('click', function () {
+        moveNavLinkBy(id, li, 1);
+      });
+    }
+    if (addChild) {
+      addChild.addEventListener('click', function () {
+        postJson('/edit/nav-link/add/', { label: 'New item', url: '/', parent_id: id, slot: li.dataset.navlinkSlot || 'left' })
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+    if (del) {
+      del.addEventListener('click', function () {
+        postJson('/edit/nav-link/' + id + '/delete/')
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+  }
+
+  function moveNavLinkBy(id, li, delta) {
+    var order = ['left', 'center', 'right'];
+    var current = (li.dataset.navlinkSlot || 'left').toLowerCase();
+    var index = order.indexOf(current);
+    if (index < 0) index = 0;
+    var next = order[index + delta];
+    if (!next) return;
+    postJson('/edit/nav-link/' + id + '/update/', { field: 'slot', value: next })
+      .then(function () { window.location.reload(); })
+      .catch(alertError);
+  }
+
+  function wireFooterLink(body, li) {
+    var id = li.dataset.footerlinkId;
+    var label = body.querySelector('.sidebar-footer-label');
+    var url = body.querySelector('.sidebar-footer-url');
+    var newTab = body.querySelector('.sidebar-footer-newtab');
+    var save = body.querySelector('.sidebar-save-footer-link');
+    var del = body.querySelector('.sidebar-delete-footer-link');
+    if (save) {
+      save.addEventListener('click', function () {
+        postJson('/edit/footer-link/' + id + '/update/', { field: 'label', value: label ? label.value : '' })
+          .then(function () { return postJson('/edit/footer-link/' + id + '/update/', { field: 'url', value: url ? url.value : '' }); })
+          .then(function () { return postJson('/edit/footer-link/' + id + '/update/', { field: 'open_new_tab', value: newTab && newTab.checked ? '1' : '0' }); })
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+    if (del) {
+      del.addEventListener('click', function () {
+        postJson('/edit/footer-link/' + id + '/delete/')
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+  }
+
+  function wireFooterColumn(body, col) {
+    var id = col.dataset.footercolId;
+    var heading = body.querySelector('.sidebar-footer-heading');
+    var visible = body.querySelector('.sidebar-footer-visible');
+    var save = body.querySelector('.sidebar-save-footer-column');
+    var add = body.querySelector('.sidebar-add-footer-link');
+    var del = body.querySelector('.sidebar-delete-footer-column');
+
+    if (save) {
+      save.addEventListener('click', function () {
+        postJson('/edit/footer-column/' + id + '/update/', { field: 'heading', value: heading ? heading.value : '' })
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+    if (visible) {
+      visible.addEventListener('change', function () {
+        postJson('/edit/footer-column/' + id + '/update/', { field: 'is_visible', value: visible.checked ? '1' : '0' })
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+    if (add) {
+      add.addEventListener('click', function () {
+        postJson('/edit/footer-column/' + id + '/link/add/', { label: 'New Link', url: '/' })
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+
+    body.querySelectorAll('.sidebar-quick-footer-link').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        btn.disabled = true;
+        postJson('/edit/footer-column/' + id + '/link/add/', {
+          label: btn.dataset.label,
+          url: btn.dataset.url,
+        }).then(function () { window.location.reload(); })
+          .catch(function (err) { btn.disabled = false; alertError(err); });
+      });
+    });
+
+    if (del) {
+      del.addEventListener('click', function () {
+        if (!confirm('Delete this column and all its links?')) return;
+        postJson('/edit/footer-column/' + id + '/delete/')
+          .then(function () { window.location.reload(); })
+          .catch(alertError);
+      });
+    }
+  }
+
+  function wireBrand(body, brand) {
+    var save = body.querySelector('.sidebar-save-brand');
+    if (!save) return;
+    save.addEventListener('click', function () {
+      var name = body.querySelector('.sidebar-brand-name');
+      var position = body.querySelector('.sidebar-brand-position');
+      var showLogo = body.querySelector('.sidebar-brand-show-logo');
+      var showName = body.querySelector('.sidebar-brand-show-name');
+      postJson('/edit/site-brand/update/', { field: 'name', value: name ? name.value : '' })
+        .then(function () { return postJson('/edit/site-brand/update/', { field: 'brand_position', value: position ? position.value : 'left' }); })
+        .then(function () { return postJson('/edit/site-brand/update/', { field: 'show_brand_logo', value: showLogo && showLogo.checked ? '1' : '0' }); })
+        .then(function () { return postJson('/edit/site-brand/update/', { field: 'show_brand_name', value: showName && showName.checked ? '1' : '0' }); })
+        .then(function () { window.location.reload(); })
+        .catch(alertError);
+    });
+  }
+
+  function wireNavBlock(body, block, kind) {
+    kind = (kind || '').toLowerCase();
+    var left = body.querySelector('.sidebar-move-chrome-left');
+    var right = body.querySelector('.sidebar-move-chrome-right');
+    if (left) {
+      left.addEventListener('click', function () { moveChromeSlot(kind, -1); });
+    }
+    if (right) {
+      right.addEventListener('click', function () { moveChromeSlot(kind, 1); });
+    }
+
+    if (kind === 'search') {
+      var toggle = body.querySelector('.sidebar-toggle-chrome');
+      if (toggle) {
+        toggle.addEventListener('click', function () {
+          postJson('/edit/site-chrome/update/', { field: 'show_nav_search', value: '0' })
+            .then(function () { window.location.reload(); })
+            .catch(alertError);
+        });
+      }
+    }
+
+    if (kind === 'cta') {
+      var save = body.querySelector('.sidebar-save-cta');
+      if (save) {
+        save.addEventListener('click', function () {
+          var label = body.querySelector('.sidebar-cta-label');
+          var url = body.querySelector('.sidebar-cta-url');
+          postJson('/edit/site-chrome/update/', { field: 'nav_cta_label', value: label ? label.value : '' })
+            .then(function () { return postJson('/edit/site-chrome/update/', { field: 'nav_cta_url', value: url ? url.value : '' }); })
+            .then(function () { window.location.reload(); })
+            .catch(alertError);
+        });
+      }
+    }
+
+    if (kind === 'auth') {
+      var saveAuth = body.querySelector('.sidebar-save-auth');
+      if (saveAuth) {
+        saveAuth.addEventListener('click', function () {
+          var login = body.querySelector('.sidebar-auth-login');
+          var reg = body.querySelector('.sidebar-auth-register');
+          var profile = body.querySelector('.sidebar-auth-profile');
+          postJson('/edit/site-chrome/update/', { field: 'show_nav_login', value: login && login.checked ? '1' : '0' })
+            .then(function () { return postJson('/edit/site-chrome/update/', { field: 'show_nav_register', value: reg && reg.checked ? '1' : '0' }); })
+            .then(function () { return postJson('/edit/site-chrome/update/', { field: 'show_nav_profile', value: profile && profile.checked ? '1' : '0' }); })
+            .then(function () { window.location.reload(); })
+            .catch(alertError);
+        });
+      }
+    }
+  }
+
+  function moveChromeSlot(kind, delta) {
+    var field = null;
+    if (kind === 'search') field = 'nav_search_slot';
+    else if (kind === 'cta') field = 'nav_cta_slot';
+    else if (kind === 'auth') field = 'nav_auth_slot';
+    if (!field) return;
+
+    var block = document.querySelector('[data-chrome-slot-field="' + field + '"]');
+    if (!block) return;
+    var current = (block.dataset.chromeSlotValue || 'left').toLowerCase();
+    var order = ['left', 'center', 'right'];
+    var index = order.indexOf(current);
+    if (index < 0) index = 0;
+    var next = order[index + delta];
+    if (!next) return;
+    postJson('/edit/site-chrome/update/', { field: field, value: next })
+      .then(function () { window.location.reload(); })
+      .catch(alertError);
+  }
+
+  function alertError(err) {
+    alert(err && err.message ? err.message : 'Request failed');
+  }
+
+  window.cblInitInspectorSidebar = init;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

@@ -1,11 +1,11 @@
-# Flexible Site Template
+# CBL — Create Build Launch
 
-A Django website you can customize without writing code. Pick from themes, navbars, footers, and section layouts. Edit content from a clean admin interface.
+CBL is a self-hosted Django website builder you can purchase once, customize, and publish wherever you want. It uses a dynamic dashboard, editable pages, reusable sections, configurable navigation, footer controls, themes, and inline media editing so buyers do not need to edit code for normal website changes.
 
 ## What you get
 
 - 8 color themes, easy to customize or add your own
-- 5 navbar styles
+- One universal navbar engine with five starting presets
 - 5 footer styles
 - Pre-built section types (hero, image grid, feature list, CTA banner, text block) that you mix and match per page
 - Dynamic content: add 3 images to a grid or 30, the layout adapts
@@ -39,7 +39,7 @@ You'll need: Python 3.12+, PostgreSQL running locally.
 
 ```bash
 # Clone or unzip into a directory, then:
-cd flexible-site
+cd cbl
 python -m venv venv
 source venv/bin/activate         # Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -49,7 +49,7 @@ cp .env.example .env             # Windows: copy .env.example .env
 # Edit .env with your editor of choice
 
 # Create the database (one-time)
-createdb flexible_site            # or use pgAdmin / your tool of choice
+createdb cbl            # or use pgAdmin / your tool of choice
 
 # Set up the project
 python manage.py migrate
@@ -86,7 +86,7 @@ Without Cloudinary, image uploads will fail. Everything else still works.
 
 After running `setup_site`, log in at `/admin/`. The interesting models:
 
-- **Site**: change site name, tagline, theme, navbar, footer, social links, copyright
+- **Site**: change site name, tagline, theme, universal navbar controls, footer, social links, copyright
 - **Pages**: add, remove, reorder pages
 - **Sections**: each page is built from sections (hero, image grid, etc.). Drag to reorder, toggle visibility, add as many items as you want inside each
 - **Themes**: 8 pre-built themes. Edit colors and fonts, or create your own
@@ -112,13 +112,13 @@ To control how many columns the grid uses, edit the section's `config` field (un
 ## File structure
 
 ```
-flexible-site/
+cbl/
 ├── config/              # Django settings (base.py, dev.py, prod.py)
 ├── core/                # Site, Page, Section, Theme models
 ├── users/               # Custom user model with email login
 ├── templates/
 │   ├── base.html        # Site shell with theme CSS injection
-│   ├── navbars/         # 5 navbar variations
+│   ├── navbars/         # Universal navbar engine + shared navbar components
 │   ├── footers/         # 5 footer variations
 │   ├── sections/        # Section type templates (hero, image_grid, etc.)
 │   └── core/page.html   # Universal page renderer
@@ -142,4 +142,57 @@ Your content (pages, sections, themes) lives in the database, not in the code, s
 
 ## Support
 
-Questions about the template? Email [your-email-here].
+Questions about CBL? Email [your-email-here].
+
+## CBL Dashboard
+
+CBL now includes an in-site staff dashboard at:
+
+```text
+/cbl/
+```
+
+Use this dashboard instead of Django Admin for day-to-day site management.
+
+Current dashboard areas:
+
+- Dashboard overview
+- Site Settings
+- Pages
+- Page publish / unpublish controls
+- Page add / edit / delete controls
+- Section add / edit / delete controls
+- Navigation link add / edit / delete controls
+- Footer column and footer link add / edit / delete controls
+
+Django Admin is still available at `/admin/` for advanced maintenance.
+
+
+## Universal Navbar Engine
+
+CBL no longer treats each navbar option as a separate template. There is one universal navbar renderer:
+
+```text
+templates/navbars/navbar_dynamic.html
+templates/navbars/_navbar_slot.html
+```
+
+The five navbar choices are now starting presets, not separate code paths. Every preset supports the same feature set:
+
+- logo
+- website name
+- menu links
+- dropdown links
+- search bar
+- login link
+- register link
+- signed-in profile dropdown
+- optional CTA button
+- left / center / right placement
+- sticky on/off
+- contained/full-width layout
+- light/dark/brand/transparent style
+
+Use `/cbl/settings/` to control global navbar features. Use `/cbl/navigation/` to add, edit, delete, hide, and position menu links.
+
+This avoids redundant navbar templates and keeps CBL flexible: future navbar features only need to be built once.

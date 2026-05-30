@@ -1,6 +1,29 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
 
+def default_navbar_config():
+    """Default low-risk navbar design controls for v1."""
+    return {
+        'height_px': 76,
+        'padding_x': 0.0,      # rem
+        'padding_y': 0.4,      # rem
+        'gap_px': 12,
+        'brand_size_rem': 1.6,
+        'link_size_rem': 1.0,
+        'radius_px': 999,
+        'border_width_px': 0,
+        'bg_color': '',
+        'text_color': '',
+        'link_color': '',
+        'link_hover_bg': '',
+        'link_hover_color': '',
+        'container_max_px': 1320,
+        'brand_weight': 600,
+        'link_style': 'pill',          # pill | underline | plain
+        'zone_distribution': 'balanced',  # balanced | center-heavy | split
+        'mobile_menu_style': 'collapse',  # collapse | offcanvas
+    }
+
 
 class Theme(models.Model):
     """A named color palette and font set that the site can apply."""
@@ -61,12 +84,14 @@ class Theme(models.Model):
 
 class Site(models.Model):
     """Single-site model holding global layout choices."""
+    # CBL uses one universal navbar engine. These choices are now presets
+    # that change configuration only; they do not point at separate templates.
     NAVBAR_CHOICES = [
-        ('nav_1', 'Simple Header with Pills'),
-        ('nav_2', 'Centered Pills Only'),
-        ('nav_3', 'Three-Column with CTA Buttons'),
-        ('nav_4', 'Dark with Search'),
-        ('nav_5', 'Two-Tier Dark and Light'),
+        ('classic', 'Classic Business'),
+        ('centered', 'Centered Brand'),
+        ('app', 'App Style'),
+        ('dark', 'Dark Header'),
+        ('split', 'Split Navigation'),
     ]
     FOOTER_CHOICES = [
         ('footer_1', 'Logo Center with Nav'),
@@ -81,7 +106,60 @@ class Site(models.Model):
     logo = CloudinaryField('logo', blank=True, null=True)
     favicon = CloudinaryField('favicon', blank=True, null=True,
                               help_text='Small icon shown in browser tabs. PNG recommended (at least 32x32 px).')
-    navbar_variant = models.CharField(max_length=20, choices=NAVBAR_CHOICES, default='nav_1')
+
+    # Navbar "brand" (logo + site name) presentation. Each piece is independently
+    # showable; the whole brand sits in one of three slots in the navbar.
+    BRAND_POSITION_CHOICES = [
+        ('left', 'Left'),
+        ('center', 'Center'),
+        ('right', 'Right'),
+    ]
+    show_brand_logo = models.BooleanField(default=True,
+        help_text='Show the logo image in the navbar (if a logo is uploaded).')
+    show_brand_name = models.BooleanField(default=True,
+        help_text='Show the site name text in the navbar.')
+    brand_position = models.CharField(
+        max_length=10, choices=BRAND_POSITION_CHOICES, default='left',
+        help_text='Where the logo and/or site name appear in the navbar.',
+    )
+
+    navbar_variant = models.CharField(max_length=20, choices=NAVBAR_CHOICES, default='classic', help_text='Navbar preset. Presets change settings only; all presets use the same universal navbar engine.')
+
+    NAVBAR_THEME_CHOICES = [
+        ('light', 'Light'),
+        ('dark', 'Dark'),
+        ('primary', 'Primary Brand Color'),
+        ('transparent', 'Transparent'),
+    ]
+    NAVBAR_CONTAINER_CHOICES = [
+        ('container', 'Contained'),
+        ('container-fluid', 'Full width'),
+    ]
+    NAVBAR_SLOT_CHOICES = [
+        ('left', 'Left'),
+        ('center', 'Center'),
+        ('right', 'Right'),
+    ]
+    navbar_theme = models.CharField(max_length=20, choices=NAVBAR_THEME_CHOICES, default='light')
+    navbar_container = models.CharField(max_length=20, choices=NAVBAR_CONTAINER_CHOICES, default='container')
+    navbar_sticky = models.BooleanField(default=False, help_text='Stick the navbar to the top while scrolling.')
+    navbar_shadow = models.BooleanField(default=True, help_text='Add a subtle border/shadow below the navbar.')
+    show_nav_search = models.BooleanField(default=False, help_text='Show a search form in the navbar.')
+    nav_search_slot = models.CharField(max_length=10, choices=NAVBAR_SLOT_CHOICES, default='right')
+    show_nav_login = models.BooleanField(default=True, help_text='Show login link when visitors are signed out.')
+    show_nav_register = models.BooleanField(default=False, help_text='Show register/signup link when visitors are signed out.')
+    show_nav_profile = models.BooleanField(default=True, help_text='Show profile dropdown when users are signed in.')
+    nav_auth_slot = models.CharField(max_length=10, choices=NAVBAR_SLOT_CHOICES, default='right')
+    nav_cta_label = models.CharField(max_length=80, blank=True, default='', help_text='Optional standalone CTA button label.')
+    nav_cta_url = models.CharField(max_length=500, blank=True, default='', help_text='Optional standalone CTA button URL or path.')
+    nav_cta_slot = models.CharField(max_length=10, choices=NAVBAR_SLOT_CHOICES, default='right')
+    show_navbar = models.BooleanField(default=True, help_text='Render the navbar on public pages.')
+    show_footer = models.BooleanField(default=True, help_text='Render the footer on public pages.')
+    navbar_config = models.JSONField(
+        default=default_navbar_config,
+        blank=True,
+        help_text='Advanced navbar layout/style controls (v1).',
+    )
     footer_variant = models.CharField(max_length=20, choices=FOOTER_CHOICES, default='footer_1')
     theme = models.ForeignKey(Theme, on_delete=models.SET_NULL, null=True, blank=True, related_name='sites')
     onboarding_complete = models.BooleanField(default=False)
@@ -112,12 +190,28 @@ class Site(models.Model):
     newsletter_heading = models.CharField(max_length=100, blank=True, default='Subscribe to our newsletter')
     newsletter_blurb = models.CharField(max_length=300, blank=True, default="Monthly digest of what's new and exciting from us.")
 
+    # SaaS hook (unused in self-hosted): hostname this site answers to.
+    # When multi-tenant is enabled, site_resolver matches request host to this.
+    domain = models.CharField(max_length=255, blank=True, db_index=True)
+
     def __str__(self):
         return self.name
 
+    @property
+    def navbar_config_merged(self):
+        cfg = default_navbar_config()
+        raw = self.navbar_config if isinstance(self.navbar_config, dict) else {}
+        cfg.update(raw)
+        return cfg
+
     @classmethod
     def get_current(cls):
-        """Helper: there is only one site, return it (creating if needed)."""
+        """Return the singleton site (self-hosted). Creates it if missing.
+
+        Do not call this directly from views/commands; call
+        site_resolver.get_active_site(request) instead so the multi-tenant
+        switch stays centralized.
+        """
         site, _ = cls.objects.get_or_create(pk=1)
         return site
 
@@ -167,6 +261,24 @@ class Page(models.Model):
     def template_path(self):
         """Builds the template path: pages/home/home_1.html"""
         return f'pages/{self.page_type}/{self.variant}.html'
+
+    @property
+    def is_published(self):
+        """Published == publicly visible. Backed by is_enabled.
+
+        Draft pages (is_enabled=False) are visible to staff only.
+        """
+        return self.is_enabled
+
+    @property
+    def in_navbar(self):
+        """True if at least one visible navbar link points to this page."""
+        return self.nav_links.filter(is_visible=True).exists()
+
+    @property
+    def in_footer(self):
+        """True if at least one visible footer link points to this page."""
+        return self.footer_links.filter(is_visible=True).exists()
 
 
 class SoftDeleteManager(models.Manager):
@@ -290,3 +402,125 @@ class SectionItem(models.Model):
     class Meta:
         ordering = ['order']
         base_manager_name = 'objects'
+
+class NavLink(models.Model):
+    """A single navbar entry. Lives independently of pages.
+
+    A link targets EITHER an internal page (slug-change-safe) or a raw URL.
+    Top-level links have parent=None; dropdown items point to their parent via
+    `parent`. A top-level link that has children renders as a dropdown toggle.
+    `is_button` renders the link as a CTA button instead of a plain nav link.
+    """
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='nav_links')
+    parent = models.ForeignKey(
+        'self', null=True, blank=True,
+        on_delete=models.CASCADE, related_name='children',
+    )
+    label = models.CharField(max_length=100)
+    page = models.ForeignKey(
+        Page, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='nav_links',
+    )
+    url = models.CharField(
+        max_length=500, blank=True,
+        help_text='External URL or path. Used only when no page is selected.',
+    )
+    is_button = models.BooleanField(
+        default=False,
+        help_text='Render as a call-to-action button instead of a plain link.',
+    )
+    open_new_tab = models.BooleanField(default=False)
+
+    # Which side of the navbar this link sits in. Sub-items (children of a
+    # dropdown) ignore this and inherit from their parent.
+    SLOT_CHOICES = [
+        ('left', 'Left'),
+        ('center', 'Center'),
+        ('right', 'Right'),
+    ]
+    slot = models.CharField(
+        max_length=10, choices=SLOT_CHOICES, default='left',
+        help_text='Where this link sits in the navbar.',
+    )
+
+    order = models.IntegerField(default=0)
+    is_visible = models.BooleanField(default=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    objects = SoftDeleteManager()
+    all_objects = AllObjectsManager()
+
+    class Meta:
+        ordering = ['order']
+        base_manager_name = 'objects'
+
+    def __str__(self):
+        return self.label
+
+    @property
+    def href(self):
+        """Resolve the link target: page URL if set, else the raw url, else #."""
+        if self.page_id and self.page:
+            if self.page.slug == 'home':
+                return '/'
+            return f'/{self.page.slug}/'
+        return self.url or '#'
+
+    @property
+    def is_dropdown(self):
+        """A top-level link with visible children renders as a dropdown."""
+        if self.parent_id is not None:
+            return False
+        return self.children.filter(is_visible=True).exists()
+
+
+class FooterColumn(models.Model):
+    """A labelled column of links in a footer (for multi-column footer layouts)."""
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='footer_columns')
+    heading = models.CharField(max_length=100, blank=True)
+    order = models.IntegerField(default=0)
+    is_visible = models.BooleanField(default=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    objects = SoftDeleteManager()
+    all_objects = AllObjectsManager()
+
+    class Meta:
+        ordering = ['order']
+        base_manager_name = 'objects'
+
+    def __str__(self):
+        return self.heading or f'Column {self.order + 1}'
+
+
+class FooterLink(models.Model):
+    """A single link inside a FooterColumn. Same page-or-url target as NavLink."""
+    column = models.ForeignKey(FooterColumn, on_delete=models.CASCADE, related_name='links')
+    label = models.CharField(max_length=100)
+    page = models.ForeignKey(
+        Page, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='footer_links',
+    )
+    url = models.CharField(max_length=500, blank=True)
+    open_new_tab = models.BooleanField(default=False)
+    order = models.IntegerField(default=0)
+    is_visible = models.BooleanField(default=True)
+    deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
+
+    objects = SoftDeleteManager()
+    all_objects = AllObjectsManager()
+
+    class Meta:
+        ordering = ['order']
+        base_manager_name = 'objects'
+
+    def __str__(self):
+        return self.label
+
+    @property
+    def href(self):
+        if self.page_id and self.page:
+            if self.page.slug == 'home':
+                return '/'
+            return f'/{self.page.slug}/'
+        return self.url or '#'

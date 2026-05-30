@@ -4,7 +4,7 @@ from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.html import format_html
 
-from .models import Site, Page, Section, SectionItem, Theme
+from .models import Site, Page, Section, SectionItem, Theme, NavLink, FooterColumn, FooterLink
 from .page_templates import PAGE_TEMPLATES, PAGE_TEMPLATES_BY_KEY
 
 
@@ -416,3 +416,34 @@ class SiteAdmin(admin.ModelAdmin):
             'fields': ('onboarding_complete',)
         }),
     )
+
+
+class NavLinkChildInline(admin.TabularInline):
+    model = NavLink
+    fk_name = 'parent'
+    extra = 0
+    fields = ('label', 'page', 'url', 'order', 'is_visible')
+    verbose_name = 'Dropdown child link'
+    verbose_name_plural = 'Dropdown child links'
+
+
+@admin.register(NavLink)
+class NavLinkAdmin(admin.ModelAdmin):
+    list_display = ('label', 'parent', 'slot', 'is_button', 'order', 'is_visible')
+    list_editable = ('slot', 'order', 'is_visible')
+    list_filter = ('slot', 'is_button', 'is_visible')
+    inlines = [NavLinkChildInline]
+    fields = ('site', 'parent', 'label', 'slot', 'page', 'url', 'is_button', 'open_new_tab', 'order', 'is_visible')
+
+
+class FooterLinkInline(admin.TabularInline):
+    model = FooterLink
+    extra = 0
+    fields = ('label', 'page', 'url', 'order', 'is_visible')
+
+
+@admin.register(FooterColumn)
+class FooterColumnAdmin(admin.ModelAdmin):
+    list_display = ('heading', 'order', 'is_visible')
+    list_editable = ('order', 'is_visible')
+    inlines = [FooterLinkInline]

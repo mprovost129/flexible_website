@@ -14,6 +14,16 @@ A Django website template sold as a one-time-purchase product (Gumroad, Lemonsqu
 
 Everything possible is dynamic, customizable, and changeable through the admin interface. Users pick from pre-built variations rather than designing from scratch. Constrained choice (5 navbars, 5 footers, 8 themes, a handful of section types) keeps the product simple while feeling flexible.
 
+### Current Product Direction (v1)
+
+Long-term goal: near-total visual control of navbar layout/style/behavior.  
+v1 implementation strategy: controlled flexibility via one universal engine + validated settings.
+
+- Keep one universal navbar renderer (`templates/navbars/navbar_dynamic.html`)
+- Store advanced style knobs in `Site.navbar_config` (JSON)
+- Expose those knobs in Dashboard Site Settings
+- Apply values through CSS variables (predictable and safe)
+
 ## Architecture Overview
 
 ### Tech Stack
@@ -34,7 +44,15 @@ Everything possible is dynamic, customizable, and changeable through the admin i
 
 **Why sections + section items, NOT fixed slots:** Originally we had a ContentBlock model with named slots like `hero_title`, `feature_1_image`. The user wanted "3 images becomes 6 images by clicking add." That required restructuring into a Section model (a chunk of the page) containing repeatable SectionItem children. The number of children equals the number of items rendered. Reflows automatically based on `config.columns_desktop`.
 
-**Why one Site row (pk=1):** Self-hosted means each deployment serves one site. `Site.get_current()` returns the singleton. If we ever go multi-tenant SaaS, this is the first thing that breaks (intentionally documented as a known trade-off).
+**Why one Site row (pk=1):** Self-hosted means each deployment serves one site. `Site.get_current()` returns the singleton. **For multi-tenant readiness, never call `get_current()` from request-handling code; call `site_resolver.get_active_site(request)` instead.** The singleton assumption is now isolated to one function so the SaaS switch is a config change, not a refactor.
+
+## Site Resolver (multi-tenant readiness)
+
+`core/site_resolver.py` is the single source of truth for "which Site are we serving?". Request-handling code (views, context processors, robots.txt) calls `get_active_site(request)`. Management commands and admin (no request) still call `Site.get_current()` directly, which is correct since setup/seed always target the singleton. Today it always returns the singleton; the `MULTI_TENANT` flag plus an inert host-lookup block is ready. `Site.domain` field already exists (unused in self-hosted). Going multi-tenant: flip the flag, populate domains, and scope Page queries in PageView/sitemap to the active site.
+
+## Industry Packs
+
+`core/packs/` turns CBL from a generic template into "CBL for <industry>". A pack is pure declarative data; the applier builds real rows. `definitions.py` holds pack dicts in a `PACKS` registry (site identity + pages + sections). `applier.py` has `apply_pack(pack_key, site_name, replace)`, idempotent at page level (existing pages untouched unless `replace=True`), transaction-wrapped. `setup_site` offers packs as the first choice (applying one skips manual theme/nav/footer prompts; "Start blank" uses the manual flow). The `apply_pack` command runs it non-interactively (`--list`, `--site-name`, `--replace`). First pack: `contractor`. Add a pack = add a dict referencing existing theme_key/nav/footer/section types; it auto-appears in setup and `--list`. Packs are the expansion path and pricing justification.
 
 **Why per-Page sidebars were skipped:** Sidebars complicate the base template and onboarding. Not needed for the MVP, which is marketing-style single-page sites. Can be added later when justified by real content.
 
@@ -64,7 +82,9 @@ flexible-site/
 ├── templates/
 │   ├── base.html            # Shell with theme CSS injection
 │   ├── core/page.html       # Universal page renderer (loops sections)
-│   ├── navbars/nav_1-5.html # 5 navbar variations
+│   ├── navbars/navbar_dynamic.html # universal navbar engine
+│   ├── navbars/_navbar_slot.html  # slot renderer (left/center/right features)
+│   ├── navbars/_nav_link.html     # shared nav link/dropdown partial
 │   ├── footers/footer_1-5.html # 5 footer variations
 │   └── sections/            # Section type templates (mix and match per page)
 │       ├── hero/layout_1.html, layout_2.html
@@ -87,7 +107,7 @@ One row at pk=1. Created automatically by `Site.get_current()`. Holds global lay
 
 Fields: `name`, `tagline`, `logo` (Cloudinary), `navbar_variant`, `footer_variant`, `theme` (FK), `onboarding_complete`, social URLs (facebook/instagram/twitter/linkedin), `copyright_text`, newsletter fields.
 
-NAVBAR_CHOICES: nav_1 through nav_5 (Simple Header with Pills, Centered Pills Only, Three-Column with CTA Buttons, Dark with Search, Two-Tier Dark and Light).
+NAVBAR_CHOICES (presets, single engine): `classic`, `centered`, `app`, `dark`, `split`.
 
 FOOTER_CHOICES: footer_1 through footer_5 (Logo Center with Nav, Brand Left/Social Right, Centered Minimal, Multi-Column Sections, Newsletter Signup).
 
@@ -105,7 +125,7 @@ One row per page on the site (home, about, contact, etc.).
 
 Fields: `site` (FK), `page_type` (choice), `variant` (legacy field, no longer drives rendering), `slug` (unique), `title`, `is_enabled`, `order`.
 
-`unique_together = ('site', 'page_type')` — one home page per site.
+`unique_together` on `(site, page_type)` was removed. Multiple pages of the same type are allowed; uniqueness is by `slug`.
 
 ### Section
 
@@ -113,7 +133,7 @@ A chunk of a page (hero, image grid, CTA banner, etc.). Pages are stacks of sect
 
 Fields: `page` (FK), `section_type` (choice), `layout` (choice: layout_1/2/3), `order`, `is_visible`, `heading`, `subheading`, `background_color`, `primary_image` (Cloudinary), `config` (JSONField).
 
-SECTION_TYPES: hero, text_block, image_grid, feature_list, cta_banner, testimonials, gallery (last two have NO templates yet).
+SECTION_TYPES: hero, text_block, image_grid, feature_list, cta_banner, testimonials, gallery, contact_form, video_embed, pricing_table.
 
 Property `template_path`: returns `sections/{section_type}/{layout}.html`.
 Property `bootstrap_col_class`: reads `config.columns_desktop`, returns `col-12 col-md-{n}` where n is `12 // columns`. Default 3 columns → col-md-4.
@@ -127,7 +147,7 @@ Fields: `section` (FK), `order`, `title`, `text`, `image` (Cloudinary), `icon`, 
 ## How Variations Work
 
 ### Navbars and Footers
-The Site model stores a string like `nav_1`. base.html does `{% include "navbars/"|add:site.navbar_variant|add:".html" %}`. To add a 6th navbar: create `templates/navbars/nav_6.html` and add `('nav_6', 'Description')` to `NAVBAR_CHOICES`.
+Navbar rendering is now centralized: base.html always includes `templates/navbars/navbar_dynamic.html`. `Site.navbar_variant` is a preset key used by that engine (it does not map to separate template files anymore). Legacy `nav_*.html` / `navbar_*.html` templates were removed to avoid duplicate paths and confusion.
 
 ### Sections
 The Section model stores `section_type='image_grid'` and `layout='layout_1'`. The page template loops sections and does `{% include section.template_path %}` which resolves to `sections/image_grid/layout_1.html`. To add a new layout to an existing section type: create `templates/sections/image_grid/layout_2.html`. To add a new section type: create the folder + template AND add to `SECTION_TYPES`.
@@ -222,6 +242,79 @@ Key env var details in render.yaml:
 
 Customer's first deploy: clicks Blueprint, links GitHub repo, pastes Cloudinary credentials, waits ~5 min, opens Render shell, runs `python manage.py setup_site`.
 
+## Navigation: NavLink / FooterColumn / FooterLink
+
+Navbars and footers are editable structures, decoupled from the page list. **Creating a page does NOT auto-add it to the navbar.** A page's existence, its published state (`is_enabled`), and where it's linked from are three independent things.
+
+Models (all soft-deletable, same managers as Section):
+- `NavLink`: a navbar entry. Targets a `page` (slug-change-safe) OR a raw `url`. `parent` (self-FK) enables dropdowns; `is_button` renders as a CTA; `is_dropdown` property = top-level link with visible children; `href` resolves page-or-url. Top-level links carry a `slot` ('left'/'center'/'right').
+- `FooterColumn`: a labelled column. `FooterLink`: a link inside a column, same page-or-url target.
+- `Page` helpers: `is_published` (alias for is_enabled), `in_navbar`, `in_footer`.
+
+### One Navbar Engine (no per-variant templates)
+
+There is now a **single** universal navbar template: `templates/navbars/navbar_dynamic.html`. The five "navbar variants" the user sees in Site Settings (`nav_1`..`nav_5`) are presets that change settings — they no longer have their own template files. Everything that used to differ between variants (themes, sticky, shadow, link style, brand position, what's in the right zone) is driven by `Site` fields and `Site.navbar_config_merged`. The engine renders three desktop zones (left / center / right) plus a mobile menu.
+
+The engine uses two partials:
+- `templates/navbars/_brand.html` — the "brand" anchor (logo + site name). Renders nothing if both pieces are hidden or unavailable.
+- `templates/navbars/_navbar_slot.html` — per-zone renderer. Emits brand (if `site.brand_position == slot`), search bar (if `site.show_nav_search and site.nav_search_slot == slot`), nav links (filtered by `nav_slot` template filter), CTA button, and auth block (login/register/profile dropdown, in whichever slot `site.nav_auth_slot` names).
+- `templates/navbars/_nav_link.html` — one nav link (handles dropdown/button/plain branches). Emits `data-navlink-*` attributes that the editor JS reads.
+
+Dropdown children inherit their parent's slot (their own `slot` value is ignored at render time).
+
+### Edit-mode UX (the "everything on the page" principle)
+
+The whole goal of edit mode is **see-as-you-edit**: the page you see in edit mode is the same page visitors see, plus minimal floating affordances. There are NO modal dialogs, NO `prompt()`-based inputs, and NO separate edit screens for routine changes.
+
+**Add-item dropdown** (rendered in `base.html`, wired by `nav_edit.js` -> `wireHoverAddButtons`). One floating button cluster appears at the top-right of the navbar (and an equivalent at the footer) on hover:
+- Green "Add item ▾" — typed picker offering: Nav link, Nav button, Dropdown menu, Search bar, Login/Register block, CTA button. Each option creates a placeholder and the page reloads. The placeholder is auto-numbered if the chosen default label already exists in the same scope (parent), so clicking "Nav link" three times yields "New Link", "New Link 2", "New Link 3" — all distinct, all visible, all renamable.
+- Gear icon — links to the dashboard nav/footer settings page (`/cbl/navigation/` or `/cbl/footer/`). For complex changes (URL, OG image, etc.) that don't fit inline.
+- Eye icon — toggles `show_navbar` / `show_footer` so the user can hide the entire region.
+- Trash icon — clears all items (`/edit/navbar/clear/` or `/edit/footer/clear/`). Confirms before running.
+
+**Inline rename** (`startInlineRename` in nav_edit.js). Clicking the pencil on any nav link, dropdown child, footer link, brand text, or footer column heading replaces the label text in place with an `<input>` styled to match. Enter saves; Esc cancels; blur saves. Behind the scenes this POSTs to `/edit/.../update/` with `field=label` (or `heading` for footer columns).
+
+**Focus hint** (`setFocusHint` / `consumeFocusHint`). When the add-item flow creates a placeholder and reloads, it stashes `{kind, id}` in `sessionStorage` first. After the reload, `consumeFocusHint` finds that element and calls `startInlineRename` automatically — so adding an item drops the user straight into rename mode. No second click needed.
+
+**Brand controls** (top-right floating buttons inside `.brand-editable`):
+- Pencil — inline rename of the site name
+- Arrows — cycle `brand_position` (left → center → right → left)
+- Eye/+ — toggle `show_brand_name`
+
+**Page-status panel** (bottom-left floating card). Shows whether the current page is published / in navbar / in footer, with "Publish & add to navbar" headline shortcut plus granular publish/unpublish, add/remove navbar, add to footer.
+
+**Drag-to-reorder** nav links (top-level and dropdown children). Native HTML5 drag with a grip handle that appears on hover.
+
+### Endpoints (`core/nav_views.py`, all staff-only POST)
+
+Publish/link workflow:
+- `publish_page` / `unpublish_page` — toggle `is_enabled`
+- `add_page_to_navbar` — create a NavLink for a page
+- `publish_and_add_to_navbar` — the headline shortcut
+- `add_page_to_footer` — create a FooterLink (uses/creates first column)
+- `remove_page_from_navbar` — soft-delete the page's nav links
+
+NavLink CRUD:
+- `add_nav_link` — creates a new link. Accepts `label`, `url`, `slot`, `is_button`, `parent_id`. **Auto-numbers the label** if it collides with an existing live link in the same `(site, parent)` scope (e.g. "New Link" → "New Link 2"). Always returns `created: True`. The previous "dedupe on identical label/url" behavior was REMOVED because it broke the placeholder-then-rename UX.
+- `update_nav_link(pk)` — field-by-field update (label, url, slot, is_button, open_new_tab, is_visible)
+- `delete_nav_link(pk)` / `undo_delete_nav_link(pk)` — soft delete / restore
+- `reorder_nav_links` — POST `order` (csv of ids) and optional `parent_id`
+
+FooterColumn / FooterLink CRUD: same shape (add/update/delete/undo).
+
+Site chrome:
+- `update_site_chrome` — generic single-field update for `show_navbar`, `show_footer`, `show_nav_search`, `nav_search_slot`, `nav_cta_label`, `nav_cta_url`, `nav_cta_slot`, `show_nav_login`, `show_nav_register`, `show_nav_profile`, `nav_auth_slot`
+- `update_site_brand` — `name`, `brand_position`, `show_brand_logo`, `show_brand_name`
+- `clear_navbar_links` / `clear_footer_content`
+
+### Seeding
+
+`seed_site._seed_navigation` creates nav links + a footer column from enabled pages (idempotent). Migration `0008_backfill_navigation` does the same for existing sites on upgrade. Packs build navigation via `applier._apply_navigation`; a pack page goes into the navbar unless it sets `'in_navbar': False`; use `'nav_label'` to override the link text and `'nav_slot'` to choose left/center/right.
+
+### Mobile
+
+The mobile menu (offcanvas or collapse) is **intentionally hidden in edit mode** to prevent a second copy of the same editable controls from appearing. Only desktop edit mode is supported for now. Public mobile rendering is unaffected.
+
 ## Critical Gotchas
 
 **AUTH_USER_MODEL must stay set to `'users.User'`.** Without it, Django falls back to the default User model which has a username field. `create_superuser` calls will fail with "missing required positional argument: 'username'". This was a bug we already fixed.
@@ -248,7 +341,8 @@ Customer's first deploy: clicks Blueprint, links GitHub repo, pastes Cloudinary 
 - Theme model with 8 seeded themes
 - Page model with SEO/OG override fields
 - Section + SectionItem with `bootstrap_col_class` helper
-- 5 navbars (nav_1 through nav_5)
+- Universal navbar engine (`navbar_dynamic.html`) with 5 presets (`classic`, `centered`, `app`, `dark`, `split`)
+- Advanced navbar v1 controls in Site Settings backed by `Site.navbar_config` (size, spacing, radius, container width, color overrides)
 - 5 footers (footer_1 through footer_5)
 - Section templates across many types (hero, image_grid, feature_list, cta_banner, text_block, testimonials, gallery, contact_form, video_embed, pricing_table)
 - Universal `core/page.html` that renders any page from its sections
@@ -263,6 +357,8 @@ Customer's first deploy: clicks Blueprint, links GitHub repo, pastes Cloudinary 
 - Customer-facing README, `.env.example`, 404/500 pages, robots.txt, sitemap.xml
 - **Inline content editing** (edit_views.py + inline_edit.js): staff edit text and swap images live on the page via pencil/camera buttons. Whitelisted fields, staff-only, returns JSON. Drag-and-drop reorder for sections and items.
 - **Structural editing** (add/delete sections and items live): see dedicated section below.
+- **Site resolver** (`core/site_resolver.py`): centralizes site lookup for multi-tenant readiness; `Site.domain` field added (inert in self-hosted).
+- **Industry packs** (`core/packs/`): declarative starter-content bundles; `contractor` pack ships; `apply_pack` command + `setup_site` integration.
 
 ## Inline + Structural Editing System (important)
 
@@ -358,6 +454,15 @@ Adding a new page in Django admin requires picking page_type, slug, variant, tit
 
 ### 4. Sidebar variations (DEFERRED)
 We have NAVBAR_CHOICES and FOOTER_CHOICES but no SIDEBAR_CHOICES. The user explicitly chose to skip sidebars for the MVP. When added, follow the same pattern: templates/sidebars/sidebar_1-N.html, a `sidebar_variant` field on Site, and a `show_sidebar` flag on Page to opt in per page. Bootstrap example sidebars 1, 2, and 3 from getbootstrap.com are good starting points.
+
+### 5. Toward "Everything Editable" (post-v1)
+
+v1 now has a controlled navbar config layer. Remaining expansion targets:
+- Per-breakpoint controls (desktop/tablet/mobile independently)
+- Visual style-editor UI with grouped controls and live preview
+- Menu behavior controls (offcanvas/drawer styles, animation presets)
+- Additional component-level variants (auth block/search/CTA design sets)
+- Save/load named navbar presets per site
 
 ### 5. Polish for production
 - Better 404 / 500 error pages

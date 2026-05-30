@@ -88,19 +88,10 @@
     // The home page must not be deletable (server enforces this too).
     if (pageSlug === 'home') return;
 
-    // The toolbar is created by inline_edit.js on DOMContentLoaded. It may not
-    // exist yet when this runs, so poll briefly for it.
-    var tries = 0;
-    var timer = setInterval(function () {
-      var toolbar = document.getElementById('edit-toolbar');
-      tries += 1;
-      if (toolbar) {
-        clearInterval(timer);
-        addDeletePageButton(toolbar, pageId);
-      } else if (tries > 20) {
-        clearInterval(timer);  // give up after ~2s
-      }
-    }, 100);
+    // The staff toolbar is rendered server-side in base.html, so we can attach
+    // immediately on DOMContentLoaded.
+    var toolbar = document.getElementById('staff-toolbar');
+    if (toolbar) addDeletePageButton(toolbar, pageId);
   }
 
   function addDeletePageButton(toolbar, pageId) {

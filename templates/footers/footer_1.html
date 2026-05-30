@@ -2,7 +2,7 @@
 
 <div class="container">
     <footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
-        <p class="text-body-secondary">© {% now "Y" %} {{ site.copyright_text }}</p>
+        <p class="text-body-secondary">&copy; {% now "Y" %} {{ site.copyright_text }}</p>
         <a href="{% url 'core:home' %}"
            class="col-md-4 d-flex align-items-center justify-content-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
             {% if site.logo %}
@@ -12,13 +12,7 @@
             {% endif %}
         </a>
         <ul class="nav col-md-4 justify-content-end">
-            {% for p in site.pages.all %}
-                {% if p.is_enabled %}
-                    <li class="nav-item">
-                        <a href="{% url 'core:page' p.slug %}" class="nav-link px-2 text-body-secondary">{{ p.title }}</a>
-                    </li>
-                {% endif %}
-            {% endfor %}
+            {% include "footers/_footer_links.html" with link_class="px-2 text-body-secondary" %}
         </ul>
     </footer>
 </div>

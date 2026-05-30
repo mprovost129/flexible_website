@@ -313,13 +313,9 @@
   // Edit mode toolbar
   // -------------------------------------------------------------------------
   function renderToolbar() {
-    var bar = document.createElement('div');
-    bar.id = 'edit-toolbar';
-    bar.innerHTML =
-      '<i class="bi bi-pencil-square me-1"></i>' +
-      '<span class="fw-semibold">Edit Mode</span>' +
-      '<a href="/admin/" class="btn btn-sm btn-outline-light ms-3" target="_blank" rel="noopener">Admin panel</a>';
-    document.body.appendChild(bar);
+    // No-op. The staff toolbar is rendered server-side in base.html so it is
+    // present even when edit mode is off (so staff can turn it back on).
+    // Kept as a function for backward compatibility with the boot sequence.
   }
 
   // -------------------------------------------------------------------------

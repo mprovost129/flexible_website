@@ -123,3 +123,84 @@ def remaining_lines(text):
             continue
         rest.append(line)
     return '\n'.join(rest)
+
+
+@register.filter
+def nav_slot(nav_links, slot):
+    """Return top-level visible nav links sitting in a given slot.
+
+    Filters at template render time so navbar templates can do:
+        {% for link in site.nav_links.all|nav_slot:"left" %}
+
+    Sub-items (links with a parent) are excluded; they appear only inside
+    their parent's dropdown menu.
+    """
+    if nav_links is None:
+        return []
+    out = []
+    seen = set()
+    for link in nav_links:
+        if not getattr(link, 'is_visible', False):
+            continue
+        if getattr(link, 'parent_id', None):
+            continue
+        if getattr(link, 'slot', 'left') == slot:
+            key = (
+                (getattr(link, 'label', '') or '').strip().lower(),
+                (getattr(link, 'href', '') or '').strip(),
+            )
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(link)
+    return out
+
+
+@register.filter
+def unique_visible_children(children):
+    """Return visible child links de-duplicated by (label, href)."""
+    if children is None:
+        return []
+    out = []
+    seen = set()
+    for child in children:
+        if not getattr(child, 'is_visible', False):
+            continue
+        key = (
+            (getattr(child, 'label', '') or '').strip().lower(),
+            (getattr(child, 'href', '') or '').strip(),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(child)
+    return out
+
+
+@register.filter
+def slot_block_order(site, slot):
+    """Return navbar block render order for one slot.
+
+    Blocks:
+      - brand
+      - search
+      - links
+      - cta
+      - auth
+    """
+    default = ['brand', 'search', 'links', 'cta', 'auth']
+    if not site:
+        return default
+    try:
+        cfg = site.navbar_config_merged if hasattr(site, 'navbar_config_merged') else {}
+        slot_order = cfg.get('slot_order', {}) if isinstance(cfg, dict) else {}
+        order = slot_order.get(slot, []) if isinstance(slot_order, dict) else []
+        order = [str(x).strip().lower() for x in order if str(x).strip()]
+        allowed = {'brand', 'search', 'links', 'cta', 'auth'}
+        filtered = [x for x in order if x in allowed]
+        for token in default:
+            if token not in filtered:
+                filtered.append(token)
+        return filtered
+    except Exception:
+        return default

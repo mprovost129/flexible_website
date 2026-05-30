@@ -1,0 +1,33 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ title }} | CBL{% endblock %}
+{% block heading %}{{ title }}{% endblock %}
+{% block content %}
+<div class="cbl-card p-4">
+    {% if subtitle %}<p class="text-muted">{{ subtitle }}</p>{% endif %}
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+        <div class="row g-3">
+            {% for field in form %}
+            <div class="col-md-{% if field.field.widget.input_type == 'checkbox' %}12{% elif field.name == 'robots_txt' or field.name == 'config' or field.name == 'subheading' or field.name == 'og_description' %}12{% else %}6{% endif %}">
+                {% if field.field.widget.input_type == 'checkbox' %}
+                <div class="form-check mt-2">
+                    {{ field }}
+                    <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                </div>
+                {% else %}
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% endif %}
+                {% if field.help_text %}<div class="form-help-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="d-flex gap-2 justify-content-end mt-4">
+            {% if back_url %}<a href="{{ back_url }}" class="btn btn-outline-secondary">Cancel</a>{% endif %}
+            <button type="submit" class="btn btn-primary">{{ submit_label|default:'Save' }}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -10,20 +10,24 @@
                     <span class="fs-4 fw-bold">{{ site.name }}</span>
                 {% endif %}
             </a>
-            <p class="text-body-secondary">© {% now "Y" %} {{ site.copyright_text }}</p>
+            <p class="text-body-secondary">&copy; {% now "Y" %} {{ site.copyright_text }}</p>
         </div>
-        <div class="col mb-3">
-            <h5>Navigate</h5>
-            <ul class="nav flex-column">
-                {% for p in site.pages.all %}
-                    {% if p.is_enabled %}
-                        <li class="nav-item mb-2">
-                            <a href="{% url 'core:page' p.slug %}" class="nav-link p-0 text-body-secondary">{{ p.title }}</a>
-                        </li>
-                    {% endif %}
-                {% endfor %}
-            </ul>
-        </div>
+        {% for column in site.footer_columns.all %}
+            {% if column.is_visible %}
+                <div class="col mb-3 footer-col-editable" data-footercol-id="{{ column.id }}" data-footercol-visible="{{ column.is_visible|yesno:'1,0' }}">
+                    <h5>{{ column.heading }}</h5>
+                    <ul class="nav flex-column">
+                        {% for fl in column.links.all %}
+                            {% if fl.is_visible %}
+                                <li class="nav-item mb-2 footer-link-editable" data-footerlink-id="{{ fl.id }}" data-footerlink-label="{{ fl.label }}" data-footerlink-newtab="{{ fl.open_new_tab|yesno:'1,0' }}" data-footerlink-visible="{{ fl.is_visible|yesno:'1,0' }}" data-footerlink-page-id="{{ fl.page_id|default:'' }}">
+                                    <a href="{{ fl.href }}" class="nav-link p-0 text-body-secondary"{% if fl.open_new_tab %} target="_blank" rel="noopener"{% endif %}>{{ fl.label }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endfor %}
         <div class="col mb-3">
             <h5>Connect</h5>
             <ul class="nav flex-column">
@@ -38,17 +42,6 @@
                 {% endif %}
                 {% if site.linkedin_url %}
                     <li class="nav-item mb-2"><a href="{{ site.linkedin_url }}" class="nav-link p-0 text-body-secondary" target="_blank" rel="noopener">LinkedIn</a></li>
-                {% endif %}
-            </ul>
-        </div>
-        <div class="col mb-3">
-            <h5>Account</h5>
-            <ul class="nav flex-column">
-                {% if user.is_authenticated %}
-                    <li class="nav-item mb-2"><a href="{% url 'logout' %}" class="nav-link p-0 text-body-secondary">Logout</a></li>
-                {% else %}
-                    <li class="nav-item mb-2"><a href="{% url 'login' %}" class="nav-link p-0 text-body-secondary">Login</a></li>
-                    <li class="nav-item mb-2"><a href="{% url 'password_reset' %}" class="nav-link p-0 text-body-secondary">Reset Password</a></li>
                 {% endif %}
             </ul>
         </div>

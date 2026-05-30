@@ -1,0 +1,41 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Pages | CBL{% endblock %}
+{% block heading %}Pages{% endblock %}
+{% block content %}
+<div class="cbl-card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-0">Website Pages</h2>
+            <div class="text-muted small">Add, update, delete, preview, and publish pages.</div>
+        </div>
+        <a href="{% url 'core:dashboard_page_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Page</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table cbl-table mb-0">
+            <thead><tr><th>Order</th><th>Page</th><th>Type</th><th>Status</th><th>Sections</th><th>Menu</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            {% for page in pages %}
+            <tr>
+                <td>{{ page.order }}</td>
+                <td><strong>{{ page.title|default:page.slug }}</strong><br><span class="text-muted small">/{{ page.slug }}/</span></td>
+                <td>{{ page.get_page_type_display }}<br><span class="text-muted small">{{ page.variant }}</span></td>
+                <td>{% if page.is_enabled %}<span class="badge text-bg-success">Published</span>{% else %}<span class="badge text-bg-secondary">Draft</span>{% endif %}</td>
+                <td>{{ page.section_count }}</td>
+                <td>{% if page.in_navbar %}<span class="badge text-bg-primary">Nav</span>{% endif %} {% if page.in_footer %}<span class="badge text-bg-info">Footer</span>{% endif %}</td>
+                <td>
+                    <div class="cbl-actions">
+                        <a href="{% if page.slug == 'home' %}/{% else %}/{% endif %}{% if page.slug != 'home' %}{{ page.slug }}/{% endif %}" class="btn btn-sm btn-outline-secondary" target="_blank">Preview</a>
+                        <a href="{% url 'core:dashboard_page_edit' page.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'core:dashboard_page_toggle_publish' page.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'core:dashboard_pages' %}"><button class="btn btn-sm btn-outline-warning">{% if page.is_enabled %}Unpublish{% else %}Publish{% endif %}</button></form>
+                        {% if page.slug != 'home' %}<form method="post" action="{% url 'core:dashboard_page_delete' page.pk %}" onsubmit="return confirm('Delete this page?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete</button></form>{% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="text-muted">No pages yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

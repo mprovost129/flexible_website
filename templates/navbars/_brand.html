@@ -1,0 +1,32 @@
+{% comment %}
+Renders the navbar "brand" (logo and/or site name) based on Site settings.
+If both pieces are hidden (or absent), this renders nothing so the slot it
+sits in collapses cleanly.
+
+Expects in context:
+  site                 -- the Site (cms_site)
+  brand_class          -- optional extra classes for the wrapper anchor
+  brand_text_class     -- optional extra classes for the site-name span
+
+The check at the top covers all "is there anything to show" cases:
+  - logo enabled AND uploaded, OR
+  - name enabled AND non-empty
+{% endcomment %}
+{% if site %}
+{% if site.show_brand_logo and site.logo or site.show_brand_name and site.name %}
+    <a href="{% url 'core:home' %}"
+       class="d-flex align-items-center text-decoration-none link-body-emphasis brand-editable {{ brand_class }}"
+       data-brand-name="{{ site.name|default:'My Site' }}"
+       data-brand-position="{{ site.brand_position|default:'left' }}"
+       data-brand-show-name="{{ site.show_brand_name|yesno:'1,0' }}"
+       data-brand-show-logo="{{ site.show_brand_logo|yesno:'1,0' }}"
+       data-brand-logo-url="{% if site.logo %}{{ site.logo.url }}{% endif %}">
+        {% if site.show_brand_logo and site.logo %}
+            <img src="{{ site.logo.url }}" alt="{{ site.name }}" height="32"{% if site.show_brand_name and site.name %} class="me-2"{% endif %}>
+        {% endif %}
+        {% if site.show_brand_name and site.name %}
+            <span class="fs-4 {{ brand_text_class }}">{{ site.name }}</span>
+        {% endif %}
+    </a>
+{% endif %}
+{% endif %}

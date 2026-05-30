@@ -11,19 +11,19 @@
     <!-- ------------------------------------------------------------------ -->
     {% if page %}
         {% with page_title=page.og_title|default:page.title %}
-        <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{{ cms_site.name|default:'My Site' }}{% endblock %}</title>
+        <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{% if cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}{% endblock %}</title>
         {% endwith %}
     {% else %}
-        <title>{% block title_fallback %}{{ cms_site.name|default:'My Site' }}{% endblock %}</title>
+        <title>{% block title_fallback %}{% if cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}{% endblock %}</title>
     {% endif %}
 
     <!-- ------------------------------------------------------------------ -->
     <!-- Primary meta                                                        -->
     <!-- ------------------------------------------------------------------ -->
     {% if page %}
-        <meta name="description" content="{{ page.og_description|default:cms_site.tagline|default:'' }}">
+        <meta name="description" content="{% if page.og_description %}{{ page.og_description }}{% elif cms_site %}{{ cms_site.tagline|default:'' }}{% endif %}">
     {% else %}
-        <meta name="description" content="{% block meta_description %}{{ cms_site.tagline|default:'' }}{% endblock %}">
+        <meta name="description" content="{% block meta_description %}{% if cms_site %}{{ cms_site.tagline|default:'' }}{% endif %}{% endblock %}">
     {% endif %}
     <link rel="canonical" href="{{ request.build_absolute_uri }}">
 
@@ -43,8 +43,8 @@
     <meta property="og:site_name"   content="{{ cms_site.name }}">
     <meta property="og:url"         content="{{ request.build_absolute_uri }}">
     {% if page %}
-    <meta property="og:title"       content="{{ page.og_title|default:page.title|default:cms_site.name }}">
-    <meta property="og:description" content="{{ page.og_description|default:cms_site.tagline|default:'' }}">
+    <meta property="og:title"       content="{% if page.og_title %}{{ page.og_title }}{% elif page.title %}{{ page.title }}{% elif cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}">
+    <meta property="og:description" content="{% if page.og_description %}{{ page.og_description }}{% elif cms_site %}{{ cms_site.tagline|default:'' }}{% endif %}">
     {% if page.og_image %}
     <meta property="og:image"       content="{{ page.og_image.url }}">
     {% elif cms_site.og_image %}
@@ -64,17 +64,17 @@
     <!-- ------------------------------------------------------------------ -->
     <meta name="twitter:card" content="summary_large_image">
     {% if page %}
-    <meta name="twitter:title"       content="{{ page.og_title|default:page.title|default:cms_site.name }}">
-    <meta name="twitter:description" content="{{ page.og_description|default:cms_site.tagline|default:'' }}">
+    <meta name="twitter:title"       content="{% if page.og_title %}{{ page.og_title }}{% elif page.title %}{{ page.title }}{% elif cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}">
+    <meta name="twitter:description" content="{% if page.og_description %}{{ page.og_description }}{% elif cms_site %}{{ cms_site.tagline|default:'' }}{% endif %}">
     {% if page.og_image %}
     <meta name="twitter:image"       content="{{ page.og_image.url }}">
     {% elif cms_site.og_image %}
     <meta name="twitter:image"       content="{{ cms_site.og_image.url }}">
     {% endif %}
     {% else %}
-    <meta name="twitter:title"       content="{{ cms_site.name }}">
-    <meta name="twitter:description" content="{{ cms_site.tagline|default:'' }}">
-    {% if cms_site.og_image %}
+    <meta name="twitter:title"       content="{% if cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}">
+    <meta name="twitter:description" content="{% if cms_site %}{{ cms_site.tagline|default:'' }}{% endif %}">
+    {% if cms_site and cms_site.og_image %}
     <meta name="twitter:image"       content="{{ cms_site.og_image.url }}">
     {% endif %}
     {% endif %}
@@ -105,6 +105,16 @@
             {% if cms_site.theme.heading_color %}--bs-heading-color: {{ cms_site.theme.heading_color }};{% endif %}
             {% if cms_site.theme.link_color %}--bs-link-color: {{ cms_site.theme.link_color }};{% endif %}
             --bs-body-font-family: {{ cms_site.theme.font_family|safe }};
+
+            /* CBL shell regions: standard mode (main white, chrome themed) */
+            --cbl-main-bg: #ffffff;
+            --cbl-main-text: {{ cms_site.theme.body_color }};
+            --cbl-main-link: {% if cms_site.theme.link_color %}{{ cms_site.theme.link_color }}{% else %}{{ cms_site.theme.primary }}{% endif %};
+            --cbl-main-link-hover: {{ cms_site.theme.primary }};
+            --cbl-chrome-bg: {% if cms_site.navbar_theme == 'dark' %}#111827{% elif cms_site.navbar_theme == 'light' %}#ffffff{% elif cms_site.navbar_theme == 'transparent' %}transparent{% else %}{{ cms_site.theme.primary }}{% endif %};
+            --cbl-chrome-text: {% if cms_site.navbar_theme == 'light' %}#212529{% else %}#ffffff{% endif %};
+            --cbl-chrome-link: {% if cms_site.navbar_theme == 'light' %}#212529{% else %}#ffffff{% endif %};
+            --cbl-chrome-link-hover: {% if cms_site.navbar_theme == 'light' %}#000000{% else %}#f2f2f2{% endif %};
         }
         {% if cms_site.theme.heading_font_family %}
         h1, h2, h3, h4, h5, h6,
@@ -127,13 +137,105 @@
     </style>
     {% endif %}
 
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=20260529-gooterfix">
     {% block extra_css %}{% endblock %}
 </head>
-<body{% if request.user.is_staff %} class="edit-mode"{% endif %}>
+{% if cms_site %}{% with bnc=cms_site.navbar_config_merged %}
+<body{% if edit_mode_active or request.user.is_authenticated and request.user.is_staff %}
+     class="{% if edit_mode_active %}edit-mode {% endif %}{% if request.user.is_authenticated and request.user.is_staff %}staff-user{% endif %}{% if edit_mode_active %} cbl-spacing-{{ bnc.section_spacing|default:'normal' }}{% endif %}"{% endif %}
+     {% if edit_mode_active %}
+     data-site-theme-id="{{ cms_site.theme_id|default:'' }}"
+     data-section-spacing="{{ bnc.section_spacing|default:'normal' }}"
+     data-body-bg="{{ bnc.body_bg_override|default:'' }}"
+     {% endif %}
+     {% if bnc.body_bg_override %}style="background-color: {{ bnc.body_bg_override }};"{% endif %}>
+{% endwith %}{% else %}
+<body{% if edit_mode_active or request.user.is_authenticated and request.user.is_staff %} class="{% if edit_mode_active %}edit-mode {% endif %}{% if request.user.is_authenticated and request.user.is_staff %}staff-user{% endif %}"{% endif %}>
+{% endif %}
+
+    {# Staff toolbar: always present for staff (even when edit mode is off) so they can toggle back on. #}
+    {% if request.user.is_authenticated and request.user.is_staff %}
+    <div id="staff-toolbar" data-edit-active="{{ edit_mode_active|yesno:'1,0' }}">
+        <span class="staff-toolbar-label">
+            <i class="bi bi-{% if edit_mode_active %}pencil-square{% else %}eye{% endif %}"></i>
+            {% if edit_mode_active %}Editing{% else %}Previewing{% endif %}
+        </span>
+        <button type="button" id="staff-toggle-edit" class="btn btn-sm {% if edit_mode_active %}btn-light{% else %}btn-warning{% endif %}">
+            {% if edit_mode_active %}Exit edit mode{% else %}Edit page{% endif %}
+        </button>
+        <a href="{% url 'core:dashboard_home' %}" class="btn btn-sm btn-outline-light" title="Open CBL dashboard">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a href="/admin/" class="btn btn-sm btn-outline-light" target="_blank" rel="noopener" title="Open advanced admin in new tab">
+            <i class="bi bi-gear"></i>
+        </a>
+    </div>
+    {% endif %}
+
+    {% if edit_mode_active %}
+    <aside id="edit-sidebar" aria-label="Edit inspector">
+        <div class="edit-sidebar-header">
+            <div>
+                <div class="edit-sidebar-kicker">Inspector</div>
+                <h2 class="edit-sidebar-title">Selection</h2>
+            </div>
+        </div>
+        <div id="edit-sidebar-body" class="edit-sidebar-body">
+            <p class="text-body-secondary mb-0">Select a page area, section, nav item, or footer item to edit its settings.</p>
+        </div>
+    </aside>
+    {% endif %}
 
     {% if cms_site %}
-        {% include "navbars/"|add:cms_site.navbar_variant|add:".html" with site=cms_site %}
+        {% with nc=cms_site.navbar_config_merged %}
+        <div id="navbar-region" class="{% if edit_mode_active %}chrome-region{% endif %}" data-visible="{{ cms_site.show_navbar|yesno:'1,0' }}"
+             {% if edit_mode_active %}
+             data-nav-theme="{{ cms_site.navbar_theme }}"
+             data-nav-sticky="{{ cms_site.navbar_sticky|yesno:'1,0' }}"
+             data-nav-shadow="{{ cms_site.navbar_shadow|yesno:'1,0' }}"
+             data-nav-container="{{ cms_site.navbar_container }}"
+             data-nav-height="{{ nc.height_px|default:76 }}"
+             data-nav-bg="{{ nc.bg_color|default:'' }}"
+             data-nav-text-color="{{ nc.text_color|default:'' }}"
+             data-nav-link-color="{{ nc.link_color|default:'' }}"
+             data-nav-link-style="{{ nc.link_style|default:'pill' }}"
+             data-nav-mobile-style="{{ nc.mobile_menu_style|default:'collapse' }}"
+             data-nav-scroll-effect="{{ nc.scroll_effect|default:'none' }}"
+             {% endif %}>
+            {% if cms_site.show_navbar or edit_mode_active %}
+                {% include "navbars/navbar_dynamic.html" with site=cms_site %}
+            {% endif %}
+            {% if edit_mode_active %}
+            <div class="chrome-hover-add chrome-hover-add-navbar">
+                <div class="chrome-hover-add-group">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-success btn-sm dropdown-toggle chrome-hover-add-btn" data-kind="navbar" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-plus-lg"></i> Add item
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end chrome-hover-add-menu">
+                            <li><button type="button" class="dropdown-item" data-nav-add-action="link"><i class="bi bi-link-45deg me-2"></i>Nav link</button></li>
+                            <li><button type="button" class="dropdown-item" data-nav-add-action="button"><i class="bi bi-square-fill me-2"></i>Nav button</button></li>
+                            <li><button type="button" class="dropdown-item" data-nav-add-action="dropdown"><i class="bi bi-menu-button-wide me-2"></i>Dropdown menu</button></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button type="button" class="dropdown-item" data-nav-add-action="search"><i class="bi bi-search me-2"></i>Search bar</button></li>
+                            <li><button type="button" class="dropdown-item" data-nav-add-action="auth"><i class="bi bi-person-circle me-2"></i>Login/Register block</button></li>
+                            <li><button type="button" class="dropdown-item" data-nav-add-action="cta"><i class="bi bi-stars me-2"></i>CTA button</button></li>
+                        </ul>
+                    </div>
+                    <a href="{% url 'core:dashboard_nav' %}" class="btn btn-light btn-sm chrome-hover-add-extra" title="Open navigation settings">
+                        <i class="bi bi-gear"></i>
+                    </a>
+                    <button type="button" class="btn btn-light btn-sm chrome-hover-add-extra" data-chrome-toggle="show_navbar" data-chrome-current="{{ cms_site.show_navbar|yesno:'1,0' }}" title="Hide navbar">
+                        <i class="bi bi-{% if cms_site.show_navbar %}eye{% else %}eye-slash{% endif %}"></i>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm chrome-hover-add-extra" data-chrome-clear="navbar" title="Delete all navbar items">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endwith %}
     {% endif %}
 
     <main>
@@ -152,14 +254,50 @@
     </main>
 
     {% if cms_site %}
-        {% include "footers/"|add:cms_site.footer_variant|add:".html" with site=cms_site %}
+        <div id="footer-region" class="{% if edit_mode_active %}chrome-region{% endif %}" data-visible="{{ cms_site.show_footer|yesno:'1,0' }}"
+             {% if edit_mode_active %}
+             data-footer-variant="{{ cms_site.footer_variant }}"
+             data-footer-copyright="{{ cms_site.copyright_text }}"
+             data-footer-facebook="{{ cms_site.facebook_url }}"
+             data-footer-instagram="{{ cms_site.instagram_url }}"
+             data-footer-twitter="{{ cms_site.twitter_url }}"
+             data-footer-linkedin="{{ cms_site.linkedin_url }}"
+             {% endif %}
+             style="background: var(--cbl-chrome-bg, var(--bs-primary)); color: var(--cbl-chrome-text, #fff);">
+            {% if cms_site.show_footer or edit_mode_active %}
+                {% include "footers/"|add:cms_site.footer_variant|add:".html" with site=cms_site %}
+            {% endif %}
+            {% if edit_mode_active %}
+            <div class="chrome-hover-add chrome-hover-add-footer">
+                <div class="chrome-hover-add-group">
+                    <button type="button" class="btn btn-success btn-sm chrome-hover-add-btn" data-chrome-add-footer-column>
+                        <i class="bi bi-plus-lg"></i> Add column
+                    </button>
+                    <a href="{% url 'core:dashboard_footer' %}" class="btn btn-light btn-sm chrome-hover-add-extra" title="Open footer settings">
+                        <i class="bi bi-gear"></i>
+                    </a>
+                    <button type="button" class="btn btn-light btn-sm chrome-hover-add-extra" data-chrome-toggle="show_footer" data-chrome-current="{{ cms_site.show_footer|yesno:'1,0' }}" title="Hide footer">
+                        <i class="bi bi-{% if cms_site.show_footer %}eye{% else %}eye-slash{% endif %}"></i>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm chrome-hover-add-extra" data-chrome-clear="footer" title="Delete all footer items">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
     {% endif %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
-    {% if request.user.is_staff %}
-    <script src="{% static 'js/inline_edit.js' %}"></script>
-    <script src="{% static 'js/structural_edit.js' %}"></script>
+    {% if request.user.is_authenticated and request.user.is_staff %}
+    <script src="{% static 'js/staff_toolbar.js' %}?v=20260529-g"></script>
+    {% endif %}
+    {% if edit_mode_active %}
+    <script src="{% static 'js/inline_edit.js' %}?v=20260529-g"></script>
+    <script src="{% static 'js/structural_edit.js' %}?v=20260529-g"></script>
+    <script src="{% static 'js/nav_edit.js' %}?v=20260529-g"></script>
+    <script src="{% static 'js/settings_sidebar.js' %}?v=20260529-g"></script>
     {% endif %}
     {% block extra_js %}{% endblock %}
 

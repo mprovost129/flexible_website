@@ -35,7 +35,39 @@ class Command(BaseCommand):
         if not home.sections.exists():
             self._create_default_sections(home)
 
+        # 5. Navbar + footer links (only if none exist yet)
+        self._seed_navigation(site)
+
         self.stdout.write(self.style.SUCCESS('Site seeded successfully.'))
+
+    def _seed_navigation(self, site):
+        """Create navbar links and a footer column from enabled pages.
+
+        Idempotent: only runs if the site has no nav links yet, so it never
+        clobbers a user's customized navigation.
+        """
+        from core.models import NavLink, FooterColumn, FooterLink
+
+        if NavLink.objects.filter(site=site).exists():
+            return
+
+        enabled_pages = site.pages.filter(is_enabled=True).order_by('order')
+        for i, page in enumerate(enabled_pages):
+            NavLink.objects.create(
+                site=site, page=page,
+                label=page.title or page.get_page_type_display(),
+                order=i, is_visible=True,
+            )
+
+        # A single "Navigate" footer column mirroring the nav, if none exist
+        if not FooterColumn.objects.filter(site=site).exists() and enabled_pages:
+            col = FooterColumn.objects.create(site=site, heading='Navigate', order=0)
+            for i, page in enumerate(enabled_pages):
+                FooterLink.objects.create(
+                    column=col, page=page,
+                    label=page.title or page.get_page_type_display(),
+                    order=i,
+                )
 
     def _seed_themes(self):
         themes = [

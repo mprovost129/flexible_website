@@ -1,0 +1,59 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}CBL Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="cbl-card cbl-stat"><div class="text-muted small">Pages</div><div class="value">{{ page_count }}</div></div></div>
+    <div class="col-md-3"><div class="cbl-card cbl-stat"><div class="text-muted small">Published</div><div class="value">{{ published_page_count }}</div></div></div>
+    <div class="col-md-3"><div class="cbl-card cbl-stat"><div class="text-muted small">Drafts</div><div class="value">{{ draft_page_count }}</div></div></div>
+    <div class="col-md-3"><div class="cbl-card cbl-stat"><div class="text-muted small">Menu Links</div><div class="value">{{ nav_link_count }}</div></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="cbl-card p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">Recent Pages</h2>
+                <a href="{% url 'core:dashboard_pages' %}" class="btn btn-outline-secondary btn-sm">Manage all</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table cbl-table mb-0">
+                    <thead><tr><th>Page</th><th>Status</th><th>Sections</th><th></th></tr></thead>
+                    <tbody>
+                    {% for page in pages %}
+                    <tr>
+                        <td><strong>{{ page.title|default:page.slug }}</strong><br><span class="text-muted small">/{{ page.slug }}/</span></td>
+                        <td>{% if page.is_enabled %}<span class="badge text-bg-success">Published</span>{% else %}<span class="badge text-bg-secondary">Draft</span>{% endif %}</td>
+                        <td>{{ page.section_count }}</td>
+                        <td class="text-end"><a href="{% url 'core:dashboard_page_edit' page.pk %}" class="btn btn-sm btn-outline-primary">Edit</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted">No pages yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="cbl-card p-3 mb-4">
+            <h2 class="h5">Launch Checklist</h2>
+            <ul class="list-unstyled mb-0 small">
+                <li class="mb-2"><i class="bi bi-check2-circle text-success"></i> Set business name and logo</li>
+                <li class="mb-2"><i class="bi bi-check2-circle text-success"></i> Create pages</li>
+                <li class="mb-2"><i class="bi bi-check2-circle text-success"></i> Add navbar/footer links</li>
+                <li class="mb-2"><i class="bi bi-check2-circle text-success"></i> Publish pages</li>
+                <li><i class="bi bi-check2-circle text-success"></i> Preview before deploy</li>
+            </ul>
+        </div>
+        <div class="cbl-card p-3">
+            <h2 class="h5">Quick Actions</h2>
+            <div class="d-grid gap-2">
+                <a href="{% url 'core:dashboard_settings' %}" class="btn btn-outline-primary">Edit Site Settings</a>
+                <a href="{% url 'core:dashboard_nav_create' %}" class="btn btn-outline-primary">Add Nav Link</a>
+                <a href="{% url 'core:dashboard_footer_column_create' %}" class="btn btn-outline-primary">Add Footer Column</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

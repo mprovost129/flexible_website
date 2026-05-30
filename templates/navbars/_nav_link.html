@@ -1,0 +1,80 @@
+{% load core_extras %}
+{% comment %}
+Renders one top-level nav link as a Bootstrap nav-item.
+
+Expects in context:
+  link        -- a NavLink instance (top-level)
+  link_class  -- optional extra classes for the <a>
+
+For staff (edit mode), each link gets data-navlink-id and an edit/delete
+affordance wired by nav_edit.js. The is_button / dropdown / plain-link
+branches are unchanged for the public.
+{% endcomment %}
+{% with href=link.href %}
+{% if link.is_dropdown %}
+    <li class="nav-item dropdown nav-editable"
+        data-navlink-id="{{ link.id }}"
+        data-navlink-label="{{ link.label }}"
+        data-navlink-href="{{ href }}"
+        data-navlink-button="0"
+        data-navlink-slot="{{ link.slot }}"
+        data-navlink-newtab="{{ link.open_new_tab|yesno:'1,0' }}"
+        data-navlink-visible="{{ link.is_visible|yesno:'1,0' }}"
+        data-navlink-page-id="{{ link.page_id|default:'' }}">
+        <a class="nav-link dropdown-toggle {{ link_class }}" href="#" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false">
+            {{ link.label }}
+        </a>
+        <ul class="dropdown-menu">
+            {% for child in link.children.all|unique_visible_children %}
+                <li class="nav-editable-child"
+                    data-navlink-id="{{ child.id }}"
+                    data-navlink-label="{{ child.label }}"
+                    data-navlink-href="{{ child.href }}"
+                    data-navlink-newtab="{{ child.open_new_tab|yesno:'1,0' }}"
+                    data-navlink-visible="{{ child.is_visible|yesno:'1,0' }}"
+                    data-navlink-page-id="{{ child.page_id|default:'' }}">
+                    <a class="dropdown-item {% if request.path == child.href %}active{% endif %}"
+                       href="{{ child.href }}"
+                       {% if child.open_new_tab %}target="_blank" rel="noopener"{% endif %}>
+                        {{ child.label }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </li>
+{% elif link.is_button %}
+    <li class="nav-item nav-editable"
+        data-navlink-id="{{ link.id }}"
+        data-navlink-label="{{ link.label }}"
+        data-navlink-href="{{ href }}"
+        data-navlink-button="1"
+        data-navlink-slot="{{ link.slot }}"
+        data-navlink-newtab="{{ link.open_new_tab|yesno:'1,0' }}"
+        data-navlink-visible="{{ link.is_visible|yesno:'1,0' }}"
+        data-navlink-page-id="{{ link.page_id|default:'' }}">
+        <a href="{{ href }}"
+           class="btn btn-primary ms-lg-2 {{ link_class }}"
+           {% if link.open_new_tab %}target="_blank" rel="noopener"{% endif %}>
+            {{ link.label }}
+        </a>
+    </li>
+{% else %}
+    <li class="nav-item nav-editable"
+        data-navlink-id="{{ link.id }}"
+        data-navlink-label="{{ link.label }}"
+        data-navlink-href="{{ href }}"
+        data-navlink-button="0"
+        data-navlink-slot="{{ link.slot }}"
+        data-navlink-newtab="{{ link.open_new_tab|yesno:'1,0' }}"
+        data-navlink-visible="{{ link.is_visible|yesno:'1,0' }}"
+        data-navlink-page-id="{{ link.page_id|default:'' }}">
+        <a href="{{ href }}"
+           class="nav-link {{ link_class }} {% if request.path == href %}active{% endif %}"
+           {% if request.path == href %}aria-current="page"{% endif %}
+           {% if link.open_new_tab %}target="_blank" rel="noopener"{% endif %}>
+            {{ link.label }}
+        </a>
+    </li>
+{% endif %}
+{% endwith %}
