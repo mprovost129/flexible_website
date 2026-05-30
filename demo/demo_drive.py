@@ -195,8 +195,7 @@ class Demo:
 
 
 def preflight(base):
-    """Verify the server is reachable and the wizard is unlocked before opening Chrome."""
-    import json
+    """Verify the server is reachable and the setup wizard will appear."""
     import urllib.request
     import urllib.error
 
@@ -207,38 +206,34 @@ def preflight(base):
         print(f"\n✗ Cannot reach {base}")
         print(f"  Error: {e.reason}")
         print("\n  FIX: Open demo/serve.bat (double-click it) and wait for")
-        print("  'Starting development server at http://127.0.0.1:8000/'")
+        print("  'Starting development server at http://127.0.0.1:8001/'")
         print("  then re-run this script.")
         return False
 
-    # 2. Query the live diagnostic endpoint to see the actual server state.
+    # 2. Fetch /setup/ and check whether the wizard form is actually there.
+    #    If the wizard is locked (admin exists), Django redirects to the
+    #    dashboard/login and we see no wizard form fields in the HTML.
     try:
-        resp = urllib.request.urlopen(f"{base}/__demo_state__/", timeout=5)
-        state = json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        if e.code == 404:
-            print(f"\n✗ The server is running but the /__demo_state__/ endpoint is missing.")
-            print(f"  This means the server is NOT using the demo settings.")
-            print(f"  Stop it and start it with demo/serve.bat instead.")
-            return False
-        raise
-    except Exception as e:
-        print(f"\n✗ Diagnostic check failed: {e}")
+        resp = urllib.request.urlopen(f"{base}/setup/", timeout=5)
+        html = resp.read().decode("utf-8", errors="replace")
+    except urllib.error.URLError as e:
+        print(f"\n✗ Could not load /setup/: {e.reason}")
         return False
 
-    print(f"\n  Server DB: {state.get('db_name', '?')}")
-    print(f"  Superusers in DB: {state.get('superusers', '?')}")
-    print(f"  Wizard ready: {state.get('wizard_ready', '?')}")
+    if 'id="email"' in html and 'id="password"' in html:
+        print("\n  Preflight OK — wizard is ready.\n")
+        return True
 
-    if not state.get('wizard_ready'):
-        print(f"\n✗ The wizard is locked — {state.get('superusers')} superuser(s) in the database.")
-        print(f"  DB file: {state.get('db_name')}")
-        print("\n  Run demo/reset_db.bat (you do NOT need to stop the server),")
-        print("  then re-run this script.")
-        return False
+    # Wizard wasn't there — figure out why and give a useful message.
+    if "accounts/login" in resp.url or "accounts/login" in html:
+        locked_reason = "admin account already exists"
+    else:
+        locked_reason = f"unexpected redirect to {resp.url}"
 
-    print(f"\n  Preflight OK — wizard is ready.\n")
-    return True
+    print(f"\n✗ The wizard is not showing ({locked_reason}).")
+    print("\n  Run demo/reset_db.bat (server can stay running), then")
+    print("  re-run this script.")
+    return False
 
 
 def run(cfg):
