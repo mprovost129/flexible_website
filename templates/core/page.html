@@ -23,12 +23,16 @@
              data-page-og-title="{{ page.og_title|default:'' }}"
              data-page-og-description="{{ page.og_description|default:'' }}">
             {% for section in sections %}
+                {% with pt=section.config.padding_top pb=section.config.padding_bottom %}
                 <div class="section-wrap{% if not section.is_visible %} section-hidden{% endif %}"
+                     {% if pt or pb %}style="{% if pt %}padding-top:{{ pt }}rem;{% endif %}{% if pb %}padding-bottom:{{ pb }}rem;{% endif %}"{% endif %}
                      data-section-id="{{ section.id }}"
                      data-section-type="{{ section.section_type }}"
                      data-section-layout="{{ section.layout }}"
                      data-section-layouts="{{ section.available_layouts|join:',' }}"
                      data-section-columns="{{ section.config.columns_desktop|default:'' }}"
+                     data-section-padding-top="{{ section.config.padding_top|default:'' }}"
+                     data-section-padding-bottom="{{ section.config.padding_bottom|default:'' }}"
                      data-section-bg="{{ section.background_color }}"
                      data-section-visible="{{ section.is_visible|yesno:'1,0' }}"
                      data-section-heading="{{ section.heading }}"
@@ -36,6 +40,7 @@
                      data-section-image-url="{% if section.primary_image %}{{ section.primary_image.url }}{% endif %}">
                     {% include section.template_path %}
                 </div>
+                {% endwith %}
             {% endfor %}
         </div>
 
@@ -47,7 +52,11 @@
         </div>
     {% else %}
         {% for section in sections %}
+            {% with pt=section.config.padding_top pb=section.config.padding_bottom %}
+            {% if pt or pb %}<div style="{% if pt %}padding-top:{{ pt }}rem;{% endif %}{% if pb %}padding-bottom:{{ pb }}rem;{% endif %}">{% endif %}
             {% include section.template_path %}
+            {% if pt or pb %}</div>{% endif %}
+            {% endwith %}
         {% endfor %}
 
         {% if not sections %}

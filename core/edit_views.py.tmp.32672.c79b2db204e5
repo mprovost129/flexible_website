@@ -74,9 +74,6 @@ class _RichTextSanitizer(HTMLParser):
             self._buf.append(f'<{tag}>')
 
     def handle_endtag(self, tag):
-        if tag == 'div':
-            self._buf.append('</p>')
-            return
         if tag in self.ALLOWED and tag != 'br':
             self._buf.append(f'</{tag}>')
 
@@ -743,30 +740,6 @@ def set_section_config(request, pk):
         config['columns_desktop'] = cols
         section.config = config
         update_fields.append('config')
-
-    # Padding (top / bottom in rem, stored in config JSON)
-    for pad_key in ('padding_top', 'padding_bottom'):
-        raw = request.POST.get(pad_key)
-        if raw is not None:
-            raw = raw.strip()
-            if raw == '' or raw == '0':
-                cfg = dict(section.config or {})
-                cfg.pop(pad_key, None)
-                section.config = cfg
-                if 'config' not in update_fields:
-                    update_fields.append('config')
-            else:
-                try:
-                    val = round(float(raw), 2)
-                    if val < 0 or val > 30:
-                        raise ValueError
-                except ValueError:
-                    return JsonResponse({'error': f'{pad_key} must be a number 0–30'}, status=400)
-                cfg = dict(section.config or {})
-                cfg[pad_key] = val
-                section.config = cfg
-                if 'config' not in update_fields:
-                    update_fields.append('config')
 
     # Background color
     bg = request.POST.get('background_color')
