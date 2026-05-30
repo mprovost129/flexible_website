@@ -67,3 +67,4 @@ secrets.json
 *.tar.bz2
 *.tar.xz*.tmp.*
 demo.sqlite3
+*.tmp.*
