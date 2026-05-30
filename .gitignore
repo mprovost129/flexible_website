@@ -65,4 +65,4 @@ secrets.json
 *.zip
 *.tar.gz
 *.tar.bz2
-*.tar.xz
+*.tar.xz*.tmp.*
