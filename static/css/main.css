@@ -1279,6 +1279,34 @@ body:not(.edit-mode) .nav-drag-handle {
     grid-template-columns: var(--cbl-nav-grid, 1fr 1fr 1fr);
 }
 
+/* =============================================================================
+   Item style presets (.cbl-items-* on section wrapper)
+   Targets direct children of Bootstrap grid columns so it works for
+   feature_list, gallery, testimonials, pricing_table without template changes.
+   ============================================================================= */
+.cbl-items-bordered [class*="col-"] > *,
+.cbl-items-bordered .col > * {
+    border: 1px solid rgba(0, 0, 0, .12);
+    border-radius: .375rem;
+    padding: 1rem;
+}
+.cbl-items-card [class*="col-"] > *,
+.cbl-items-card .col > * {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: .5rem;
+    padding: 1.25rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+}
+.cbl-items-card-shadow [class*="col-"] > *,
+.cbl-items-card-shadow .col > * {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, .06);
+    border-radius: .6rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, .10);
+}
+
 /* Second-row overflow: center zone drops below brand + right */
 .cbl-navbar-overflow-second-row .cbl-navbar-desktop {
     grid-template-columns: 1fr 1fr;

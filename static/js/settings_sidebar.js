@@ -296,11 +296,16 @@
     var heading = sectionEl.dataset.sectionHeading || '';
     var subheading = sectionEl.dataset.sectionSubheading || '';
     var bg = sectionEl.dataset.sectionBg || '';
-    var columns = sectionEl.dataset.sectionColumns || '';
-    var imageUrl = sectionEl.dataset.sectionImageUrl || '';
-    var padTop = sectionEl.dataset.sectionPaddingTop || '';
-    var padBot = sectionEl.dataset.sectionPaddingBottom || '';
-    var showColumns = COLUMN_SECTION_TYPES.indexOf(sectionType) !== -1;
+    var columns      = sectionEl.dataset.sectionColumns      || '';
+    var imageUrl     = sectionEl.dataset.sectionImageUrl     || '';
+    var padTop       = sectionEl.dataset.sectionPaddingTop   || '';
+    var padBot       = sectionEl.dataset.sectionPaddingBottom || '';
+    var borderStyle  = sectionEl.dataset.sectionBorderStyle  || 'none';
+    var borderWidth  = sectionEl.dataset.sectionBorderWidth  || '1';
+    var borderColor  = sectionEl.dataset.sectionBorderColor  || '';
+    var borderRadius = sectionEl.dataset.sectionBorderRadius || '';
+    var itemStyle    = sectionEl.dataset.sectionItemStyle    || 'none';
+    var showColumns  = COLUMN_SECTION_TYPES.indexOf(sectionType) !== -1;
 
     var layoutOptions = layouts.map(function (item) {
       return '<option value="' + escapeHtml(item) + '"' + (item === layout ? ' selected' : '') + '>' + escapeHtml(item) + '</option>';
@@ -345,6 +350,26 @@
         '<select class="form-select form-select-sm mb-2 sidebar-section-layout">' + layoutOptions + '</select>' +
         columnsHtml +
         renderColorField('sidebar-section-bg', bg, 'Background color') +
+        '<label class="form-label small mb-1">Border</label>' +
+        '<div class="d-flex gap-2 mb-1">' +
+          '<select class="form-select form-select-sm sidebar-section-border-style" style="flex:2">' +
+            '<option value="none"'   + (borderStyle === 'none'   ? ' selected' : '') + '>None</option>' +
+            '<option value="solid"'  + (borderStyle === 'solid'  ? ' selected' : '') + '>Solid</option>' +
+            '<option value="dashed"' + (borderStyle === 'dashed' ? ' selected' : '') + '>Dashed</option>' +
+            '<option value="dotted"' + (borderStyle === 'dotted' ? ' selected' : '') + '>Dotted</option>' +
+          '</select>' +
+          '<input type="number" class="form-control form-control-sm sidebar-section-border-width" style="flex:1" min="1" max="20" value="' + escapeHtml(borderWidth) + '" placeholder="px">' +
+        '</div>' +
+        renderColorField('sidebar-section-border-color', borderColor, 'Border color') +
+        '<label class="form-label small mb-1">Corner radius (px)</label>' +
+        '<input type="number" class="form-control form-control-sm mb-2 sidebar-section-border-radius" min="0" max="200" value="' + escapeHtml(borderRadius) + '" placeholder="0">' +
+        '<label class="form-label small mb-1">Item style</label>' +
+        '<div class="btn-group btn-group-sm w-100 mb-2 sidebar-section-item-style-group">' +
+          '<input type="radio" class="btn-check" name="item-style-' + escapeHtml(sectionId) + '" id="is-none-'       + escapeHtml(sectionId) + '" value="none"        autocomplete="off"' + (itemStyle === 'none'        ? ' checked' : '') + '><label class="btn btn-outline-secondary" for="is-none-'       + escapeHtml(sectionId) + '">None</label>' +
+          '<input type="radio" class="btn-check" name="item-style-' + escapeHtml(sectionId) + '" id="is-bordered-'  + escapeHtml(sectionId) + '" value="bordered"     autocomplete="off"' + (itemStyle === 'bordered'     ? ' checked' : '') + '><label class="btn btn-outline-secondary" for="is-bordered-'  + escapeHtml(sectionId) + '">Bordered</label>' +
+          '<input type="radio" class="btn-check" name="item-style-' + escapeHtml(sectionId) + '" id="is-card-'      + escapeHtml(sectionId) + '" value="card"         autocomplete="off"' + (itemStyle === 'card'         ? ' checked' : '') + '><label class="btn btn-outline-secondary" for="is-card-'      + escapeHtml(sectionId) + '">Card</label>' +
+          '<input type="radio" class="btn-check" name="item-style-' + escapeHtml(sectionId) + '" id="is-shadow-'    + escapeHtml(sectionId) + '" value="card-shadow"  autocomplete="off"' + (itemStyle === 'card-shadow'  ? ' checked' : '') + '><label class="btn btn-outline-secondary" for="is-shadow-'    + escapeHtml(sectionId) + '">Shadow</label>' +
+        '</div>' +
         '<label class="form-label small mb-1">Spacing</label>' +
         '<div class="d-flex gap-2 align-items-center mb-2">' +
           '<span class="small text-body-secondary" style="white-space:nowrap">Top (rem)</span>' +
@@ -975,12 +1000,22 @@
         var bg      = body.querySelector('.sidebar-section-bg');
         var padTop  = body.querySelector('.sidebar-section-pad-top');
         var padBot  = body.querySelector('.sidebar-section-pad-bot');
+        var bStyle  = body.querySelector('.sidebar-section-border-style');
+        var bWidth  = body.querySelector('.sidebar-section-border-width');
+        var bColor  = body.querySelector('.sidebar-section-border-color');
+        var bRadius = body.querySelector('.sidebar-section-border-radius');
+        var iStyle  = body.querySelector('.sidebar-section-item-style-group input[type="radio"]:checked');
         var req = postJson('/edit/section/' + sectionId + '/layout/', { layout: layout ? layout.value : '' });
         var configPayload = {};
-        if (columns) configPayload.columns_desktop = columns.value;
-        if (bg) configPayload.background_color = bg.value;
-        if (padTop) configPayload.padding_top = padTop.value;
-        if (padBot) configPayload.padding_bottom = padBot.value;
+        if (columns) configPayload.columns_desktop  = columns.value;
+        if (bg)      configPayload.background_color = bg.value;
+        if (padTop)  configPayload.padding_top       = padTop.value;
+        if (padBot)  configPayload.padding_bottom    = padBot.value;
+        if (bStyle)  configPayload.border_style      = bStyle.value;
+        if (bWidth)  configPayload.border_width      = bWidth.value;
+        if (bColor)  configPayload.border_color      = bColor.value;
+        if (bRadius) configPayload.border_radius     = bRadius.value;
+        if (iStyle)  configPayload.item_style        = iStyle.value;
         if (Object.keys(configPayload).length) {
           req = req.then(function () {
             return postJson('/edit/section/' + sectionId + '/config/', configPayload);

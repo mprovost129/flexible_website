@@ -768,6 +768,69 @@ def set_section_config(request, pk):
                 if 'config' not in update_fields:
                     update_fields.append('config')
 
+    # Border (style, width px, color, radius px) + item style
+    _BORDER_STYLES = {'none', 'solid', 'dashed', 'dotted'}
+    _ITEM_STYLES   = {'none', 'bordered', 'card', 'card-shadow'}
+
+    border_style = request.POST.get('border_style')
+    if border_style is not None:
+        border_style = border_style.strip().lower()
+        if border_style not in _BORDER_STYLES:
+            return JsonResponse({'error': 'Invalid border_style'}, status=400)
+        cfg = dict(section.config or {})
+        if border_style == 'none' or border_style == '':
+            cfg.pop('border_style', None)
+        else:
+            cfg['border_style'] = border_style
+        section.config = cfg
+        if 'config' not in update_fields:
+            update_fields.append('config')
+
+    for int_key, max_val in (('border_width', 20), ('border_radius', 200)):
+        raw = request.POST.get(int_key)
+        if raw is not None:
+            raw = raw.strip()
+            cfg = dict(section.config or {})
+            if raw == '' or raw == '0':
+                cfg.pop(int_key, None)
+            else:
+                try:
+                    val = int(raw)
+                    if val < 0 or val > max_val:
+                        raise ValueError
+                except ValueError:
+                    return JsonResponse({'error': f'{int_key} must be 0–{max_val}'}, status=400)
+                cfg[int_key] = val
+            section.config = cfg
+            if 'config' not in update_fields:
+                update_fields.append('config')
+
+    border_color = request.POST.get('border_color')
+    if border_color is not None:
+        border_color = border_color.strip()
+        cfg = dict(section.config or {})
+        if border_color:
+            cfg['border_color'] = border_color
+        else:
+            cfg.pop('border_color', None)
+        section.config = cfg
+        if 'config' not in update_fields:
+            update_fields.append('config')
+
+    item_style = request.POST.get('item_style')
+    if item_style is not None:
+        item_style = item_style.strip().lower()
+        if item_style not in _ITEM_STYLES:
+            return JsonResponse({'error': 'Invalid item_style'}, status=400)
+        cfg = dict(section.config or {})
+        if item_style == 'none' or item_style == '':
+            cfg.pop('item_style', None)
+        else:
+            cfg['item_style'] = item_style
+        section.config = cfg
+        if 'config' not in update_fields:
+            update_fields.append('config')
+
     # Background color
     bg = request.POST.get('background_color')
     if bg is not None:
