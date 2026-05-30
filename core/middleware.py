@@ -24,7 +24,7 @@ class FirstRunSetupMiddleware:
                 path = request.path
                 # Allow the wizard itself, static/media, and the admin (so a
                 # technical user can still createsuperuser the old way).
-                allowed_prefixes = ('/setup/', '/static/', '/media/', '/admin/', '/healthz')
+                allowed_prefixes = ('/setup/', '/static/', '/media/', '/admin/', '/healthz', '/__demo_state__/')
                 if not path.startswith(allowed_prefixes):
                     return redirect(reverse('core:setup_wizard'))
         return self.get_response(request)
