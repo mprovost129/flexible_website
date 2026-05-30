@@ -1,0 +1,5 @@
+# Dependencies for the screen-recording demo driver (demo/demo_drive.py).
+# Install with:  pip install -r demo/requirements-demo.txt
+# Then once:     playwright install chromium
+
+playwright==1.49.1
