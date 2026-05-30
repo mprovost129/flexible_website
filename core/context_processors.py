@@ -1,5 +1,21 @@
+from django.conf import settings
+
 from .models import Page, Site
 from .site_resolver import get_active_site
+
+
+# Single source of truth for static-asset cache-busting. Bump this one value
+# when you ship new CSS/JS instead of hand-editing ?v= on every <link>/<script>.
+# In production WhiteNoise's manifest storage already fingerprints filenames,
+# so this is mostly a dev-convenience + a belt-and-suspenders for non-manifest
+# setups. In DEBUG we use a per-process value so a server restart busts caches.
+RELEASE = '20260530'
+
+if settings.DEBUG:
+    import time
+    ASSET_VERSION = str(int(time.time()))
+else:
+    ASSET_VERSION = RELEASE
 
 
 def site_context(request):
@@ -37,4 +53,5 @@ def site_context(request):
         'cms_site': site,
         'active_theme': active_theme,
         'edit_mode_active': edit_mode_active,
+        'asset_version': ASSET_VERSION,
     }

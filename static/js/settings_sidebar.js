@@ -1397,8 +1397,10 @@
     var textCol   = r ? (r.dataset.navTextColor  || '')         : '';
     var linkCol   = r ? (r.dataset.navLinkColor  || '')         : '';
     var linkStyle    = r ? (r.dataset.navLinkStyle    || 'pill')     : 'pill';
-    var mobileStyle  = r ? (r.dataset.navMobileStyle  || 'collapse') : 'collapse';
-    var scrollEffect = r ? (r.dataset.navScrollEffect || 'none')     : 'none';
+    var mobileStyle    = r ? (r.dataset.navMobileStyle    || 'collapse') : 'collapse';
+    var scrollEffect   = r ? (r.dataset.navScrollEffect   || 'none')    : 'none';
+    var dropdownStyle  = r ? (r.dataset.navDropdownStyle  || 'default') : 'default';
+    var menuOverflow   = r ? (r.dataset.navOverflow        || 'visible') : 'visible';
 
     function themeOpt(val, label) {
       return '<option value="' + val + '"' + (theme === val ? ' selected' : '') + '>' + label + '</option>';
@@ -1455,9 +1457,22 @@
           '<label class="form-check-label small" for="sna-shadow">Drop shadow</label>' +
         '</div>' +
         '<label class="form-label small mb-1">Scroll effect</label>' +
-        '<select class="form-select form-select-sm mb-3 sidebar-navbar-scroll-effect">' +
-          '<option value="none"' + (scrollEffect === 'none' ? ' selected' : '') + '>None</option>' +
+        '<select class="form-select form-select-sm mb-2 sidebar-navbar-scroll-effect">' +
+          '<option value="none"'    + (scrollEffect === 'none'    ? ' selected' : '') + '>None</option>' +
           '<option value="fade-in"' + (scrollEffect === 'fade-in' ? ' selected' : '') + '>Transparent → solid on scroll</option>' +
+        '</select>' +
+        '<label class="form-label small mb-1">Dropdown style</label>' +
+        '<select class="form-select form-select-sm mb-2 sidebar-navbar-dropdown-style">' +
+          '<option value="default"'  + (dropdownStyle === 'default'  ? ' selected' : '') + '>Default (white + shadow)</option>' +
+          '<option value="bordered"' + (dropdownStyle === 'bordered' ? ' selected' : '') + '>Bordered (no shadow)</option>' +
+          '<option value="dark"'     + (dropdownStyle === 'dark'     ? ' selected' : '') + '>Dark</option>' +
+          '<option value="branded"'  + (dropdownStyle === 'branded'  ? ' selected' : '') + '>Branded (primary color)</option>' +
+        '</select>' +
+        '<label class="form-label small mb-1">Menu overflow</label>' +
+        '<select class="form-select form-select-sm mb-3 sidebar-navbar-menu-overflow">' +
+          '<option value="visible"'    + (menuOverflow === 'visible'    ? ' selected' : '') + '>Visible (no limit)</option>' +
+          '<option value="more-menu"'  + (menuOverflow === 'more-menu'  ? ' selected' : '') + '>More ▼ (auto-hide overflow)</option>' +
+          '<option value="second-row"' + (menuOverflow === 'second-row' ? ' selected' : '') + '>Second row</option>' +
         '</select>' +
         '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-navbar">Save</button>' +
       '</div>';
@@ -1474,10 +1489,12 @@
       var linkCol      = body.querySelector('.sidebar-navbar-link-color');
       var height       = body.querySelector('.sidebar-navbar-height');
       var container    = body.querySelector('.sidebar-navbar-container');
-      var mobile       = body.querySelector('.sidebar-navbar-mobile');
-      var sticky       = body.querySelector('.sidebar-navbar-sticky');
-      var shadow       = body.querySelector('.sidebar-navbar-shadow');
-      var scrollEffect = body.querySelector('.sidebar-navbar-scroll-effect');
+      var mobile         = body.querySelector('.sidebar-navbar-mobile');
+      var sticky         = body.querySelector('.sidebar-navbar-sticky');
+      var shadow         = body.querySelector('.sidebar-navbar-shadow');
+      var scrollEffect   = body.querySelector('.sidebar-navbar-scroll-effect');
+      var dropdownStyle  = body.querySelector('.sidebar-navbar-dropdown-style');
+      var menuOverflow   = body.querySelector('.sidebar-navbar-menu-overflow');
 
       function chrome(field, value) {
         return postJson('/edit/site-chrome/update/', { field: field, value: value });
@@ -1492,7 +1509,9 @@
         .then(function () { return chrome('navbar_shadow',    shadow    ? (shadow.checked ? '1' : '0')    : '1'); })
         .then(function () { return cfg('link_style',      linkStyle    ? linkStyle.value        : 'pill'); })
         .then(function () { return cfg('mobile_menu_style', mobile     ? mobile.value           : 'collapse'); })
-        .then(function () { return cfg('scroll_effect',   scrollEffect ? scrollEffect.value     : 'none'); })
+        .then(function () { return cfg('scroll_effect',   scrollEffect  ? scrollEffect.value    : 'none'); })
+        .then(function () { return cfg('dropdown_style',  dropdownStyle ? dropdownStyle.value   : 'default'); })
+        .then(function () { return cfg('menu_overflow',   menuOverflow  ? menuOverflow.value    : 'visible'); })
         .then(function () { return cfg('bg_color',        bg           ? bg.value.trim()        : ''); })
         .then(function () { return cfg('text_color',      textCol      ? textCol.value.trim()   : ''); })
         .then(function () { return cfg('link_color',      linkCol      ? linkCol.value.trim()   : ''); })

@@ -4,10 +4,14 @@ from . import views
 from . import edit_views
 from . import nav_views
 from . import dashboard_views
+from . import setup_views
 
 app_name = 'core'
 
 urlpatterns = [
+
+    # First-run setup wizard (locks itself once an admin exists)
+    path('setup/', setup_views.setup_wizard, name='setup_wizard'),
 
     # CBL in-site dashboard (staff only)
     path('cbl/',                                      dashboard_views.dashboard_home,              name='dashboard_home'),
@@ -104,6 +108,7 @@ urlpatterns = [
     path('edit/toggle-mode/', views.toggle_edit_mode, name='toggle_edit_mode'),
 
     # Protocol-level files (no trailing slash, must come before <slug>)
+    path('healthz', views.healthz, name='healthz'),
     path('robots.txt', views.robots_txt, name='robots_txt'),
     path('sitemap.xml', views.sitemap_xml, name='sitemap_xml'),
 

@@ -238,6 +238,8 @@ NAVBAR_CONFIG_CHOICE_KEYS = {
     'cta_style': {'accent', 'outline', 'light'},
     'scroll_effect': {'none', 'fade-in'},
     'section_spacing': {'compact', 'normal', 'spacious'},
+    'dropdown_style': {'default', 'bordered', 'dark', 'branded'},
+    'menu_overflow': {'visible', 'more-menu', 'second-row'},
 }
 NAVBAR_CONFIG_COLOR_KEYS = {
     'bg_color', 'text_color', 'link_color', 'link_hover_bg', 'link_hover_color',

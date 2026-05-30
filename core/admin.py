@@ -4,7 +4,7 @@ from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils.html import format_html
 
-from .models import Site, Page, Section, SectionItem, Theme, NavLink, FooterColumn, FooterLink
+from .models import Site, Page, Section, SectionItem, Theme, NavLink, FooterColumn, FooterLink, ContactSubmission
 from .page_templates import PAGE_TEMPLATES, PAGE_TEMPLATES_BY_KEY
 
 
@@ -450,3 +450,17 @@ class FooterColumnAdmin(admin.ModelAdmin):
     list_display = ('heading', 'order', 'is_visible')
     list_editable = ('order', 'is_visible')
     inlines = [FooterLinkInline]
+
+
+@admin.register(ContactSubmission)
+class ContactSubmissionAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'subject', 'page_slug', 'email_sent', 'is_read', 'created_at')
+    list_filter = ('email_sent', 'is_read', 'created_at')
+    list_editable = ('is_read',)
+    search_fields = ('name', 'email', 'subject', 'message')
+    readonly_fields = ('site', 'page_slug', 'name', 'email', 'subject', 'message',
+                       'recipient', 'email_sent', 'client_ip', 'created_at')
+    ordering = ('-created_at',)
+
+    def has_add_permission(self, request):
+        return False

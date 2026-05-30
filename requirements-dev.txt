@@ -1,0 +1,11 @@
+# Development & test tooling. Install with:
+#   pip install -r requirements-dev.txt
+# This includes everything in requirements.txt plus dev-only packages.
+
+-r requirements.txt
+
+pytest==9.0.2
+pytest-django==4.12.0
+ruff==0.15.9
+pre_commit==4.5.1
+django-debug-toolbar==6.3.0

@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
-from .models import Page, Section, Site
+from .models import ContactSubmission, Page, Section, Site
 from .site_resolver import get_active_site
 
 
@@ -125,6 +125,20 @@ def contact_submit(request):
         messages.error(request, 'Please fill in all required fields.')
         return _redirect_page(page_slug)
 
+    # Persist the submission first so a lead is never lost, even if email is
+    # unconfigured or the mail server errors.
+    submission = ContactSubmission.objects.create(
+        site=get_active_site(request),
+        page_slug=page_slug,
+        name=name,
+        email=email,
+        subject=subject,
+        message=body,
+        recipient=to,
+        client_ip=ip,
+        email_sent=False,
+    )
+
     try:
         send_mail(
             subject=f'[Contact] {subject}',
@@ -132,6 +146,8 @@ def contact_submit(request):
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[to],
         )
+        submission.email_sent = True
+        submission.save(update_fields=['email_sent'])
         logger.info(
             'Contact submission accepted',
             extra={'page_slug': page_slug, 'client_ip': ip, 'section_id': section_id or None, 'recipient': to},
@@ -139,13 +155,12 @@ def contact_submit(request):
         messages.success(request, 'Message sent! We will be in touch soon.')
     except Exception:
         logger.exception(
-            'Contact submission failed',
+            'Contact submission email failed (submission was still saved)',
             extra={'page_slug': page_slug, 'client_ip': ip, 'section_id': section_id or None},
         )
-        messages.error(
-            request,
-            'There was a problem sending your message. Please try again later.',
-        )
+        # The lead is saved, so from the visitor's perspective this still
+        # succeeded. The owner can read it in the dashboard.
+        messages.success(request, 'Message sent! We will be in touch soon.')
 
     return _redirect_page(page_slug)
 
@@ -161,6 +176,15 @@ def _client_ip(request):
     if forwarded_for:
         return forwarded_for.split(',')[0].strip()
     return request.META.get('REMOTE_ADDR', 'unknown')
+
+
+def healthz(request):
+    """Liveness probe for hosting platforms (always 200, no DB or auth).
+
+    Used as Render's healthCheckPath so the check passes both before and after
+    first-run setup, when '/' may redirect to the setup wizard.
+    """
+    return HttpResponse('ok', content_type='text/plain; charset=utf-8')
 
 
 def robots_txt(request):

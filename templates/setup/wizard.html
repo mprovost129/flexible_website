@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to CBL — Set up your site</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0;
+        }
+        .setup-card {
+            background: #fff;
+            color: #1e293b;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+            max-width: 560px;
+            width: 100%;
+        }
+        .setup-kicker { letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.75rem; color: #64748b; }
+        .pack-option { cursor: pointer; }
+        .pack-option input { margin-right: 0.5rem; }
+        .pack-option .form-check-label { width: 100%; }
+        .pack-option:hover { background: #f8fafc; }
+        .pack-card { border: 1px solid #e2e8f0; border-radius: 0.6rem; padding: 0.65rem 0.85rem; margin-bottom: 0.5rem; }
+        .pack-card:has(input:checked) { border-color: var(--bs-primary); background: #eff6ff; }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="setup-card mx-auto p-4 p-md-5">
+            <div class="setup-kicker mb-1">Create · Build · Launch</div>
+            <h1 class="h3 mb-1">Welcome — let's set up your site</h1>
+            <p class="text-secondary mb-4">This one-time setup creates your admin account and your starting content. It takes about a minute.</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} py-2">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" action="{% url 'core:setup_wizard' %}">
+                {% csrf_token %}
+
+                <h2 class="h6 text-uppercase text-secondary mt-2 mb-3">Your admin account</h2>
+                <div class="mb-3">
+                    <label class="form-label" for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ email }}" required autofocus>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" minlength="8" required>
+                        <div class="form-text">At least 8 characters.</div>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <label class="form-label" for="password2">Confirm password</label>
+                        <input type="password" class="form-control" id="password2" name="password2" minlength="8" required>
+                    </div>
+                </div>
+
+                <h2 class="h6 text-uppercase text-secondary mt-3 mb-3">Your site</h2>
+                <div class="mb-3">
+                    <label class="form-label" for="site_name">Site name</label>
+                    <input type="text" class="form-control" id="site_name" name="site_name" value="{{ site_name }}" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label d-block mb-2">Starting point</label>
+                    <div class="pack-card">
+                        <div class="form-check pack-option mb-0">
+                            <input class="form-check-input" type="radio" name="pack" id="pack-blank" value="" {% if not selected_pack %}checked{% endif %}>
+                            <label class="form-check-label" for="pack-blank">
+                                <strong>Start blank</strong>
+                                <div class="text-secondary small">A clean home page you build out yourself.</div>
+                            </label>
+                        </div>
+                    </div>
+                    {% for key, name, description in pack_choices %}
+                    <div class="pack-card">
+                        <div class="form-check pack-option mb-0">
+                            <input class="form-check-input" type="radio" name="pack" id="pack-{{ key }}" value="{{ key }}" {% if selected_pack == key %}checked{% endif %}>
+                            <label class="form-check-label" for="pack-{{ key }}">
+                                <strong>{{ name }}</strong>
+                                <div class="text-secondary small">{{ description }}</div>
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-rocket-takeoff-fill me-1"></i> Create my site
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

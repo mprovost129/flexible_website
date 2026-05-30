@@ -25,11 +25,9 @@ Render hosts your site for free on a `.onrender.com` subdomain. Best if you want
 4. Render reads `render.yaml` and creates your web service plus database automatically
 5. When prompted, paste in your Cloudinary credentials (see [Cloudinary Setup](#cloudinary-setup) below)
 6. Wait 3-5 minutes for the first deploy to finish
-7. Open the **Shell** tab in your Render web service and run:
-   ```
-   python manage.py setup_site
-   ```
-8. Visit `your-site.onrender.com/admin/` and log in
+7. Visit `your-site.onrender.com` — you will land on a setup screen in your browser
+
+That setup screen creates your admin account, names your site, and lets you pick a starting point (blank or an industry pack). No shell commands, no `manage.py`. When you submit it, you are logged in and dropped straight onto your live site in edit mode. The setup screen disappears permanently once your admin account exists.
 
 ### Option 2: Run locally
 
@@ -42,7 +40,11 @@ You'll need: Python 3.12+, PostgreSQL running locally.
 cd cbl
 python -m venv venv
 source venv/bin/activate         # Windows: venv\Scripts\activate
+
+# Runtime deps only:
 pip install -r requirements.txt
+# ...or, if you plan to develop/run tests, get the dev tooling too:
+# pip install -r requirements-dev.txt
 
 # Copy the env template and fill in values
 cp .env.example .env             # Windows: copy .env.example .env
@@ -51,15 +53,12 @@ cp .env.example .env             # Windows: copy .env.example .env
 # Create the database (one-time)
 createdb cbl            # or use pgAdmin / your tool of choice
 
-# Set up the project
+# Apply the schema and run it
 python manage.py migrate
-python manage.py setup_site
-
-# Run it
 python manage.py runserver
 ```
 
-Visit `http://localhost:8000/`.
+Visit `http://localhost:8000/`. You will land on the browser setup screen the first time. (Prefer the command line? `python manage.py setup_site` still works as an interactive alternative.)
 
 ### Option 3: Deploy elsewhere
 
@@ -68,7 +67,7 @@ Any host that runs Django works. The essentials:
 - Python 3.12+
 - PostgreSQL database
 - Environment variables (see `.env.example`)
-- Run `python manage.py migrate` and `python manage.py setup_site` after first deploy
+- Run `python manage.py migrate` after first deploy, then finish setup in the browser at `/`
 
 Common targets: Railway, Fly.io, DigitalOcean App Platform, Heroku, your own VPS.
 
@@ -82,14 +81,34 @@ Cloudinary hosts your images and gives you a generous free tier (25GB storage an
 
 Without Cloudinary, image uploads will fail. Everything else still works.
 
+## Contact Form & Email
+
+The contact form works out of the box: every submission is saved to your database, so you never lose a lead. You can read submissions any time under **Contact submissions** in `/admin/`.
+
+To also get an email each time someone submits, configure SMTP. Until you do, submissions are still saved (and printed to your server logs in development), they just are not emailed.
+
+Add these to your `.env` (local) or host environment variables (production):
+
+```
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.yourprovider.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your-smtp-username
+EMAIL_HOST_PASSWORD=your-smtp-password
+DEFAULT_FROM_EMAIL=noreply@yourdomain.com
+```
+
+Any SMTP provider works (a transactional service such as Mailgun, SendGrid, Postmark, or Amazon SES is recommended over a personal Gmail account for deliverability). Set the recipient address per contact section in its `config` (`to_email`); it defaults to `DEFAULT_FROM_EMAIL`.
+
 ## Customizing Your Site
 
-After running `setup_site`, log in at `/admin/`. The interesting models:
+After finishing the browser setup, log in at `/admin/` (or edit live on the page in edit mode). The interesting models:
 
 - **Site**: change site name, tagline, theme, universal navbar controls, footer, social links, copyright
 - **Pages**: add, remove, reorder pages
 - **Sections**: each page is built from sections (hero, image grid, etc.). Drag to reorder, toggle visibility, add as many items as you want inside each
 - **Themes**: 8 pre-built themes. Edit colors and fonts, or create your own
+- **Contact submissions**: read-only log of everyone who has used a contact form
 
 ### Adding images to a grid
 

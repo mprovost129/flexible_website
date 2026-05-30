@@ -9,7 +9,8 @@ left, center, or right through Site Settings and NavLink.slot.
 {% endcomment %}
 
 {% with theme=site.navbar_theme nc=site.navbar_config_merged %}
-<header class="cbl-navbar-shell {% if site.navbar_sticky %}sticky-top{% endif %} {% if site.navbar_shadow %}cbl-navbar-shadow{% endif %} cbl-navbar-{{ theme }} cbl-navbar-preset-{{ site.navbar_variant }} cbl-nav-links-{{ nc.link_style|default:'pill' }} cbl-nav-zones-{{ nc.zone_distribution|default:'balanced' }}"
+<header class="cbl-navbar-shell {% if site.navbar_sticky %}sticky-top{% endif %} {% if site.navbar_shadow %}cbl-navbar-shadow{% endif %} cbl-navbar-{{ theme }} cbl-navbar-preset-{{ site.navbar_variant }} cbl-nav-links-{{ nc.link_style|default:'pill' }} cbl-nav-zones-{{ nc.zone_distribution|default:'balanced' }} cbl-dropdown-{{ nc.dropdown_style|default:'default' }} cbl-navbar-overflow-{{ nc.menu_overflow|default:'visible' }}"
+        data-overflow-mode="{{ nc.menu_overflow|default:'visible' }}"
         {% if nc.scroll_effect and nc.scroll_effect != 'none' %}data-scroll-effect="{{ nc.scroll_effect }}"{% endif %}
         style="
         --cbl-nav-bg: {% if nc.bg_color %}{{ nc.bg_color }}{% elif theme == 'dark' %}#111827{% elif theme == 'light' %}#ffffff{% elif theme == 'transparent' %}transparent{% else %}var(--bs-primary){% endif %};

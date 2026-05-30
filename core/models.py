@@ -548,3 +548,32 @@ class FooterLink(models.Model):
                 return '/'
             return f'/{self.page.slug}/'
         return self.url or '#'
+
+
+class ContactSubmission(models.Model):
+    """A persisted contact-form submission.
+
+    Every submission is saved here regardless of whether the outbound email
+    succeeds. This means a buyer who has not configured SMTP (or whose mail
+    provider has a hiccup) never silently loses a lead -- the messages are
+    always visible in the dashboard and admin.
+    """
+    site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='contact_submissions')
+    page_slug = models.CharField(max_length=200, blank=True, default='')
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    subject = models.CharField(max_length=200, blank=True, default='')
+    message = models.TextField()
+    recipient = models.EmailField(blank=True, default='',
+        help_text='The address this submission was emailed to (from the section config).')
+    email_sent = models.BooleanField(default=False,
+        help_text='Whether the outbound notification email was sent successfully.')
+    is_read = models.BooleanField(default=False)
+    client_ip = models.CharField(max_length=64, blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.name} <{self.email}> — {self.created_at:%Y-%m-%d %H:%M}'
