@@ -17,7 +17,7 @@ Quick start:
     # In one terminal, run your CBL server on a FRESH database:
     #   python manage.py migrate && python manage.py runserver
     # In another terminal (run from the project root):
-    python demo/demo_drive.py --base-url http://localhost:8000 --speed slow
+    python demo/demo_drive.py --base-url http://localhost:8001 --speed slow
 
 Notes:
   - The setup wizard only appears on a fresh database (no admin yet). For the
@@ -378,8 +378,8 @@ def run(cfg):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Record-ready CBL demo driver.")
-    parser.add_argument("--base-url", default="http://localhost:8000",
-                        help="Where CBL is running (default: http://localhost:8000)")
+    parser.add_argument("--base-url", default="http://localhost:8001",
+                        help="Where CBL is running (default: http://localhost:8001)")
     parser.add_argument("--email", default="owner@example.com")
     parser.add_argument("--password", default="supersecret123")
     parser.add_argument("--site-name", default="Acme Builders")
