@@ -40,6 +40,7 @@ urlpatterns = [
     # by the page router.
     path('edit/section/<int:pk>/field/<str:field>/', edit_views.edit_section_field,  name='edit_section_field'),
     path('edit/section/<int:pk>/image/',             edit_views.edit_section_image,   name='edit_section_image'),
+    path('edit/section/<int:pk>/image/remove/',      edit_views.remove_section_image, name='remove_section_image'),
     path('edit/item/<int:pk>/field/<str:field>/',    edit_views.edit_item_field,      name='edit_item_field'),
     path('edit/item/<int:pk>/image/',                edit_views.edit_item_image,      name='edit_item_image'),
     path('edit/sections/reorder/',                   edit_views.reorder_sections,     name='reorder_sections'),
@@ -50,6 +51,7 @@ urlpatterns = [
     path('edit/section/<int:pk>/delete/',            edit_views.delete_section,       name='delete_section'),
     path('edit/section/<int:section_pk>/item/add/',  edit_views.add_item,             name='add_item'),
     path('edit/item/<int:pk>/delete/',               edit_views.delete_item,          name='delete_item'),
+    path('edit/item/<int:pk>/',                      edit_views.get_item_data,        name='get_item_data'),
 
     # Page-level + section config editing live
     path('edit/page/<int:pk>/delete/',               edit_views.delete_page,          name='delete_page'),

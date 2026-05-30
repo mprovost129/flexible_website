@@ -13,12 +13,13 @@ convenience -- a non-staff user hitting these URLs gets a 403.
 
 import cloudinary.uploader
 import json
+from html.parser import HTMLParser
 
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from django.utils.html import linebreaks, escape
-from django.views.decorators.http import require_POST
+from django.utils.html import linebreaks, escape, mark_safe
+from django.views.decorators.http import require_POST, require_GET
 
 from .models import Page, Section, SectionItem, NavLink, FooterColumn, FooterLink
 
@@ -43,21 +44,66 @@ def _staff_check(request):
 SECTION_TEXT_FIELDS = {'heading', 'subheading'}
 ITEM_TEXT_FIELDS = {'title', 'text', 'icon', 'link_url', 'link_text'}
 PAGE_TEXT_FIELDS = {'title', 'og_title', 'og_description'}
+RICH_TEXT_FIELDS = {'subheading', 'text'}
 
-# Fields whose values are rendered with Django's linebreaks filter in templates.
-# The server returns rendered HTML so the page reflects the right formatting
-# immediately after save, without a full reload.
-LINEBREAK_FIELDS = {'subheading', 'text'}
+
+class _RichTextSanitizer(HTMLParser):
+    """Strip all tags except a safe allowlist; drop all attributes except href on <a>."""
+    ALLOWED = frozenset({'strong', 'em', 'b', 'i', 'u', 's', 'br', 'p',
+                         'a', 'ul', 'ol', 'li', 'h2', 'h3', 'h4'})
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self._buf = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag not in self.ALLOWED:
+            return
+        if tag == 'a':
+            href = next((v for k, v in attrs if k == 'href'), '#') or '#'
+            href = href.strip()
+            if not href.startswith(('http://', 'https://', '/', '#', 'mailto:')):
+                href = '#'
+            self._buf.append(f'<a href="{escape(href)}" rel="noopener noreferrer">')
+        elif tag == 'br':
+            self._buf.append('<br>')
+        else:
+            self._buf.append(f'<{tag}>')
+
+    def handle_endtag(self, tag):
+        if tag in self.ALLOWED and tag != 'br':
+            self._buf.append(f'</{tag}>')
+
+    def handle_data(self, data):
+        self._buf.append(escape(data))
+
+    def handle_entityref(self, name):
+        self._buf.append(f'&{name};')
+
+    def handle_charref(self, name):
+        self._buf.append(f'&#{name};')
+
+    def result(self):
+        return ''.join(self._buf)
+
+
+def sanitize_rich_text(value):
+    """Sanitize HTML to a safe tag allowlist; pass plain text through unchanged."""
+    if not value:
+        return ''
+    if '<' not in value:
+        return value  # plain text — no sanitization needed
+    p = _RichTextSanitizer()
+    p.feed(value)
+    return p.result()
 
 
 def _render_field(field, value):
-    """Return safe HTML suitable for innerHTML injection.
-
-    For multiline fields (subheading, text) this applies the same linebreaks
-    filter the templates use. For single-line fields it's just HTML-escaped text.
-    """
-    if field in LINEBREAK_FIELDS:
-        return linebreaks(value)   # escapes HTML + converts \\n to <br>/<p>
+    """Return safe HTML for innerHTML injection after inline editing."""
+    if field in RICH_TEXT_FIELDS:
+        if '<' in value:
+            return value  # already sanitized HTML
+        return linebreaks(escape(value))
     return escape(value)
 
 
@@ -77,6 +123,8 @@ def edit_section_field(request, pk, field):
 
     section = get_object_or_404(Section, pk=pk)
     value = request.POST.get('value', '').strip()
+    if field in RICH_TEXT_FIELDS:
+        value = sanitize_rich_text(value)
     setattr(section, field, value)
     section.save(update_fields=[field])
 
@@ -107,6 +155,18 @@ def edit_section_image(request, pk):
     return JsonResponse({'success': True, 'url': result['secure_url']})
 
 
+@require_POST
+def remove_section_image(request, pk):
+    """Clear the primary_image field on a Section."""
+    err = _staff_check(request)
+    if err:
+        return err
+    section = get_object_or_404(Section, pk=pk)
+    section.primary_image = None
+    section.save(update_fields=['primary_image'])
+    return JsonResponse({'success': True})
+
+
 # ---------------------------------------------------------------------------
 # SectionItem endpoints
 # ---------------------------------------------------------------------------
@@ -123,6 +183,8 @@ def edit_item_field(request, pk, field):
 
     item = get_object_or_404(SectionItem, pk=pk)
     value = request.POST.get('value', '').strip()
+    if field in RICH_TEXT_FIELDS:
+        value = sanitize_rich_text(value)
     setattr(item, field, value)
     item.save(update_fields=[field])
 
@@ -150,6 +212,25 @@ def edit_item_image(request, pk):
     item.save(update_fields=['image'])
 
     return JsonResponse({'success': True, 'url': result['secure_url']})
+
+
+@require_GET
+def get_item_data(request, pk):
+    """Return all editable fields for a SectionItem as JSON (staff only)."""
+    err = _staff_check(request)
+    if err:
+        return err
+    item = get_object_or_404(SectionItem, pk=pk)
+    return JsonResponse({
+        'id': item.pk,
+        'title': item.title,
+        'text': item.text,
+        'icon': item.icon,
+        'link_url': item.link_url,
+        'link_text': item.link_text,
+        'image_url': item.image.url if item.image else '',
+        'section_id': item.section_id,
+    })
 
 
 # ---------------------------------------------------------------------------

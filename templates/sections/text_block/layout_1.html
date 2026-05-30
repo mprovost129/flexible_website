@@ -16,7 +16,7 @@
                       unrendered version, then the server returns rendered HTML on save.
                     -->
                     <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
-                        <div class="lead text-body-secondary edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|linebreaks }}</div>
+                        <div class="lead text-body-secondary edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|safe }}</div>
                     </div>
                 {% endif %}
             </div>

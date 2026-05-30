@@ -11,7 +11,7 @@
                 {% endif %}
                 {% if section.subheading %}
                     <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
-                        <p class="lead mb-0 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading }}</p>
+                        <p class="lead mb-0 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|safe }}</p>
                     </div>
                 {% endif %}
             </div>

@@ -556,6 +556,17 @@ body.edit-mode .edit-sidebar .form-select {
     font-size: 0.9rem;
 }
 
+/* Rich text editor toolbar (in settings sidebar) */
+.cbl-rich-editor [contenteditable]:focus {
+    outline: 2px solid rgba(var(--bs-primary-rgb), 0.35);
+    border-color: var(--bs-primary);
+}
+.cbl-rich-toolbar .btn {
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
 body.edit-mode .cbl-inspector-selected {
     outline: 2px solid rgba(var(--bs-primary-rgb), 0.55) !important;
     outline-offset: 3px;

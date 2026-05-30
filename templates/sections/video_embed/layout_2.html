@@ -37,7 +37,7 @@
                 {% endif %}
                 {% if section.subheading %}
                     <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
-                        <div class="text-body-secondary fs-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|linebreaks }}</div>
+                        <div class="text-body-secondary fs-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|safe }}</div>
                     </div>
                 {% endif %}
                 {% if first and first.title %}

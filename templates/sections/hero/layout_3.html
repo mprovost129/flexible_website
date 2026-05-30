@@ -69,7 +69,7 @@
                 {% if section.subheading %}
                     <div class="edit-wrap mt-3" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
                         <p class="lead edit-content" style="color: inherit; opacity: 0.9;" data-edit-value="{{ section.subheading }}">
-                            {{ section.subheading }}
+                            {{ section.subheading|safe }}
                         </p>
                     </div>
                 {% endif %}

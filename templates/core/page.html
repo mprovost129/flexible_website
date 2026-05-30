@@ -32,7 +32,8 @@
                      data-section-bg="{{ section.background_color }}"
                      data-section-visible="{{ section.is_visible|yesno:'1,0' }}"
                      data-section-heading="{{ section.heading }}"
-                     data-section-subheading="{{ section.subheading }}">
+                     data-section-subheading="{{ section.subheading }}"
+                     data-section-image-url="{% if section.primary_image %}{{ section.primary_image.url }}{% endif %}">
                     {% include section.template_path %}
                 </div>
             {% endfor %}
