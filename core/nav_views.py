@@ -235,6 +235,7 @@ NAVBAR_CONFIG_CHOICE_KEYS = {
     'link_style': {'pill', 'underline', 'plain'},
     'zone_distribution': {'balanced', 'center-heavy', 'split'},
     'mobile_menu_style': {'collapse', 'offcanvas'},
+    'cta_style': {'accent', 'outline', 'light'},
     'scroll_effect': {'none', 'fade-in'},
     'section_spacing': {'compact', 'normal', 'spacious'},
 }

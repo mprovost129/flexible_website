@@ -22,6 +22,7 @@ def default_navbar_config():
         'link_style': 'pill',          # pill | underline | plain
         'zone_distribution': 'balanced',  # balanced | center-heavy | split
         'mobile_menu_style': 'collapse',  # collapse | offcanvas
+        'cta_style': 'accent',         # accent | outline | light
     }
 
 
@@ -227,6 +228,18 @@ class Page(models.Model):
     ]
 
     site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='pages')
+    inherit_site_theme = models.BooleanField(
+        default=True,
+        help_text='When enabled, this page uses the site theme.',
+    )
+    theme = models.ForeignKey(
+        Theme,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='page_overrides',
+        help_text='Optional page-specific theme when inheritance is disabled.',
+    )
     page_type = models.CharField(max_length=20, choices=PAGE_TYPES)
     variant = models.CharField(max_length=20)
     slug = models.SlugField(unique=True)
@@ -279,6 +292,17 @@ class Page(models.Model):
     def in_footer(self):
         """True if at least one visible footer link points to this page."""
         return self.footer_links.filter(is_visible=True).exists()
+
+    @property
+    def effective_theme(self):
+        """Theme used when rendering this page.
+
+        Pages inherit the site theme by default. When inheritance is disabled,
+        a page-specific theme is used if selected.
+        """
+        if self.inherit_site_theme:
+            return self.site.theme
+        return self.theme or self.site.theme
 
 
 class SoftDeleteManager(models.Manager):

@@ -26,7 +26,12 @@ Site Settings. All navbar presets use this same slot renderer.
                   role="search" action="/" method="get">
                 <label class="visually-hidden" for="navbar-search-{{ slot }}">Search</label>
                 <input id="navbar-search-{{ slot }}" class="form-control form-control-sm" type="search" name="q" placeholder="Search" aria-label="Search">
-                <button class="btn btn-sm btn-outline-primary ms-2" type="submit"><i class="bi bi-search"></i></button>
+                <button class="btn btn-sm btn-outline-primary"
+                        type="submit"
+                        aria-label="Search"
+                        title="Search">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                </button>
             </form>
         </div>
         {% endif %}
@@ -41,7 +46,7 @@ Site Settings. All navbar presets use this same slot renderer.
     {% elif block == 'cta' %}
         {% if site.nav_cta_label and site.nav_cta_url and site.nav_cta_slot == slot %}
         <div class="cbl-nav-block cbl-nav-block-cta" data-nav-block-kind="cta" data-nav-block-slot="{{ slot }}">
-            <a class="btn btn-primary btn-sm cbl-navbar-cta"
+            <a class="btn cbl-navbar-cta cbl-navbar-cta--{{ site.navbar_config_merged.cta_style|default:'accent' }}"
                data-chrome-slot-field="nav_cta_slot"
                data-chrome-slot-value="{{ slot }}"
                href="{{ site.nav_cta_url }}">{{ site.nav_cta_label }}</a>

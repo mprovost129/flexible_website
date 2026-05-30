@@ -140,7 +140,7 @@ def duplicate_pages_action(modeladmin, request, queryset):
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
-    list_display  = ('title', 'page_type', 'slug', 'is_enabled', 'order', 'duplicate_link')
+    list_display  = ('title', 'page_type', 'slug', 'is_enabled', 'inherit_site_theme', 'order', 'duplicate_link')
     list_editable = ('is_enabled', 'order')
     prepopulated_fields = {'slug': ('title',)}
     actions = [duplicate_pages_action]
@@ -152,7 +152,10 @@ class PageAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Page', {
-            'fields': ('site', 'page_type', 'title', 'slug', 'is_enabled', 'order', 'variant')
+            'fields': (
+                'site', 'page_type', 'title', 'slug', 'is_enabled', 'order', 'variant',
+                'inherit_site_theme', 'theme',
+            )
         }),
         ('SEO / Social sharing', {
             'fields': ('og_title', 'og_description', 'og_image'),

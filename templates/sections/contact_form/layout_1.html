@@ -16,7 +16,9 @@
 
   The form POSTs to /contact/submit/ which handles validation, spam filtering
   (honeypot field), email sending, and Django messages for success/error.
-  The page_slug hidden field ensures the user is redirected back to this page.
+    Hidden fields:
+        page_slug   -- redirect target after submit
+        section_id  -- lets the server load trusted section config (recipient)
 -->
 <section class="py-5"
          {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
@@ -38,11 +40,11 @@
                     {% csrf_token %}
                     <!-- Page to redirect back to after submission -->
                     <input type="hidden" name="page_slug" value="{{ page.slug }}">
-                    <!-- Recipient -- set in section config or falls back to DEFAULT_FROM_EMAIL -->
-                    <input type="hidden" name="to_email" value="{{ section.config.to_email|default:'' }}">
+                    <!-- Section id for trusted, server-side recipient lookup -->
+                    <input type="hidden" name="section_id" value="{{ section.id }}">
                     <!-- Honeypot: must stay empty. Bots fill everything; humans don't see this. -->
                     <div style="position:absolute;left:-9999px;opacity:0;" aria-hidden="true">
-                        <input type="text" name="website" tabindex="-1" autocomplete="off">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-label="Leave this field blank">
                     </div>
 
                     <div class="mb-3">

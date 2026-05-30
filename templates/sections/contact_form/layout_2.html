@@ -12,7 +12,7 @@
     link_url   -- optional link (e.g. "mailto:...", "tel:...")
     link_text  -- link display text (if different from text)
 
-  Config (Section.config JSON): same as layout_1 plus:
+    Config (Section.config JSON):
     to_email       -- recipient address
     show_subject   -- "false" to hide subject field
     submit_label   -- button label
@@ -68,9 +68,9 @@
                 <form method="POST" action="{% url 'core:contact_submit' %}" novalidate>
                     {% csrf_token %}
                     <input type="hidden" name="page_slug" value="{{ page.slug }}">
-                    <input type="hidden" name="to_email" value="{{ section.config.to_email|default:'' }}">
+                    <input type="hidden" name="section_id" value="{{ section.id }}">
                     <div style="position:absolute;left:-9999px;opacity:0;" aria-hidden="true">
-                        <input type="text" name="website" tabindex="-1" autocomplete="off">
+                        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-label="Leave this field blank">
                     </div>
 
                     <div class="row g-3">

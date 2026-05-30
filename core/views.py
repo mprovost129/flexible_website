@@ -1,13 +1,19 @@
+import logging
+
 from django.conf import settings
 from django.contrib import messages
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
-from .models import Page, Site
+from .models import Page, Section, Site
 from .site_resolver import get_active_site
+
+
+logger = logging.getLogger(__name__)
 
 
 @require_POST
@@ -33,14 +39,15 @@ class PageView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         slug = self.kwargs.get('slug', 'home')
+        site = get_active_site(self.request)
 
         # Staff can view a disabled page (to edit it before publishing);
         # the public gets a 404 for disabled pages.
         if self.request.user.is_authenticated and self.request.user.is_staff:
-            page = get_object_or_404(Page, slug=slug)
+            page = get_object_or_404(Page, site=site, slug=slug)
             sections = page.sections.all().prefetch_related('items')
         else:
-            page = get_object_or_404(Page, slug=slug, is_enabled=True)
+            page = get_object_or_404(Page, site=site, slug=slug, is_enabled=True)
             sections = page.sections.filter(is_visible=True).prefetch_related('items')
 
         ctx['page'] = page
@@ -63,9 +70,15 @@ def contact_submit(request):
     Honeypot field ('website') blocks bots. On success or spam, redirect back
     to the originating page with a Django message.
 
-    Config options (set in Section.config JSON via admin):
-      to_email: "you@example.com"   -- who receives the email.
-                                       Defaults to settings.DEFAULT_FROM_EMAIL.
+        Config options (set in Section.config JSON via admin):
+            to_email: "you@example.com"   -- who receives the email.
+                                                                             Defaults to settings.DEFAULT_FROM_EMAIL.
+
+        Recipient resolution is server-side only:
+            - request supplies section_id + page_slug
+            - view resolves the matching contact_form section on the active site
+            - view reads Section.config.to_email from DB
+            - request-provided to_email is ignored
 
     Requires email to be configured via EMAIL_* environment variables. If the
     email backend is the default console backend the message prints to stdout
@@ -78,11 +91,35 @@ def contact_submit(request):
         messages.success(request, 'Message sent!')
         return _redirect_page(page_slug)
 
+    ip = _client_ip(request)
+    throttle_key = f'contact-submit:{ip}:{page_slug}'
+    recent_submissions = cache.get_or_set(throttle_key, 0, timeout=60)
+    if recent_submissions >= 5:
+        logger.warning(
+            'Contact submission rate-limited',
+            extra={'page_slug': page_slug, 'client_ip': ip},
+        )
+        messages.error(request, 'Too many messages sent recently. Please wait a minute and try again.')
+        return _redirect_page(page_slug)
+    cache.incr(throttle_key)
+
     name    = request.POST.get('name', '').strip()
     email   = request.POST.get('email', '').strip()
     subject = request.POST.get('subject', '').strip() or 'Website contact form'
     body    = request.POST.get('message', '').strip()
-    to      = request.POST.get('to_email', '').strip() or settings.DEFAULT_FROM_EMAIL
+
+    to = settings.DEFAULT_FROM_EMAIL
+    section_id = (request.POST.get('section_id') or '').strip()
+    if section_id.isdigit():
+        site = get_active_site(request)
+        if section := Section.objects.filter(
+            pk=int(section_id),
+            page__site=site,
+            page__slug=page_slug,
+            section_type='contact_form',
+        ).select_related('page').first():
+            cfg = section.config if isinstance(section.config, dict) else {}
+            to = (cfg.get('to_email') or '').strip() or settings.DEFAULT_FROM_EMAIL
 
     if not name or not email or not body:
         messages.error(request, 'Please fill in all required fields.')
@@ -95,8 +132,16 @@ def contact_submit(request):
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[to],
         )
+        logger.info(
+            'Contact submission accepted',
+            extra={'page_slug': page_slug, 'client_ip': ip, 'section_id': section_id or None, 'recipient': to},
+        )
         messages.success(request, 'Message sent! We will be in touch soon.')
     except Exception:
+        logger.exception(
+            'Contact submission failed',
+            extra={'page_slug': page_slug, 'client_ip': ip, 'section_id': section_id or None},
+        )
         messages.error(
             request,
             'There was a problem sending your message. Please try again later.',
@@ -109,6 +154,13 @@ def _redirect_page(slug):
     if slug == 'home':
         return redirect('core:home')
     return redirect('core:page', slug=slug)
+
+
+def _client_ip(request):
+    forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    if forwarded_for:
+        return forwarded_for.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR', 'unknown')
 
 
 def robots_txt(request):

@@ -74,3 +74,22 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        var inheritEl = document.getElementById('id_inherit_site_theme');
+        var themeEl = document.getElementById('id_theme');
+        if (!inheritEl || !themeEl) return;
+
+        function syncThemeOverrideState() {
+            var inherited = !!inheritEl.checked;
+            themeEl.disabled = inherited;
+            themeEl.closest('.col-md-6')?.classList.toggle('opacity-50', inherited);
+        }
+
+        inheritEl.addEventListener('change', syncThemeOverrideState);
+        syncThemeOverrideState();
+    })();
+</script>
+{% endblock %}

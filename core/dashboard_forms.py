@@ -39,6 +39,11 @@ class SiteSettingsForm(BootstrapModelForm):
         ('collapse', 'Collapse'),
         ('offcanvas', 'Offcanvas Drawer'),
     ]
+    CTA_STYLE_CHOICES = [
+        ('accent', 'Accent (high contrast)'),
+        ('outline', 'Outline'),
+        ('light', 'Light pill'),
+    ]
 
     nav_height_px = forms.IntegerField(min_value=48, max_value=180, required=False, label='Navbar height (px)')
     nav_padding_x = forms.FloatField(min_value=0, max_value=6, required=False, label='Navbar horizontal padding (rem)')
@@ -53,6 +58,7 @@ class SiteSettingsForm(BootstrapModelForm):
     nav_link_style = forms.ChoiceField(choices=LINK_STYLE_CHOICES, required=False, label='Nav link style')
     nav_zone_distribution = forms.ChoiceField(choices=ZONE_DISTRIBUTION_CHOICES, required=False, label='Desktop zone distribution')
     nav_mobile_menu_style = forms.ChoiceField(choices=MOBILE_MENU_STYLE_CHOICES, required=False, label='Mobile menu style')
+    nav_cta_style = forms.ChoiceField(choices=CTA_STYLE_CHOICES, required=False, label='CTA button style')
 
     nav_bg_color = forms.CharField(required=False, label='Navbar background color')
     nav_text_color = forms.CharField(required=False, label='Navbar text color')
@@ -116,6 +122,7 @@ class SiteSettingsForm(BootstrapModelForm):
         self.fields['nav_link_style'].initial = cfg.get('link_style')
         self.fields['nav_zone_distribution'].initial = cfg.get('zone_distribution')
         self.fields['nav_mobile_menu_style'].initial = cfg.get('mobile_menu_style')
+        self.fields['nav_cta_style'].initial = cfg.get('cta_style', 'accent')
         self.fields['nav_bg_color'].initial = cfg.get('bg_color')
         self.fields['nav_text_color'].initial = cfg.get('text_color')
         self.fields['nav_link_color'].initial = cfg.get('link_color')
@@ -148,6 +155,7 @@ class SiteSettingsForm(BootstrapModelForm):
             'link_style': self.cleaned_data.get('nav_link_style') or cfg.get('link_style'),
             'zone_distribution': self.cleaned_data.get('nav_zone_distribution') or cfg.get('zone_distribution'),
             'mobile_menu_style': self.cleaned_data.get('nav_mobile_menu_style') or cfg.get('mobile_menu_style'),
+            'cta_style': self.cleaned_data.get('nav_cta_style') or cfg.get('cta_style', 'accent'),
             'bg_color': self.cleaned_data.get('nav_bg_color', ''),
             'text_color': self.cleaned_data.get('nav_text_color', ''),
             'link_color': self.cleaned_data.get('nav_link_color', ''),
@@ -166,6 +174,7 @@ class PageForm(BootstrapModelForm):
         model = Page
         fields = [
             'title', 'slug', 'page_type', 'variant', 'order', 'is_enabled',
+            'inherit_site_theme', 'theme',
             'og_title', 'og_description', 'og_image',
         ]
         widgets = {
@@ -173,7 +182,15 @@ class PageForm(BootstrapModelForm):
         }
         labels = {
             'is_enabled': 'Published',
+            'inherit_site_theme': 'Use site theme',
+            'theme': 'Page theme override',
         }
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get('inherit_site_theme'):
+            cleaned['theme'] = None
+        return cleaned
 
 
 class SectionForm(BootstrapModelForm):

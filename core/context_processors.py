@@ -1,4 +1,4 @@
-from .models import Site
+from .models import Page, Site
 from .site_resolver import get_active_site
 
 
@@ -19,8 +19,22 @@ def site_context(request):
     if getattr(request, 'user', None) and request.user.is_authenticated and request.user.is_staff:
         edit_mode_active = request.session.get('edit_mode', True)
 
+    active_theme = site.theme if site else None
+    if site:
+        match = getattr(request, 'resolver_match', None)
+        url_name = getattr(match, 'url_name', '') if match else ''
+        if url_name in {'home', 'page'}:
+            slug = (getattr(match, 'kwargs', {}) or {}).get('slug', 'home')
+            page_qs = Page.objects.filter(site=site, slug=slug).select_related('theme')
+            if not (getattr(request, 'user', None) and request.user.is_authenticated and request.user.is_staff):
+                page_qs = page_qs.filter(is_enabled=True)
+            page = page_qs.first()
+            if page and not page.inherit_site_theme and page.theme_id:
+                active_theme = page.theme
+
     return {
         'site': site,
         'cms_site': site,
+        'active_theme': active_theme,
         'edit_mode_active': edit_mode_active,
     }

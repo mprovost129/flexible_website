@@ -54,7 +54,7 @@ branches are unchanged for the public.
         data-navlink-visible="{{ link.is_visible|yesno:'1,0' }}"
         data-navlink-page-id="{{ link.page_id|default:'' }}">
         <a href="{{ href }}"
-           class="btn btn-primary ms-lg-2 {{ link_class }}"
+           class="btn cbl-navbar-cta cbl-navbar-cta--{{ site.navbar_config_merged.cta_style|default:'accent' }} ms-lg-2 {{ link_class }}"
            {% if link.open_new_tab %}target="_blank" rel="noopener"{% endif %}>
             {{ link.label }}
         </a>

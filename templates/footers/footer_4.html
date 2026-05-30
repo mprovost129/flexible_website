@@ -10,7 +10,7 @@
                     <span class="fs-4 fw-bold">{{ site.name }}</span>
                 {% endif %}
             </a>
-            <p class="text-body-secondary">&copy; {% now "Y" %} {{ site.copyright_text }}</p>
+            <p class="text-body-secondary">{{ site.copyright_text }}</p>
         </div>
         {% for column in site.footer_columns.all %}
             {% if column.is_visible %}

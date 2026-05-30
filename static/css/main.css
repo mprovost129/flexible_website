@@ -91,6 +91,37 @@ a:hover {
     color: var(--cbl-main-link-hover, var(--bs-link-hover-color));
 }
 
+/* Keyboard users need a strong, consistent focus target across controls. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.btn:focus-visible,
+[role="button"]:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--bs-info, #0dcaf0) 80%, #ffffff 20%);
+    outline-offset: 2px;
+    box-shadow: none !important;
+}
+
+.skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 11000;
+    padding: 0.6rem 0.9rem;
+    border-radius: 0.4rem;
+    background: #111827;
+    color: #ffffff !important;
+    text-decoration: none;
+    transition: top 0.15s ease;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+    top: 1rem;
+}
+
 /* =============================================================================
    Layout
    ============================================================================= */
@@ -179,6 +210,65 @@ main {
     --bs-btn-active-bg: color-mix(in srgb, var(--cbl-chrome-text, #fff) 20%, transparent);
     --bs-btn-active-border-color: var(--cbl-chrome-link, #fff);
     --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
+}
+
+#navbar-region .cbl-navbar-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.5rem;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    border: 2px solid transparent;
+    text-decoration: none;
+    transition: background-color 0.16s ease, color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+#navbar-region .cbl-navbar-cta:hover {
+    transform: translateY(-1px);
+}
+
+#navbar-region .cbl-navbar-cta--accent {
+    background: #ea580c;
+    border-color: #ffffff;
+    color: #ffffff !important;
+}
+
+#navbar-region .cbl-navbar-cta--accent:hover,
+#navbar-region .cbl-navbar-cta--accent:focus {
+    background: #c2410c;
+    border-color: #ffffff;
+    color: #ffffff !important;
+}
+
+#navbar-region .cbl-navbar-cta--outline {
+    background: transparent;
+    border-color: #ffffff;
+    color: #ffffff !important;
+}
+
+#navbar-region .cbl-navbar-cta--outline:hover,
+#navbar-region .cbl-navbar-cta--outline:focus {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: #ffffff;
+    color: #ffffff !important;
+}
+
+#navbar-region .cbl-navbar-cta--light {
+    background: #ffffff;
+    border-color: #ffffff;
+    color: var(--cbl-chrome-bg, var(--bs-primary)) !important;
+}
+
+#navbar-region .cbl-navbar-cta--light:hover,
+#navbar-region .cbl-navbar-cta--light:focus {
+    background: #f1f5f9;
+    border-color: #ffffff;
+    color: var(--cbl-chrome-bg, var(--bs-primary)) !important;
 }
 
 #footer-region .border-top,
@@ -1176,8 +1266,35 @@ body:not(.edit-mode) .nav-drag-handle {
     color: var(--cbl-nav-link-hover, inherit);
     background: var(--cbl-nav-link-hover-bg, transparent);
 }
+.cbl-nav-block-search {
+    min-width: 0;
+    flex: 0 0 11rem;
+    min-width: 11rem;
+    max-width: 11rem;
+}
 .cbl-navbar-search {
-    min-width: min(18rem, 100%);
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    min-width: 0;
+    width: 100%;
+}
+.cbl-navbar-search .form-control {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 2.25rem;
+    padding: .35rem .6rem;
+    font-size: .875rem;
+    border-radius: 999px;
+}
+.cbl-navbar-search .btn {
+    flex: 0 0 auto;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 .55rem;
+    margin-left: 0 !important;
+    border-radius: 999px;
 }
 .cbl-navbar-mobile .navbar-brand,
 .cbl-navbar-zone .navbar-brand {
@@ -1222,6 +1339,18 @@ body:not(.edit-mode) .nav-drag-handle {
     .cbl-navbar-shell .btn,
     .cbl-navbar-search {
         width: 100%;
+    }
+}
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .cbl-nav-block-search {
+        flex: 0 0 auto;
+        max-width: none;
+    }
+    .cbl-navbar-search {
+        width: auto;
+    }
+    .cbl-navbar-search .form-control {
+        display: none;
     }
 }
 @media (min-width: 992px) {
