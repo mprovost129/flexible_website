@@ -1,99 +1,127 @@
-# CBL demo driver
+# CBL Demo — Screen Recording Guide
 
-A script that opens a real Chrome window and operates CBL by itself: it runs
-the first-run setup wizard, lands on the live site, and live-edits the navbar
-and brand in edit mode. You screen-record the window while it runs, then upload
-the recording wherever you want (landing page, Gumroad, etc.).
+Two scripts live in this folder:
 
-On top of plain browser automation it adds, so the result films well:
+| Script | What it does |
+|---|---|
+| `record.bat` | **Start here.** Resets the DB and launches the site builder. Double-click to run. |
+| `build_site.py` | Drives Chrome to build a complete site from scratch (login → pages → theme → preview). |
+| `demo_drive.py` | Older wizard-based demo. See the bottom of this file if you need it. |
 
-- a large, always-visible cursor that glides between targets,
-- a click ripple so every click reads on camera,
-- a caption bar at the bottom narrating each step (easy to trim out later).
+---
 
-## One-time install
+## One-time setup
 
 ```bash
 pip install -r demo/requirements-demo.txt
 playwright install chromium
 ```
 
-- `playwright` is the browser automation library.
-- `playwright install chromium` downloads the actual browser it drives. You only do this once.
+Only needed once. `playwright install chromium` downloads the browser that the scripts drive.
 
-## Recording the full demo (with the setup wizard)
+---
 
-The demo uses a **dedicated SQLite database** (`demo.sqlite3`) so it never
-touches your dev or production database. Everything runs locally — no
-PostgreSQL or Cloudinary needed.
+## Recording a demo (recommended)
+
+### What it shows
+
+The script logs in, then builds a real site live in the browser:
+
+1. Login with a pre-created account — lands on a blank site in edit mode
+2. **Add Hero section** — heading and subheading typed in the sidebar
+3. **Add Feature List section** — "Why Clients Choose Us", set to 3 columns
+4. **Add Call to Action section** — heading and subheading
+5. **Rename the brand** — "Bright Studio" via the sidebar brand panel
+6. **Switch theme** — Ocean theme picked from the theme swatches
+7. **Create a Contact page** — via the sidebar page panel, contact form template
+8. **Navigate to Contact** — shows the live contact form
+9. **Exit edit mode** — preview of the finished public site
+
+### Steps
+
+**1. Start your screen recorder** pointed at the Chrome window (not your whole screen).
+
+**2. Double-click `demo\record.bat`**
+
+That's it. The script:
+- Resets the database to a clean state automatically
+- Waits 3 seconds (hit record in that window)
+- Opens Chrome and builds the site
+
+The browser stays open after the build finishes. Stop recording whenever you're happy with the take.
+
+### Another take
+
+Just double-click `record.bat` again. It resets the database at the start every time.
+
+---
+
+## Running from the terminal instead
+
+If you prefer the command line over the batch file:
 
 ```bash
-# 1. Run the server on the demo database (leave this terminal running):
-python manage.py runserver --settings=config.Settings.demo
+# 1. Reset the database
+python -c "
+import os, django
+os.environ['DJANGO_SETTINGS_MODULE'] = 'config.Settings.dev'
+django.setup()
+from django.core.management import call_command
+call_command('flush', '--no-input', verbosity=0)
+from core.management.commands.seed_site import Command as S
+class Q:
+    def write(self, *a): pass
+    def __getattr__(self, n): return lambda s='': s
+c = S(); c.stdout = Q(); c.style = Q(); c.handle()
+from django.contrib.auth import get_user_model
+from core.models import Site
+User = get_user_model()
+User.objects.create_superuser(email='hello@brightstudio.com', password='Demo1234!')
+site = Site.objects.first()
+site.name = 'Bright Studio'; site.show_brand_name = True; site.navbar_theme = 'light'
+site.save()
+print('Ready')
+"
 
-# 2. In a SECOND terminal, start your screen recorder, then run:
-python demo/demo_drive.py --base-url http://localhost:8000 --speed slow
+# 2. Start your recorder, then run the builder
+python demo/build_site.py
 ```
 
-To reset back to a fresh wizard for another take, just delete `demo.sqlite3`
-and re-run the migrate step:
+The server must be running on port 8001 before you start. If it's not, the script will fail immediately with a connection error.
 
-```bash
-# Windows (PowerShell):
-Remove-Item demo.sqlite3
-python manage.py migrate --settings=config.Settings.demo
-
-# Mac/Linux:
-rm demo.sqlite3 && python manage.py migrate --settings=config.Settings.demo
-```
-
-- A maximized Chrome window opens and drives itself through the whole flow.
-- The script prints "Start your screen recorder now" and waits 2 seconds before it begins, giving you a moment to hit record.
-- `--speed slow` is the most watchable. Use `normal` or `fast` for a snappier cut.
-
-## If an admin already exists
-
-If the database is not fresh, the wizard has locked itself. The script detects
-this, logs in with the same credentials instead, and still demonstrates the
-live editing. To force the full wizard segment, reset the database as in step 1.
-
-## Useful flags
-
-```bash
-python demo/demo_drive.py \
-  --base-url http://localhost:8000 \   # or your Render URL
-  --email owner@example.com \          # admin account the wizard creates
-  --password supersecret123 \
-  --site-name "Acme Builders" \        # also used to rename the brand on camera
-  --pack contractor \                  # starting pack, or "" for a blank start
-  --speed slow \                       # slow | normal | fast
-  --keep-open                          # leave the browser open at the end
-```
-
-- `--no-cursor` turns off the fake cursor and caption bar if you want a clean UI capture.
-- `--keep-open` pauses at the end so the final state stays on screen until you press Enter in the terminal.
+---
 
 ## Tips for a clean recording
 
-- Record the Chrome window only, not your whole screen, so the terminal does not show.
-- The captions are designed to be trimmed: if you want a silent UI capture, pass `--no-cursor` and add your own voiceover.
-- Every step is best-effort. If one element is not found (for example a template
-  changed), that step is logged in the terminal and skipped, and the recording
-  keeps going rather than crashing mid-take.
-- Want to point it at a deployed site? Pass `--base-url https://your-site.onrender.com`. Remember the wizard only runs there if that deployment has no admin yet.
+- **Record Chrome only**, not your whole screen — keep the terminal out of frame.
+- The script runs at a speed that looks natural on camera: fast enough to feel efficient, slow enough to follow.
+- If a step fails it is logged to the terminal and skipped; the recording keeps going.
+- For another take, just run `record.bat` again — no manual cleanup needed.
 
-## What the script does, in order
+---
 
-1. Opens `/setup/` and decides wizard vs login based on where it lands.
-2. (Wizard) fills email, password, confirm, site name, picks a pack, submits.
-3. Shows the live site in edit mode.
-4. Hovers the navbar, opens "Add item", chooses "Nav link".
-5. The sidebar link-creator opens — types "Services" and "/services/" into the
-   label and URL fields, then clicks "Add link". Page reloads with the new item.
-6. Renames the brand inline the same way.
-7. Exits edit mode to show the clean public view.
-8. Clears the caption and (optionally) waits before closing.
+## Credentials used by the builder
 
-To change the script, the steps live in `run()` inside `demo/demo_drive.py`,
-each wrapped in `d.step("caption", lambda: ...)`. Add, remove, or reorder those
-calls to change what the video shows.
+| Field | Value |
+|---|---|
+| Email | `hello@brightstudio.com` |
+| Password | `Demo1234!` |
+| Site name | Bright Studio |
+| Theme | Ocean |
+
+To change these, edit the top of `demo/build_site.py`.
+
+---
+
+## Older wizard-based demo (`demo_drive.py`)
+
+`demo_drive.py` runs the first-run setup wizard and was the original demo approach. It is kept here but `build_site.py` is recommended instead.
+
+If you want to use it:
+
+```bash
+# Requires a fresh database with no admin account
+python demo/demo_drive.py --speed slow --keep-open
+```
+
+The preflight check will tell you if the database needs to be reset first.
