@@ -190,8 +190,27 @@
     });
   }
 
+  function trackNavbarHeight() {
+    var region = document.getElementById('navbar-region');
+    var sidebar = document.getElementById('edit-sidebar');
+    if (!region || !sidebar) return;
+    function update() {
+      // Use ceil so we always round up; add 12px buffer for shadow + breathing room
+      var h = Math.ceil(region.getBoundingClientRect().height) + 12;
+      sidebar.style.top = h + 'px';
+      sidebar.style.maxHeight = 'calc(100vh - ' + h + 'px - 1rem)';
+    }
+    update();
+    // Re-measure after full load (fonts/images can affect navbar height)
+    window.addEventListener('load', update, { once: true });
+    if (window.ResizeObserver) {
+      new ResizeObserver(update).observe(region);
+    }
+  }
+
   function init() {
     if (!document.body.classList.contains('edit-mode')) return;
+    trackNavbarHeight();
     wireChromeHoverAdd();
     wireHoverAddButtons();
     setupPageStatusPanel();
