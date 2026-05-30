@@ -196,32 +196,48 @@ class Demo:
 
 def preflight(base):
     """Verify the server is reachable and the wizard is unlocked before opening Chrome."""
+    import json
     import urllib.request
     import urllib.error
 
     # 1. Is the server running at all?
     try:
-        resp = urllib.request.urlopen(f"{base}/setup/", timeout=5)
-        final_url = resp.url
+        urllib.request.urlopen(f"{base}/healthz", timeout=5)
     except urllib.error.URLError as e:
-        print(f"\n✗ Cannot reach {base}/setup/")
+        print(f"\n✗ Cannot reach {base}")
         print(f"  Error: {e.reason}")
         print("\n  FIX: Open demo/serve.bat (double-click it) and wait for")
         print("  'Starting development server at http://127.0.0.1:8000/'")
         print("  then re-run this script.")
         return False
 
-    # 2. Did the wizard redirect us away (i.e., an admin already exists)?
-    if "/setup" not in final_url:
-        print(f"\n✗ The wizard is locked — the server already has an admin account.")
-        print(f"  URL after redirect: {final_url}")
-        print("\n  This usually means the server is using the wrong database.")
-        print("  Make sure you started the server with demo/serve.bat,")
-        print("  NOT with plain 'python manage.py runserver'.")
-        print("\n  To reset the demo database, run demo/reset_db.bat, then")
-        print("  restart demo/serve.bat, then re-run this script.")
+    # 2. Query the live diagnostic endpoint to see the actual server state.
+    try:
+        resp = urllib.request.urlopen(f"{base}/__demo_state__/", timeout=5)
+        state = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            print(f"\n✗ The server is running but the /__demo_state__/ endpoint is missing.")
+            print(f"  This means the server is NOT using the demo settings.")
+            print(f"  Stop it and start it with demo/serve.bat instead.")
+            return False
+        raise
+    except Exception as e:
+        print(f"\n✗ Diagnostic check failed: {e}")
         return False
 
+    print(f"\n  Server DB: {state.get('db_name', '?')}")
+    print(f"  Superusers in DB: {state.get('superusers', '?')}")
+    print(f"  Wizard ready: {state.get('wizard_ready', '?')}")
+
+    if not state.get('wizard_ready'):
+        print(f"\n✗ The wizard is locked — {state.get('superusers')} superuser(s) in the database.")
+        print(f"  DB file: {state.get('db_name')}")
+        print("\n  Run demo/reset_db.bat (you do NOT need to stop the server),")
+        print("  then re-run this script.")
+        return False
+
+    print(f"\n  Preflight OK — wizard is ready.\n")
     return True
 
 

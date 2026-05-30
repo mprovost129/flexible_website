@@ -23,3 +23,7 @@ DATABASES = {
 
 # Accept weak passwords in the demo (the wizard enforces 8 chars minimum).
 AUTH_PASSWORD_VALIDATORS = []
+
+# Expose a diagnostic endpoint so the demo preflight can verify the live
+# server is actually using this database (not a dev/prod one).
+CBL_DEMO_DIAGNOSTICS = True
