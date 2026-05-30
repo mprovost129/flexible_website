@@ -72,12 +72,7 @@
 
     document.addEventListener('click', function (event) {
       if (event.target.closest('#edit-sidebar')) return;
-      if (event.target.closest('.nav-edit-controls, .section-toolbar, .chrome-hover-add, .edit-pencil-btn, .nav-drag-handle, .item-delete-btn, .footer-edit-controls, .brand-edit-controls, .edit-form')) {
-        return;
-      }
-      // Keep auth actions functional while edit-mode inspector is active.
-      // Without this, capture-phase interception blocks logout form submits.
-      if (event.target.closest('form[action$="/accounts/logout/"]')) {
+      if (event.target.closest('.nav-edit-controls, .section-toolbar, .chrome-hover-add, .edit-pencil-btn, .nav-drag-handle, .item-delete-btn, .footer-edit-controls, .brand-edit-controls')) {
         return;
       }
 
@@ -85,7 +80,7 @@
       if (itemWrap) {
         event.preventDefault();
         event.stopPropagation();
-        render({ kind: 'item', el: itemWrap, itemId: itemWrap.dataset.editId });
+        render({ kind: 'item', itemId: itemWrap.dataset.editId });
         return;
       }
 
@@ -249,12 +244,6 @@
       '</div>' +
       '</div>');
 
-    rows.push('<div class="edit-sidebar-section">' +
-      '<h3>Pages</h3>' +
-      '<div class="sidebar-pages-list mb-2"><span class="small text-body-secondary">Loading…</span></div>' +
-      '<button type="button" class="btn btn-sm btn-outline-success w-100 sidebar-new-page-btn">+ New page</button>' +
-      '</div>');
-
     var sectionSpacing = document.body.dataset.sectionSpacing || 'normal';
     var bodyBg = document.body.dataset.bodyBg || '';
     rows.push('<div class="edit-sidebar-section">' +
@@ -286,9 +275,6 @@
     var subheading = sectionEl.dataset.sectionSubheading || '';
     var bg = sectionEl.dataset.sectionBg || '';
     var columns = sectionEl.dataset.sectionColumns || '';
-    var imageUrl = sectionEl.dataset.sectionImageUrl || '';
-    var padTop = sectionEl.dataset.sectionPaddingTop || '';
-    var padBot = sectionEl.dataset.sectionPaddingBottom || '';
     var showColumns = COLUMN_SECTION_TYPES.indexOf(sectionType) !== -1;
 
     var layoutOptions = layouts.map(function (item) {
@@ -305,27 +291,13 @@
         '</select>';
     }
 
-    var imgHtml = imageUrl
-      ? '<img src="' + escapeHtml(imageUrl) + '" alt="" style="max-height:80px;max-width:100%;border-radius:4px;object-fit:cover;" class="mb-2 d-block">'
-      : '<p class="small text-body-secondary mb-2">No image.</p>';
-
     return '<div class="mb-2 fw-semibold">' + escapeHtml(sectionType.replace(/_/g, ' ')) + '</div>' +
-      '<div class="edit-sidebar-section">' +
-        '<h3>Image</h3>' +
-        imgHtml +
-        '<input type="file" class="sidebar-section-img-file" accept="image/*" style="display:none">' +
-        '<div class="d-flex gap-2 mb-1">' +
-          '<button type="button" class="btn btn-sm btn-outline-primary flex-fill sidebar-upload-section-img">Upload image</button>' +
-          (imageUrl ? '<button type="button" class="btn btn-sm btn-outline-danger sidebar-remove-section-img">Remove</button>' : '') +
-        '</div>' +
-        '<div class="small text-danger sidebar-section-img-status"></div>' +
-      '</div>' +
       '<div class="edit-sidebar-section">' +
         '<h3>Content</h3>' +
         '<label class="form-label small mb-1">Heading</label>' +
         '<input type="text" class="form-control form-control-sm mb-2 sidebar-section-heading" value="' + escapeHtml(heading) + '">' +
         '<label class="form-label small mb-1">Subheading</label>' +
-        renderRichTextEditor('sidebar-section-subheading', subheading) +
+        '<textarea class="form-control form-control-sm mb-2 sidebar-section-subheading" rows="3">' + escapeHtml(subheading) + '</textarea>' +
         '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-content">Save content</button>' +
       '</div>' +
       '<div class="edit-sidebar-section">' +
@@ -335,13 +307,6 @@
         columnsHtml +
         '<label class="form-label small mb-1">Background color</label>' +
         '<input type="text" class="form-control form-control-sm mb-2 sidebar-section-bg" placeholder="#ffffff or empty" value="' + escapeHtml(bg) + '">' +
-        '<label class="form-label small mb-1">Spacing</label>' +
-        '<div class="d-flex gap-2 align-items-center mb-2">' +
-          '<span class="small text-body-secondary" style="white-space:nowrap">Top (rem)</span>' +
-          '<input type="number" class="form-control form-control-sm sidebar-section-pad-top" min="0" max="30" step="0.5" value="' + escapeHtml(padTop) + '" placeholder="0">' +
-          '<span class="small text-body-secondary" style="white-space:nowrap">Bottom (rem)</span>' +
-          '<input type="number" class="form-control form-control-sm sidebar-section-pad-bot" min="0" max="30" step="0.5" value="' + escapeHtml(padBot) + '" placeholder="0">' +
-        '</div>' +
         '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-display">Save display</button>' +
       '</div>' +
       '<div class="edit-sidebar-section">' +
@@ -586,70 +551,38 @@
       '</button>';
     }).join('');
 
-    var slotSelect = '<select class="form-select form-select-sm sidebar-shared-slot">' +
-      '<option value="left">Left</option>' +
-      '<option value="center">Center</option>' +
-      '<option value="right">Right</option>' +
-    '</select>';
-
     return '<div class="edit-sidebar-section">' +
-        '<h3>Slot</h3>' +
-        slotSelect +
-      '</div>' +
-      '<div class="edit-sidebar-section">' +
-        '<h3>Link to existing page</h3>' +
-        '<select class="form-select form-select-sm mb-2 sidebar-link-page-picker"><option value="">Choose a page…</option></select>' +
-        '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-add-page-link" disabled>Add to navbar</button>' +
-      '</div>' +
-      '<div class="edit-sidebar-section">' +
-        '<h3>Custom link</h3>' +
-        '<label class="form-label small mb-1">Label</label>' +
-        '<input type="text" class="form-control form-control-sm mb-2 sidebar-ext-label" placeholder="e.g. Blog">' +
-        '<label class="form-label small mb-1">URL</label>' +
-        '<input type="text" class="form-control form-control-sm mb-2 sidebar-ext-url" placeholder="https://…">' +
-        '<button type="button" class="btn btn-sm btn-outline-primary w-100 sidebar-add-ext-link">Add link</button>' +
-      '</div>' +
-      '<div class="edit-sidebar-section">' +
-        '<h3>Create new page</h3>' +
-        '<label class="form-label small mb-1">Page title</label>' +
-        '<input type="text" class="form-control form-control-sm mb-2 sidebar-new-page-title" placeholder="e.g. About Us">' +
+        '<h3>Create a new page</h3>' +
+        '<p class="small text-body-secondary mb-2">Pick a template to build a page and add it to the navbar.</p>' +
+        '<div class="mb-2"><label class="form-label small mb-1">Page title</label>' +
+        '<input type="text" class="form-control form-control-sm sidebar-new-page-title" placeholder="e.g. About Us"></div>' +
         '<div class="cbl-tpl-grid mb-2">' + templateCards + '</div>' +
-        '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-create-page-link" disabled>Create page &amp; add to nav</button>' +
+        '<div class="mb-2"><label class="form-label small mb-1">Slot</label>' +
+        '<select class="form-select form-select-sm sidebar-new-page-slot">' +
+          '<option value="left">Left</option>' +
+          '<option value="center">Center</option>' +
+          '<option value="right">Right</option>' +
+        '</select></div>' +
+        '<button type="button" class="btn btn-sm btn-primary w-100 mb-2 sidebar-create-page-link" disabled>Create page &amp; add to nav</button>' +
+      '</div>' +
+      '<div class="edit-sidebar-section">' +
+        '<h3>Or link to a URL</h3>' +
+        '<div class="mb-2"><label class="form-label small mb-1">Label</label>' +
+        '<input type="text" class="form-control form-control-sm sidebar-ext-label" placeholder="e.g. Blog"></div>' +
+        '<div class="mb-2"><label class="form-label small mb-1">URL</label>' +
+        '<input type="text" class="form-control form-control-sm sidebar-ext-url" placeholder="https://..."></div>' +
+        '<div class="mb-2"><label class="form-label small mb-1">Slot</label>' +
+        '<select class="form-select form-select-sm sidebar-ext-slot">' +
+          '<option value="left">Left</option>' +
+          '<option value="center">Center</option>' +
+          '<option value="right">Right</option>' +
+        '</select></div>' +
+        '<button type="button" class="btn btn-sm btn-outline-primary w-100 sidebar-add-ext-link">Add link</button>' +
       '</div>';
   }
 
   function wireNewNavLink(body, isButton) {
     var selectedKey = null;
-
-    var pagePicker = body.querySelector('.sidebar-link-page-picker');
-    var addPageBtn = body.querySelector('.sidebar-add-page-link');
-    if (pagePicker) {
-      fetchPages(function (pages) {
-        pages.forEach(function (p) {
-          var opt = document.createElement('option');
-          opt.value = String(p.id);
-          opt.textContent = p.title + (p.published ? '' : ' (draft)');
-          pagePicker.appendChild(opt);
-        });
-      });
-      pagePicker.addEventListener('change', function () {
-        if (addPageBtn) addPageBtn.disabled = !pagePicker.value;
-      });
-    }
-    if (addPageBtn) {
-      addPageBtn.addEventListener('click', function () {
-        var page = (_pagesCache || []).filter(function (p) { return String(p.id) === pagePicker.value; })[0];
-        if (!page) return;
-        var slotEl = body.querySelector('.sidebar-shared-slot');
-        var slot = slotEl ? slotEl.value : 'left';
-        addPageBtn.disabled = true;
-        postJson('/edit/nav-link/add/', { label: page.title, url: page.url, slot: slot, is_button: isButton ? '1' : '0' })
-          .then(function (resp) {
-            if (window.cblSetFocusHint) window.cblSetFocusHint({ kind: 'nav-link', id: resp.id });
-            window.location.reload();
-          }).catch(function (err) { addPageBtn.disabled = false; alertError(err); });
-      });
-    }
 
     body.querySelectorAll('.sidebar-pick-template').forEach(function (card) {
       card.addEventListener('click', function () {
@@ -658,7 +591,7 @@
         selectedKey = card.dataset.tplKey;
         var titleInput = body.querySelector('.sidebar-new-page-title');
         if (titleInput && !titleInput.value.trim()) {
-          var tpl = PAGE_TEMPLATES.filter(function (t) { return t.key === selectedKey; })[0];
+          var tpl = PAGE_TEMPLATES.find(function (t) { return t.key === selectedKey; });
           if (tpl) titleInput.value = tpl.name;
         }
         var createBtn = body.querySelector('.sidebar-create-page-link');
@@ -671,20 +604,25 @@
       createBtn.addEventListener('click', function () {
         if (!selectedKey) return;
         var titleEl = body.querySelector('.sidebar-new-page-title');
-        var slotEl  = body.querySelector('.sidebar-shared-slot');
+        var slotEl = body.querySelector('.sidebar-new-page-slot');
         var title = titleEl ? titleEl.value.trim() : '';
-        var slot  = slotEl  ? slotEl.value         : 'left';
+        var slot = slotEl ? slotEl.value : 'left';
         createBtn.disabled = true;
-        createBtn.textContent = 'Creating…';
-        postJson('/edit/nav-link/create-page/', { template_key: selectedKey, title: title, slot: slot })
-          .then(function (resp) {
-            if (window.cblSetFocusHint) window.cblSetFocusHint({ kind: 'nav-link', id: resp.nav_link_id });
-            window.location.reload();
-          }).catch(function (err) {
-            createBtn.disabled = false;
-            createBtn.textContent = 'Create page & add to nav';
-            alertError(err);
-          });
+        createBtn.textContent = 'Creating...';
+        postJson('/edit/nav-link/create-page/', {
+          template_key: selectedKey,
+          title: title,
+          slot: slot,
+        }).then(function (resp) {
+          if (window.cblSetFocusHint) {
+            window.cblSetFocusHint({ kind: 'nav-link', id: resp.nav_link_id });
+          }
+          window.location.reload();
+        }).catch(function (err) {
+          createBtn.disabled = false;
+          createBtn.textContent = 'Create page & add to nav';
+          alertError(err);
+        });
       });
     }
 
@@ -692,19 +630,26 @@
     if (addExtBtn) {
       addExtBtn.addEventListener('click', function () {
         var labelEl = body.querySelector('.sidebar-ext-label');
-        var urlEl   = body.querySelector('.sidebar-ext-url');
-        var slotEl  = body.querySelector('.sidebar-shared-slot');
+        var urlEl = body.querySelector('.sidebar-ext-url');
+        var slotEl = body.querySelector('.sidebar-ext-slot');
         var label = labelEl ? labelEl.value.trim() : 'New Link';
-        var url   = urlEl   ? urlEl.value.trim()   : '/';
-        var slot  = slotEl  ? slotEl.value         : 'left';
+        var url = urlEl ? urlEl.value.trim() : '/';
+        var slot = slotEl ? slotEl.value : 'left';
         if (!label) label = 'New Link';
-        if (!url)   url   = '/';
+        if (!url) url = '/';
         addExtBtn.disabled = true;
-        postJson('/edit/nav-link/add/', { label: label, url: url, slot: slot, is_button: isButton ? '1' : '0' })
-          .then(function (resp) {
-            if (window.cblSetFocusHint) window.cblSetFocusHint({ kind: 'nav-link', id: resp.id });
-            window.location.reload();
-          }).catch(function (err) { addExtBtn.disabled = false; alertError(err); });
+        postJson('/edit/nav-link/add/', {
+          label: label, url: url, slot: slot,
+          is_button: isButton ? '1' : '0',
+        }).then(function (resp) {
+          if (window.cblSetFocusHint) {
+            window.cblSetFocusHint({ kind: 'nav-link', id: resp.id });
+          }
+          window.location.reload();
+        }).catch(function (err) {
+          addExtBtn.disabled = false;
+          alertError(err);
+        });
       });
     }
   }
@@ -824,30 +769,6 @@
       });
     }
 
-    var pagesList = body.querySelector('.sidebar-pages-list');
-    if (pagesList) {
-      fetchPages(function (pages) {
-        if (!pages.length) { pagesList.innerHTML = '<p class="small text-body-secondary mb-0">No pages found.</p>'; return; }
-        pagesList.innerHTML = '';
-        pages.forEach(function (p) {
-          var isCurrent = page && p.slug === page.slug;
-          var a = document.createElement('a');
-          a.href = p.url;
-          a.className = 'd-flex align-items-center gap-1 text-decoration-none py-1 border-bottom small ' + (isCurrent ? 'fw-semibold text-body' : 'text-body-secondary');
-          a.innerHTML = escapeHtml(p.title || p.slug) +
-            '<span class="badge text-bg-' + (p.published ? 'success' : 'secondary') + ' ms-auto">' +
-            (p.published ? 'Live' : 'Draft') + '</span>';
-          pagesList.appendChild(a);
-        });
-      });
-    }
-    var newPageBtn = body.querySelector('.sidebar-new-page-btn');
-    if (newPageBtn) {
-      newPageBtn.addEventListener('click', function () {
-        if (typeof window.cblShowNewNavLinkPanel === 'function') window.cblShowNewNavLinkPanel(false);
-      });
-    }
-
     var savePageDesign = body.querySelector('.sidebar-save-page-design');
     if (savePageDesign) {
       savePageDesign.addEventListener('click', function () {
@@ -897,74 +818,35 @@
   function wireSection(body, sectionEl) {
     var sectionId = sectionEl.dataset.sectionId;
 
-    var uploadImgBtn = body.querySelector('.sidebar-upload-section-img');
-    var imgFile      = body.querySelector('.sidebar-section-img-file');
-    var removeImgBtn = body.querySelector('.sidebar-remove-section-img');
-    var imgStatus    = body.querySelector('.sidebar-section-img-status');
-
-    if (uploadImgBtn && imgFile) {
-      uploadImgBtn.addEventListener('click', function () { imgFile.click(); });
-      imgFile.addEventListener('change', function () {
-        if (!imgFile.files || !imgFile.files.length) return;
-        var fd = new FormData();
-        fd.append('image', imgFile.files[0]);
-        uploadImgBtn.disabled = true;
-        uploadImgBtn.textContent = 'Uploading…';
-        fetch('/edit/section/' + sectionId + '/image/', {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'X-CSRFToken': getCsrf() },
-          body: fd,
-        })
-          .then(function (r) { return r.json().catch(function () { throw new Error('Server error (' + r.status + ')'); }); })
-          .then(function (d) {
-            if (d.success) { window.location.reload(); }
-            else { throw new Error(d.error || 'Upload failed'); }
-          })
-          .catch(function (err) {
-            if (imgStatus) imgStatus.textContent = err.message || 'Upload failed';
-            uploadImgBtn.disabled = false;
-            uploadImgBtn.textContent = 'Upload image';
-          });
-      });
-    }
-    if (removeImgBtn) {
-      removeImgBtn.addEventListener('click', function () {
-        postJson('/edit/section/' + sectionId + '/image/remove/')
-          .then(function () { window.location.reload(); })
-          .catch(alertError);
-      });
-    }
-
-    wireRichToolbar(body);
-
     var saveContent = body.querySelector('.sidebar-save-content');
     if (saveContent) {
       saveContent.addEventListener('click', function () {
         var heading = body.querySelector('.sidebar-section-heading');
-        var subheadingVal = getEditorContent(body, '.sidebar-section-subheading');
+        var subheading = body.querySelector('.sidebar-section-subheading');
         var req = postJson('/edit/section/' + sectionId + '/field/heading/', { value: heading ? heading.value : '' });
-        req = req.then(function () {
-          return postJson('/edit/section/' + sectionId + '/field/subheading/', { value: subheadingVal });
-        });
-        req.then(function () { window.location.reload(); }).catch(alertError);
+        if (subheading) {
+          req = req.then(function () {
+            return postJson('/edit/section/' + sectionId + '/field/subheading/', { value: subheading.value });
+          });
+        }
+        req.then(function () {
+          sectionEl.dataset.sectionHeading = heading ? heading.value : '';
+          sectionEl.dataset.sectionSubheading = subheading ? subheading.value : '';
+          window.location.reload();
+        }).catch(alertError);
       });
     }
 
     var saveDisplay = body.querySelector('.sidebar-save-display');
     if (saveDisplay) {
       saveDisplay.addEventListener('click', function () {
-        var layout  = body.querySelector('.sidebar-section-layout');
+        var layout = body.querySelector('.sidebar-section-layout');
         var columns = body.querySelector('.sidebar-section-columns');
-        var bg      = body.querySelector('.sidebar-section-bg');
-        var padTop  = body.querySelector('.sidebar-section-pad-top');
-        var padBot  = body.querySelector('.sidebar-section-pad-bot');
+        var bg = body.querySelector('.sidebar-section-bg');
         var req = postJson('/edit/section/' + sectionId + '/layout/', { layout: layout ? layout.value : '' });
         var configPayload = {};
         if (columns) configPayload.columns_desktop = columns.value;
         if (bg) configPayload.background_color = bg.value;
-        if (padTop) configPayload.padding_top = padTop.value;
-        if (padBot) configPayload.padding_bottom = padBot.value;
         if (Object.keys(configPayload).length) {
           req = req.then(function () {
             return postJson('/edit/section/' + sectionId + '/config/', configPayload);
@@ -1500,130 +1382,6 @@
 
       req.then(function () { window.location.reload(); }).catch(alertError);
     });
-  }
-
-  function renderRichTextEditor(cls, value) {
-    return '<div class="cbl-rich-editor mb-2">' +
-        '<div class="cbl-rich-toolbar btn-group btn-group-sm mb-1">' +
-          '<button type="button" class="btn btn-outline-secondary" data-cmd="bold"><strong>B</strong></button>' +
-          '<button type="button" class="btn btn-outline-secondary" data-cmd="italic"><em>I</em></button>' +
-          '<button type="button" class="btn btn-outline-secondary" data-cmd="insertUnorderedList">&#8226; List</button>' +
-        '</div>' +
-        '<div class="form-control ' + escapeHtml(cls) + '" contenteditable="true" style="min-height:80px;overflow-y:auto;">' + value + '</div>' +
-      '</div>';
-  }
-
-  function getEditorContent(container, selector) {
-    var el = container.querySelector(selector);
-    return el ? el.innerHTML : '';
-  }
-
-  function wireRichToolbar(container) {
-    container.querySelectorAll('.cbl-rich-toolbar [data-cmd]').forEach(function (btn) {
-      btn.addEventListener('mousedown', function (e) {
-        e.preventDefault();
-        document.execCommand(btn.dataset.cmd, false, null);
-      });
-    });
-    // Tell the browser to insert <p> on Enter (not <div>, which the sanitizer strips)
-    container.querySelectorAll('[contenteditable]').forEach(function (el) {
-      el.addEventListener('focus', function () {
-        try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
-      }, { once: false });
-    });
-  }
-
-  function renderItem(itemId) {
-    return '<div class="edit-sidebar-section sidebar-item-shell" data-item-id="' + escapeHtml(itemId) + '">' +
-        '<p class="small text-body-secondary mb-0">Loading item…</p>' +
-      '</div>';
-  }
-
-  function wireItem(body, itemId) {
-    var shell = body.querySelector('.sidebar-item-shell');
-    fetch('/edit/item/' + itemId + '/', { credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (!shell) return;
-        var imgHtml = d.image_url
-          ? '<img src="' + escapeHtml(d.image_url) + '" alt="" style="max-height:60px;max-width:100%;border-radius:4px;object-fit:cover;" class="mb-2 d-block">'
-          : '<p class="small text-body-secondary mb-1">No image.</p>';
-        shell.innerHTML =
-          '<h3>Item</h3>' +
-          '<div class="mb-2">' + imgHtml +
-            '<input type="file" class="sidebar-item-img-file" accept="image/*" style="display:none">' +
-            '<button type="button" class="btn btn-sm btn-outline-primary w-100 mb-1 sidebar-upload-item-img">Upload image</button>' +
-            '<div class="small text-danger sidebar-item-img-status"></div>' +
-          '</div>' +
-          '<label class="form-label small mb-1">Title</label>' +
-          '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-title" value="' + escapeHtml(d.title || '') + '">' +
-          '<label class="form-label small mb-1">Text</label>' +
-          renderRichTextEditor('sidebar-item-text', d.text || '') +
-          '<label class="form-label small mb-1">Icon <span class="text-body-secondary">(Bootstrap icon name)</span></label>' +
-          '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-icon" placeholder="star-fill" value="' + escapeHtml(d.icon || '') + '">' +
-          '<label class="form-label small mb-1">Link URL</label>' +
-          '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-link-url" value="' + escapeHtml(d.link_url || '') + '">' +
-          '<label class="form-label small mb-1">Link text</label>' +
-          '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-link-text" value="' + escapeHtml(d.link_text || '') + '">' +
-          '<button type="button" class="btn btn-sm btn-primary w-100 mb-2 sidebar-save-item">Save</button>' +
-          '<button type="button" class="btn btn-sm btn-outline-danger w-100 sidebar-delete-item">Delete item</button>';
-
-        wireRichToolbar(shell);
-
-        var save = shell.querySelector('.sidebar-save-item');
-        if (save) {
-          save.addEventListener('click', function () {
-            var title   = shell.querySelector('.sidebar-item-title');
-            var text    = getEditorContent(shell, '.sidebar-item-text');
-            var icon    = shell.querySelector('.sidebar-item-icon');
-            var linkUrl = shell.querySelector('.sidebar-item-link-url');
-            var linkTxt = shell.querySelector('.sidebar-item-link-text');
-            postJson('/edit/item/' + itemId + '/field/title/',     { value: title   ? title.value   : '' })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/text/',      { value: text }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/icon/',      { value: icon    ? icon.value    : '' }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_url/',  { value: linkUrl ? linkUrl.value : '' }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_text/', { value: linkTxt ? linkTxt.value : '' }); })
-              .then(function () { window.location.reload(); })
-              .catch(alertError);
-          });
-        }
-
-        var uploadBtn = shell.querySelector('.sidebar-upload-item-img');
-        var imgFile   = shell.querySelector('.sidebar-item-img-file');
-        var imgStatus = shell.querySelector('.sidebar-item-img-status');
-        if (uploadBtn && imgFile) {
-          uploadBtn.addEventListener('click', function () { imgFile.click(); });
-          imgFile.addEventListener('change', function () {
-            if (!imgFile.files || !imgFile.files.length) return;
-            var fd = new FormData();
-            fd.append('image', imgFile.files[0]);
-            uploadBtn.disabled = true; uploadBtn.textContent = 'Uploading…';
-            fetch('/edit/item/' + itemId + '/image/', {
-              method: 'POST', credentials: 'same-origin',
-              headers: { 'X-CSRFToken': getCsrf() }, body: fd,
-            })
-              .then(function (r) { return r.json().catch(function () { throw new Error('Server error (' + r.status + ')'); }); })
-              .then(function (d2) { if (d2.success) { window.location.reload(); } else { throw new Error(d2.error || 'Upload failed'); } })
-              .catch(function (err) {
-                if (imgStatus) imgStatus.textContent = err.message || 'Upload failed';
-                uploadBtn.disabled = false; uploadBtn.textContent = 'Upload image';
-              });
-          });
-        }
-
-        var del = shell.querySelector('.sidebar-delete-item');
-        if (del) {
-          del.addEventListener('click', function () {
-            if (!confirm('Delete this item?')) return;
-            postJson('/edit/item/' + itemId + '/delete/')
-              .then(function () { window.location.reload(); })
-              .catch(alertError);
-          });
-        }
-      })
-      .catch(function () {
-        if (shell) shell.innerHTML = '<p class="text-danger small mb-0">Failed to load item.</p>';
-      });
   }
 
   function renderFooter() {

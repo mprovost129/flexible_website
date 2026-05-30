@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:640px;">
+    <h1 class="h3 mb-3">My profile</h1>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Account details</h2>
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="profile">
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ profile_form.display_name.id_for_label }}">Display name</label>
+                    {{ profile_form.display_name }}
+                    {% if profile_form.display_name.errors %}<div class="text-danger small mt-1">{{ profile_form.display_name.errors|striptags }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ profile_form.email.id_for_label }}">Email</label>
+                    {{ profile_form.email }}
+                    {% if profile_form.email.errors %}<div class="text-danger small mt-1">{{ profile_form.email.errors|striptags }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ profile_form.avatar.id_for_label }}">Avatar</label>
+                    {% if profile_user.avatar %}
+                        <div class="mb-2">
+                            <img src="{{ profile_user.avatar.url }}" alt="Current avatar" class="rounded-circle" style="width:56px;height:56px;object-fit:cover;">
+                        </div>
+                    {% endif %}
+                    {{ profile_form.avatar }}
+                    {% if profile_form.avatar.errors %}<div class="text-danger small mt-1">{{ profile_form.avatar.errors|striptags }}</div>{% endif %}
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ profile_form.first_name.id_for_label }}">First name</label>
+                        {{ profile_form.first_name }}
+                        {% if profile_form.first_name.errors %}<div class="text-danger small mt-1">{{ profile_form.first_name.errors|striptags }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ profile_form.last_name.id_for_label }}">Last name</label>
+                        {{ profile_form.last_name }}
+                        {% if profile_form.last_name.errors %}<div class="text-danger small mt-1">{{ profile_form.last_name.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <button class="btn btn-primary mt-3" type="submit">Save profile</button>
+            </form>
+            <p class="text-body-secondary small mt-3 mb-0">Joined {{ profile_user.date_joined|date:'Y-m-d' }}</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Change password</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <input type="hidden" name="action" value="password">
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ password_form.old_password.id_for_label }}">Current password</label>
+                    {{ password_form.old_password }}
+                    {% if password_form.old_password.errors %}<div class="text-danger small mt-1">{{ password_form.old_password.errors|striptags }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ password_form.new_password1.id_for_label }}">New password</label>
+                    {{ password_form.new_password1 }}
+                    {% if password_form.new_password1.errors %}<div class="text-danger small mt-1">{{ password_form.new_password1.errors|striptags }}</div>{% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="{{ password_form.new_password2.id_for_label }}">Confirm new password</label>
+                    {{ password_form.new_password2 }}
+                    {% if password_form.new_password2.errors %}<div class="text-danger small mt-1">{{ password_form.new_password2.errors|striptags }}</div>{% endif %}
+                </div>
+
+                {% if password_form.non_field_errors %}
+                    <div class="text-danger small mb-3">{{ password_form.non_field_errors|striptags }}</div>
+                {% endif %}
+
+                <button class="btn btn-outline-primary" type="submit">Update password</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

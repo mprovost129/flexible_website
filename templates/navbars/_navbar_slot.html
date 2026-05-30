@@ -60,16 +60,30 @@ Site Settings. All navbar presets use this same slot renderer.
                     {% if site.show_nav_profile %}
                     <div class="dropdown">
                         <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i>
+                            {% if request.user.avatar %}
+                                <img src="{{ request.user.avatar.url }}" alt="{{ request.user.get_full_name|default:request.user.get_username }}" class="rounded-circle" style="width:1.1rem;height:1.1rem;object-fit:cover;vertical-align:-2px;">
+                            {% else %}
+                                <i class="bi bi-person-circle"></i>
+                            {% endif %}
                             {{ request.user.get_full_name|default:request.user.get_username }}
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="/accounts/profile/">Profile</a></li>
                             {% if request.user.is_staff %}<li><a class="dropdown-item" href="{% url 'core:dashboard_home' %}">CBL Dashboard</a></li>{% endif %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            <li>
+                                <form method="post" action="{% url 'logout' %}" style="margin:0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
                         </ul>
                     </div>
+                    {% else %}
+                    <form method="post" action="{% url 'logout' %}" class="d-inline" style="margin:0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary btn-sm">Logout</button>
+                    </form>
                     {% endif %}
                 {% else %}
                     {% if site.show_nav_login %}<a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Login</a>{% endif %}

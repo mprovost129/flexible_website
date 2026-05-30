@@ -499,6 +499,10 @@ body.edit-mode .chrome-hover-add-group .chrome-hover-add-extra:focus {
     border-color: #ced4da;
 }
 
+body.edit-mode .cbl-navbar-shell {
+    z-index: 1500;
+}
+
 body.edit-mode #edit-sidebar {
     position: fixed;
     top: 4.75rem;
