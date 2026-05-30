@@ -24,6 +24,55 @@ v1 implementation strategy: controlled flexibility via one universal engine + va
 - Expose those knobs in Dashboard Site Settings
 - Apply values through CSS variables (predictable and safe)
 
+## Latest Status (May 2026)
+
+This repo is now in a "polished v1" state, not just a scaffold. The live site content and UX have been pushed significantly beyond the original template baseline.
+
+### Content + Brand Buildout Completed
+
+- Core public pages are fully built and populated through the in-app CMS flow: home, about, contact, services, blog.
+- Navigation and footer structures are fully populated and aligned to the page set.
+- Site copy has been unified around the "Create Build Launch" voice.
+- Launch-themed branding is active (CBL Launch Teal), with page rendering honoring effective theme selection correctly.
+
+### Theme / Navbar / Search Polish Completed
+
+- Theme CSS variable precedence bug was fixed by ensuring dynamic theme vars are injected after `main.css`.
+- Navbar CTA now supports style variants via `navbar_config.cta_style`: `accent`, `outline`, `light`.
+- Dashboard controls and server validation for CTA style were added (`dashboard_forms.py` + `nav_views.py`).
+- Active CTA style was set to `light` for stronger contrast on the chosen chrome colors.
+- Search UI in navbar was tightened for fit (including compact/icon behavior) and given explicit accessibility labels.
+
+### Security + Correctness Hardening Completed
+
+- Contact form recipient trust boundary fixed:
+   - recipient is resolved server-side from `Section.config.to_email` using `section_id` + `page_slug` + active site scope
+   - posted `to_email` is ignored
+   - contact templates now post `section_id` (not `to_email`)
+- `PageView` now scopes slug lookups by active site (`page__site`), improving multi-tenant readiness.
+- Footer year duplication bug fixed: footer templates no longer prepend `{% now "Y" %}` and now render `site.copyright_text` as single source of truth.
+- Contact submit endpoint now includes lightweight rate limiting (5/minute per IP+page) and structured logging for accepted, rate-limited, and failed submissions.
+
+### Accessibility Pass Completed
+
+- Added skip link and target main landmark:
+   - `<a class="skip-link" href="#main-content">...`
+   - `<main id="main-content" tabindex="-1">`
+- Added consistent global `:focus-visible` styling for keyboard users.
+- Icon-only admin toolbar link now has an explicit `aria-label`.
+- Honeypot contact inputs retain anti-bot behavior and now include an explicit label to avoid unlabeled-control a11y scan noise.
+
+### Test Coverage Added
+
+New regression tests now cover:
+- contact recipient hardening (posted recipient ignored; trusted section recipient used)
+- section/page mismatch fallback behavior
+- contact rate limiting
+- footer copyright single-source rendering across footer variants
+- accessibility shell baseline (skip link + main target + honeypot labeling)
+
+Tests run clean in this session (`core.tests.test_contact_and_footer`).
+
 ## Architecture Overview
 
 ### Tech Stack
@@ -359,6 +408,12 @@ The mobile menu (offcanvas or collapse) is **intentionally hidden in edit mode**
 - **Structural editing** (add/delete sections and items live): see dedicated section below.
 - **Site resolver** (`core/site_resolver.py`): centralizes site lookup for multi-tenant readiness; `Site.domain` field added (inert in self-hosted).
 - **Industry packs** (`core/packs/`): declarative starter-content bundles; `contractor` pack ships; `apply_pack` command + `setup_site` integration.
+- **Full v1 marketing site content** is now populated in-app (home/about/contact/services/blog) with unified CBL voice.
+- **Navbar CTA style variants** (`accent`/`outline`/`light`) with dashboard control + validation; search fit and compact behavior improved.
+- **Contact security hardening**: server-side recipient resolution from section config, posted recipient ignored, plus request throttling and structured logs.
+- **Footer normalization**: removed template-injected year to prevent duplicate year output.
+- **Accessibility shell baseline**: skip link, main target landmark, stronger focus-visible treatment, and labeled honeypot input.
+- **Regression test suite** in `core/tests/test_contact_and_footer.py` covering contact security/rate-limit behavior, footer rendering correctness, and shell accessibility invariants.
 
 ## Inline + Structural Editing System (important)
 
