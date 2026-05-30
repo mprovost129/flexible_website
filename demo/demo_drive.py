@@ -194,8 +194,42 @@ class Demo:
         self.beat()
 
 
+def preflight(base):
+    """Verify the server is reachable and the wizard is unlocked before opening Chrome."""
+    import urllib.request
+    import urllib.error
+
+    # 1. Is the server running at all?
+    try:
+        resp = urllib.request.urlopen(f"{base}/setup/", timeout=5)
+        final_url = resp.url
+    except urllib.error.URLError as e:
+        print(f"\n✗ Cannot reach {base}/setup/")
+        print(f"  Error: {e.reason}")
+        print("\n  FIX: Open demo/serve.bat (double-click it) and wait for")
+        print("  'Starting development server at http://127.0.0.1:8000/'")
+        print("  then re-run this script.")
+        return False
+
+    # 2. Did the wizard redirect us away (i.e., an admin already exists)?
+    if "/setup" not in final_url:
+        print(f"\n✗ The wizard is locked — the server already has an admin account.")
+        print(f"  URL after redirect: {final_url}")
+        print("\n  This usually means the server is using the wrong database.")
+        print("  Make sure you started the server with demo/serve.bat,")
+        print("  NOT with plain 'python manage.py runserver'.")
+        print("\n  To reset the demo database, run demo/reset_db.bat, then")
+        print("  restart demo/serve.bat, then re-run this script.")
+        return False
+
+    return True
+
+
 def run(cfg):
     base = cfg["base_url"].rstrip("/")
+    if not preflight(base):
+        sys.exit(1)
+
     with sync_playwright() as p:
         browser = p.chromium.launch(
             headless=False,
