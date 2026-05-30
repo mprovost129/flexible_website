@@ -344,8 +344,7 @@
         '<label class="form-label small mb-1">Layout</label>' +
         '<select class="form-select form-select-sm mb-2 sidebar-section-layout">' + layoutOptions + '</select>' +
         columnsHtml +
-        '<label class="form-label small mb-1">Background color</label>' +
-        '<input type="text" class="form-control form-control-sm mb-2 sidebar-section-bg" placeholder="#ffffff or empty" value="' + escapeHtml(bg) + '">' +
+        renderColorField('sidebar-section-bg', bg, 'Background color') +
         '<label class="form-label small mb-1">Spacing</label>' +
         '<div class="d-flex gap-2 align-items-center mb-2">' +
           '<span class="small text-body-secondary" style="white-space:nowrap">Top (rem)</span>' +
@@ -952,6 +951,7 @@
       });
     }
 
+    wireColorFields(body);
     wireRichToolbar(body);
 
     var saveContent = body.querySelector('.sidebar-save-content');
@@ -1626,6 +1626,124 @@
 
       req.then(function () { window.location.reload(); }).catch(alertError);
     });
+  }
+
+  var NEUTRAL_COLORS = [
+    '#ffffff', '#f8f9fa', '#e9ecef', '#dee2e6', '#ced4da',
+    '#adb5bd', '#6c757d', '#495057', '#343a40', '#212529', '#000000',
+  ];
+
+  function getThemeColors() {
+    var style = getComputedStyle(document.documentElement);
+    var props = [
+      '--bs-primary', '--bs-secondary', '--bs-success',
+      '--bs-danger', '--bs-warning', '--bs-info',
+    ];
+    var out = [];
+    props.forEach(function (p) {
+      var v = style.getPropertyValue(p).trim();
+      if (v) out.push(v);
+    });
+    var bodyBg = style.getPropertyValue('--cbl-main-bg').trim();
+    if (bodyBg && bodyBg !== '#ffffff' && out.indexOf(bodyBg) < 0) out.push(bodyBg);
+    return out;
+  }
+
+  function renderColorField(inputCls, value, label) {
+    var hasBg = !!value;
+    var swatchStyle = hasBg
+      ? 'background:' + escapeHtml(value) + ';'
+      : 'background:repeating-conic-gradient(#e0e0e0 0% 25%,#f5f5f5 0% 50%) 0 0/8px 8px;';
+    return '<label class="form-label small mb-1">' + escapeHtml(label) + '</label>' +
+      '<div class="cbl-color-field position-relative mb-2">' +
+        '<div class="d-flex align-items-center gap-2">' +
+          '<button type="button" class="cbl-color-trigger" style="' + swatchStyle + '" title="Choose colour"></button>' +
+          '<input type="text" class="form-control form-control-sm ' + escapeHtml(inputCls) + '" placeholder="None" value="' + escapeHtml(value) + '">' +
+          (hasBg ? '<button type="button" class="btn btn-link btn-sm p-0 text-body-secondary cbl-color-clear" title="Clear" style="font-size:1.2rem;line-height:1">&times;</button>' : '') +
+        '</div>' +
+        '<div class="cbl-color-popover d-none">' +
+          '<div class="cbl-color-group-label">Theme</div>' +
+          '<div class="cbl-color-swatches cbl-theme-swatches"></div>' +
+          '<div class="cbl-color-group-label">Neutral</div>' +
+          '<div class="cbl-color-swatches cbl-neutral-swatches"></div>' +
+          '<div class="cbl-color-group-label">Custom</div>' +
+          '<div class="d-flex gap-2 align-items-center">' +
+            '<input type="color" class="cbl-native-picker" value="' + escapeHtml(value && value.startsWith('#') && value.length === 7 ? value : '#ffffff') + '">' +
+            '<input type="text" class="form-control form-control-sm cbl-hex-input" placeholder="#rrggbb" value="' + escapeHtml(value) + '">' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function wireColorField(field) {
+    var input  = field.querySelector('input[type="text"]');
+    var trigger = field.querySelector('.cbl-color-trigger');
+    var popover = field.querySelector('.cbl-color-popover');
+    var native  = field.querySelector('.cbl-native-picker');
+    var hexIn   = field.querySelector('.cbl-hex-input');
+    var clearBtn = field.querySelector('.cbl-color-clear');
+    var themeSw = field.querySelector('.cbl-theme-swatches');
+    var neutSw  = field.querySelector('.cbl-neutral-swatches');
+    if (!trigger || !popover || !input) return;
+
+    var transparentBg = 'repeating-conic-gradient(#e0e0e0 0% 25%,#f5f5f5 0% 50%) 0 0/8px 8px';
+
+    function setValue(val) {
+      val = (val || '').trim();
+      input.value = val;
+      trigger.style.background = val || transparentBg;
+      if (hexIn) hexIn.value = val;
+      if (native && val && /^#[0-9a-fA-F]{6}$/.test(val)) native.value = val;
+      field.querySelectorAll('.cbl-color-swatch').forEach(function (s) {
+        s.classList.toggle('cbl-swatch-active', s.dataset.color === val);
+      });
+    }
+
+    function makeSwatch(color, parent, isNone) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cbl-color-swatch' + (isNone ? ' cbl-color-none-swatch' : '') + (input.value === color ? ' cbl-swatch-active' : '');
+      if (!isNone) btn.style.background = color;
+      btn.dataset.color = color;
+      btn.title = isNone ? 'No background' : color;
+      btn.addEventListener('click', function (e) { e.stopPropagation(); setValue(color); closePopover(); });
+      parent.appendChild(btn);
+    }
+
+    function openPopover() {
+      themeSw.innerHTML = '';
+      makeSwatch('', themeSw, true);
+      getThemeColors().forEach(function (c) { makeSwatch(c, themeSw, false); });
+      neutSw.innerHTML = '';
+      NEUTRAL_COLORS.forEach(function (c) { makeSwatch(c, neutSw, false); });
+      if (hexIn) hexIn.value = input.value;
+      popover.classList.remove('d-none');
+    }
+
+    function closePopover() { popover.classList.add('d-none'); }
+
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      popover.classList.contains('d-none') ? openPopover() : closePopover();
+    });
+
+    if (native) {
+      native.addEventListener('input', function () { setValue(native.value); });
+    }
+    if (hexIn) {
+      hexIn.addEventListener('change', function () { setValue(hexIn.value.trim()); });
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function (e) { e.stopPropagation(); setValue(''); closePopover(); });
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!field.contains(e.target)) closePopover();
+    });
+  }
+
+  function wireColorFields(container) {
+    container.querySelectorAll('.cbl-color-field').forEach(wireColorField);
   }
 
   function renderRichTextEditor(cls, value) {

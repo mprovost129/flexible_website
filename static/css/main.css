@@ -659,6 +659,73 @@ body.edit-mode .edit-sidebar .form-select {
     font-size: 0.9rem;
 }
 
+/* --------------------------------------------------------------------------
+   Color field picker (sidebar)
+   -------------------------------------------------------------------------- */
+.cbl-color-trigger {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,.18);
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform .1s;
+}
+.cbl-color-trigger:hover { transform: scale(1.08); }
+.cbl-color-popover {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1600;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,.13);
+    border-radius: .6rem;
+    padding: .6rem;
+    width: 15rem;
+    box-shadow: 0 8px 24px rgba(15,23,42,.16);
+}
+.cbl-color-group-label {
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #94a3b8;
+    margin-bottom: .35rem;
+}
+.cbl-color-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: .5rem;
+}
+.cbl-color-swatch {
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 5px;
+    border: 1px solid rgba(0,0,0,.12);
+    cursor: pointer;
+    transition: transform .1s;
+    position: relative;
+}
+.cbl-color-swatch:hover { transform: scale(1.15); z-index: 1; }
+.cbl-color-swatch.cbl-swatch-active {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+.cbl-color-none-swatch {
+    background: repeating-conic-gradient(#e0e0e0 0% 25%, #f5f5f5 0% 50%) 0 0 / 8px 8px;
+}
+.cbl-native-picker {
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 1px;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 5px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
 /* Rich text editor toolbar (in settings sidebar) */
 .cbl-rich-editor [contenteditable]:focus {
     outline: 2px solid rgba(var(--bs-primary-rgb), 0.35);
