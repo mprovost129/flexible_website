@@ -35,7 +35,7 @@ python manage.py runserver --settings=config.Settings.demo
 python demo/demo_drive.py --base-url http://localhost:8000 --speed slow
 ```
 
-To reset back to a fresh wizard for another take, just delete `demo.sqlite3`
+To reset back to a fresh wizard for another take, just delete 
 and re-run the migrate step:
 
 ```bash
