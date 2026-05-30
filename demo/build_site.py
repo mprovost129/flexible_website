@@ -220,28 +220,38 @@ def main():
         except Exception as e:
             print(f"  contact: {e}")
 
-        # NAVIGATE TO CONTACT
-        try:
-            lnk = pg.locator('a[href="/contact/"]').first
-            if lnk.count() > 0:
-                clk(lnk)
-            else:
-                nav(pg, "/contact/")
-            pg.wait_for_load_state("domcontentloaded")
-            pg.evaluate(KILL_DEBUG)
-            beat(2.5)
-            print("On contact page")
-        except Exception:
-            nav(pg, "/contact/")
-            beat(2.5)
+        # NAVIGATE TO CONTACT  (retry up to 3 times in case server hiccups)
+        for attempt in range(3):
+            try:
+                lnk = pg.locator('a[href="/contact/"]').first
+                if lnk.count() > 0:
+                    clk(lnk)
+                else:
+                    nav(pg, "/contact/")
+                pg.wait_for_load_state("domcontentloaded")
+                pg.evaluate(KILL_DEBUG)
+                beat(2.5)
+                print("On contact page")
+                break
+            except Exception as e:
+                print(f"  contact nav attempt {attempt+1}: {type(e).__name__} — retrying in 3s")
+                time.sleep(3)
 
         # PREVIEW
         beat(1.5)
-        clk(pg.locator("#staff-toggle-edit"), force=True)
-        pg.wait_for_load_state("domcontentloaded")
+        try:
+            clk(pg.locator("#staff-toggle-edit"), force=True)
+            pg.wait_for_load_state("domcontentloaded")
+        except Exception:
+            pass
         beat(2)
-        nav(pg, "/")
-        beat(4)
+        for attempt in range(3):
+            try:
+                nav(pg, "/")
+                beat(4)
+                break
+            except Exception:
+                time.sleep(3)
         print("Preview done!")
 
         print("\nSite built. Recording until you close this terminal (Ctrl+C).")
