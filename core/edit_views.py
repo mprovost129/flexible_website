@@ -57,6 +57,9 @@ class _RichTextSanitizer(HTMLParser):
         self._buf = []
 
     def handle_starttag(self, tag, attrs):
+        if tag == 'div':
+            self._buf.append('<p>')
+            return
         if tag not in self.ALLOWED:
             return
         if tag == 'a':
@@ -71,6 +74,9 @@ class _RichTextSanitizer(HTMLParser):
             self._buf.append(f'<{tag}>')
 
     def handle_endtag(self, tag):
+        if tag == 'div':
+            self._buf.append('</p>')
+            return
         if tag in self.ALLOWED and tag != 'br':
             self._buf.append(f'</{tag}>')
 

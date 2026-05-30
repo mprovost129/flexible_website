@@ -80,7 +80,7 @@
       if (itemWrap) {
         event.preventDefault();
         event.stopPropagation();
-        render({ kind: 'item', itemId: itemWrap.dataset.editId });
+        render({ kind: 'item', el: itemWrap, itemId: itemWrap.dataset.editId });
         return;
       }
 
@@ -1506,6 +1506,12 @@
         e.preventDefault();
         document.execCommand(btn.dataset.cmd, false, null);
       });
+    });
+    // Tell the browser to insert <p> on Enter (not <div>, which the sanitizer strips)
+    container.querySelectorAll('[contenteditable]').forEach(function (el) {
+      el.addEventListener('focus', function () {
+        try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (e) {}
+      }, { once: false });
     });
   }
 
