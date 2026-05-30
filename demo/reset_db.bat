@@ -1,17 +1,19 @@
 @echo off
 REM Wipes and recreates the demo SQLite database so the wizard runs again.
-REM Use this before each fresh recording take.
+REM Run this before each fresh recording take.
 
 cd /d "%~dp0.."
-set DJANGO_SETTINGS_MODULE=config.Settings.demo
 
 if exist demo.sqlite3 (
     del demo.sqlite3
     echo Deleted old demo.sqlite3
+) else (
+    echo No existing demo.sqlite3 found.
 )
 
 echo Running migrations...
-python manage.py migrate
+python manage.py migrate --settings=config.Settings.demo
 echo.
-echo Demo database is fresh. Run serve.bat, then demo_drive.py.
+echo Done. Demo database is fresh -- the wizard will appear on next run.
+echo Now open demo\serve.bat in a new terminal, then run the demo script.
 pause
