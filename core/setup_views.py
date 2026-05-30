@@ -78,7 +78,9 @@ def setup_wizard(request):
         site.save()
 
         # Log the new admin in and send them straight to edit mode.
-        login(request, user)
+        # Specify the backend explicitly because axes adds a second backend
+        # and Django requires disambiguation when multiple are configured.
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(request, 'Your site is ready. You are now in edit mode.')
         return redirect('core:home')
 
