@@ -164,6 +164,7 @@ class Site(models.Model):
     footer_variant = models.CharField(max_length=20, choices=FOOTER_CHOICES, default='footer_1')
     theme = models.ForeignKey(Theme, on_delete=models.SET_NULL, null=True, blank=True, related_name='sites')
     onboarding_complete = models.BooleanField(default=False)
+    active_pack_key = models.CharField(max_length=50, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

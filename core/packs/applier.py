@@ -59,6 +59,7 @@ def apply_pack(pack_key, site_name=None, replace=False):
         if theme:
             site.theme = theme
 
+    site.active_pack_key = pack_key
     site.save()
 
     # Pages and their sections

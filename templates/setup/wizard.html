@@ -23,15 +23,22 @@
             width: 100%;
         }
         .setup-kicker { letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.75rem; color: #64748b; }
-        .pack-option { cursor: pointer; }
-        .pack-option input { margin-right: 0.5rem; }
-        .pack-option .form-check-label { width: 100%; }
-        .pack-option:hover { background: #f8fafc; }
-        .pack-card { border: 1px solid #e2e8f0; border-radius: 0.6rem; padding: 0.65rem 0.85rem; margin-bottom: 0.5rem; }
-        .pack-card:has(input:checked) { border-color: var(--bs-primary); background: #eff6ff; }
+        .pack-desc { min-height: 1.4em; }
     </style>
 </head>
 <body>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var sel = document.getElementById('pack');
+            var desc = document.getElementById('pack-desc');
+            function updateDesc() {
+                var opt = sel.options[sel.selectedIndex];
+                desc.textContent = opt ? (opt.dataset.desc || '') : '';
+            }
+            sel.addEventListener('change', updateDesc);
+            updateDesc();
+        });
+    </script>
     <div class="container py-5">
         <div class="setup-card mx-auto p-4 p-md-5">
             <div class="setup-kicker mb-1">Create · Build · Launch</div>
@@ -71,27 +78,14 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label d-block mb-2">Starting point</label>
-                    <div class="pack-card">
-                        <div class="form-check pack-option mb-0">
-                            <input class="form-check-input" type="radio" name="pack" id="pack-blank" value="" {% if not selected_pack %}checked{% endif %}>
-                            <label class="form-check-label" for="pack-blank">
-                                <strong>Start blank</strong>
-                                <div class="text-secondary small">A clean home page you build out yourself.</div>
-                            </label>
-                        </div>
-                    </div>
-                    {% for key, name, description in pack_choices %}
-                    <div class="pack-card">
-                        <div class="form-check pack-option mb-0">
-                            <input class="form-check-input" type="radio" name="pack" id="pack-{{ key }}" value="{{ key }}" {% if selected_pack == key %}checked{% endif %}>
-                            <label class="form-check-label" for="pack-{{ key }}">
-                                <strong>{{ name }}</strong>
-                                <div class="text-secondary small">{{ description }}</div>
-                            </label>
-                        </div>
-                    </div>
-                    {% endfor %}
+                    <label class="form-label" for="pack">Starting point</label>
+                    <select class="form-select" id="pack" name="pack">
+                        <option value="" data-desc="A clean home page you build from scratch." {% if not selected_pack %}selected{% endif %}>Start blank</option>
+                        {% for key, name, description in pack_choices %}
+                        <option value="{{ key }}" data-desc="{{ description }}" {% if selected_pack == key %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text pack-desc" id="pack-desc"></div>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-lg w-100">

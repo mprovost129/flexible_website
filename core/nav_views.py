@@ -800,6 +800,42 @@ def set_site_theme(request):
     return JsonResponse({'success': True})
 
 
+def list_packs(request):
+    """Return all available industry packs as JSON (staff only, GET)."""
+    err = _staff_check(request)
+    if err:
+        return err
+    site = get_active_site(request)
+    from core.packs.definitions import list_packs as _list_packs
+    result = [
+        {'key': key, 'name': name, 'description': desc, 'is_current': key == site.active_pack_key}
+        for key, name, desc in _list_packs()
+    ]
+    return JsonResponse({'packs': result, 'current_key': site.active_pack_key})
+
+
+@require_POST
+def apply_pack_view(request):
+    """Apply an industry pack to the site (staff only, replaces content)."""
+    err = _staff_check(request)
+    if err:
+        return err
+    import json
+    try:
+        body = json.loads(request.body)
+    except (ValueError, TypeError):
+        body = {}
+    pack_key = (body.get('pack_key') or request.POST.get('pack_key') or '').strip()
+    if not pack_key:
+        return JsonResponse({'error': 'pack_key is required'}, status=400)
+    from core.packs.definitions import get_pack
+    if not get_pack(pack_key):
+        return JsonResponse({'error': f'Unknown pack "{pack_key}"'}, status=400)
+    from core.packs.applier import apply_pack
+    apply_pack(pack_key, replace=True)
+    return JsonResponse({'success': True})
+
+
 def list_pages(request):
     """Return all pages for the active site as JSON (staff only, GET)."""
     err = _staff_check(request)

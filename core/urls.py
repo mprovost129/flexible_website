@@ -101,6 +101,8 @@ urlpatterns = [
     path('edit/site-logo/remove/',                   nav_views.remove_site_logo,      name='remove_site_logo'),
     path('edit/site/themes/',                        nav_views.list_themes,           name='list_themes'),
     path('edit/site/theme/set/',                     nav_views.set_site_theme,        name='set_site_theme'),
+    path('edit/site/packs/',                         nav_views.list_packs,            name='list_packs'),
+    path('edit/site/pack/apply/',                    nav_views.apply_pack_view,       name='apply_pack'),
     path('edit/page/<int:pk>/field/<str:field>/',    edit_views.edit_page_field,      name='edit_page_field'),
     path('edit/footer/clear/',                       nav_views.clear_footer_content,  name='clear_footer_content'),
 

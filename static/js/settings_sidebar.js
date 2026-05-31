@@ -280,6 +280,12 @@
       '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-page-design">Save page design</button>' +
       '</div>');
 
+    rows.push('<div class="edit-sidebar-section">' +
+      '<h3>Switch template</h3>' +
+      '<p class="small text-body-secondary mb-2">Choose an industry starter to rebuild your site with fresh pages and content.</p>' +
+      '<div class="sidebar-packs-list mb-2"><span class="small text-body-secondary">Loading…</span></div>' +
+      '</div>');
+
     return rows.join('');
   }
 
@@ -932,6 +938,39 @@
         });
       });
     }
+
+    var packsList = body.querySelector('.sidebar-packs-list');
+    if (packsList) {
+      fetchPacks(function (data) {
+        if (!data || !data.packs || !data.packs.length) {
+          packsList.innerHTML = '<span class="small text-body-secondary">No templates available.</span>';
+          return;
+        }
+        packsList.innerHTML = '';
+        data.packs.forEach(function (pack) {
+          var isCurrent = pack.is_current;
+          var card = document.createElement('div');
+          card.className = 'border rounded p-2 mb-2' + (isCurrent ? ' border-primary bg-primary-subtle' : '');
+          card.innerHTML =
+            '<div class="d-flex justify-content-between align-items-start gap-2">' +
+              '<div>' +
+                '<div class="small fw-semibold">' + escapeHtml(pack.name) + (isCurrent ? ' <span class="badge text-bg-primary ms-1">Active</span>' : '') + '</div>' +
+                '<div class="small text-body-secondary">' + escapeHtml(pack.description) + '</div>' +
+              '</div>' +
+              (!isCurrent ? '<button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0 sidebar-apply-pack" data-pack-key="' + escapeHtml(pack.key) + '">Apply</button>' : '') +
+            '</div>';
+          if (!isCurrent) {
+            card.querySelector('.sidebar-apply-pack').addEventListener('click', function () {
+              if (!confirm('Apply the "' + pack.name + '" template?\n\nThis will replace all your pages and content with the template starter. Your site name and theme will also be updated.\n\nThis cannot be undone.')) return;
+              postJson('/edit/site/pack/apply/', { pack_key: pack.key })
+                .then(function () { window.location.reload(); })
+                .catch(alertError);
+            });
+          }
+          packsList.appendChild(card);
+        });
+      });
+    }
   }
 
   function wireSection(body, sectionEl) {
@@ -1072,6 +1111,16 @@
       .then(function (r) { return r.json(); })
       .then(function (d) { _themesCache = d.themes || []; cb(_themesCache); })
       .catch(function () { cb([]); });
+  }
+
+  var _packsCache = null;
+
+  function fetchPacks(cb) {
+    if (_packsCache) { cb(_packsCache); return; }
+    fetch('/edit/site/packs/', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { _packsCache = d; cb(_packsCache); })
+      .catch(function () { cb(null); });
   }
 
   function wireNavLink(body, li, child) {
