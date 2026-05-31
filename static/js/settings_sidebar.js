@@ -276,8 +276,7 @@
         '<option value="normal"'   + (sectionSpacing === 'normal'   ? ' selected' : '') + '>Normal</option>' +
         '<option value="spacious"' + (sectionSpacing === 'spacious' ? ' selected' : '') + '>Spacious</option>' +
       '</select>' +
-      '<label class="form-label small mb-1">Body background <span class="text-body-secondary">(overrides theme)</span></label>' +
-      '<input type="text" class="form-control form-control-sm mb-3 sidebar-body-bg" placeholder="#rrggbb or empty" value="' + escapeHtml(bodyBg) + '">' +
+      renderColorField('sidebar-body-bg', bodyBg, 'Body background (overrides theme)') +
       '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-page-design">Save page design</button>' +
       '</div>');
 
@@ -824,6 +823,7 @@
   }
 
   function wirePage(body, page) {
+    wireColorFields(body);
     var bind = function (selector, fn) {
       var el = body.querySelector(selector);
       if (el) el.addEventListener('click', fn);
@@ -1566,12 +1566,9 @@
           styleOpt('underline', 'Underline') +
           styleOpt('plain',     'Plain') +
         '</select>' +
-        '<label class="form-label small mb-1">Background <span class="text-body-secondary small">(overrides theme)</span></label>' +
-        '<input type="text" class="form-control form-control-sm mb-2 sidebar-navbar-bg" placeholder="#rrggbb or empty" value="' + escapeHtml(bg) + '">' +
-        '<label class="form-label small mb-1">Text color <span class="text-body-secondary small">(overrides theme)</span></label>' +
-        '<input type="text" class="form-control form-control-sm mb-2 sidebar-navbar-text-color" placeholder="#rrggbb or empty" value="' + escapeHtml(textCol) + '">' +
-        '<label class="form-label small mb-1">Link color <span class="text-body-secondary small">(overrides theme)</span></label>' +
-        '<input type="text" class="form-control form-control-sm mb-2 sidebar-navbar-link-color" placeholder="#rrggbb or empty" value="' + escapeHtml(linkCol) + '">' +
+        renderColorField('sidebar-navbar-bg', bg, 'Background (overrides theme)') +
+        renderColorField('sidebar-navbar-text-color', textCol, 'Text color (overrides theme)') +
+        renderColorField('sidebar-navbar-link-color', linkCol, 'Link color (overrides theme)') +
       '</div>' +
       '<div class="edit-sidebar-section">' +
         '<h3>Layout</h3>' +
@@ -1621,6 +1618,7 @@
   }
 
   function wireNavbar(body) {
+    wireColorFields(body);
     var save = body.querySelector('.sidebar-save-navbar');
     if (!save) return;
     save.addEventListener('click', function () {
