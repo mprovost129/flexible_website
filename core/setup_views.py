@@ -9,6 +9,7 @@ the dashboard, and the middleware stops intercepting requests.
 """
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
+from django.db.utils import OperationalError, ProgrammingError
 from django.shortcuts import redirect, render
 
 from .models import Site
@@ -20,7 +21,12 @@ from .management.commands.seed_site import Command as SeedCommand
 def setup_complete():
     """True once at least one superuser exists."""
     User = get_user_model()
-    return User.objects.filter(is_superuser=True).exists()
+    try:
+        return User.objects.filter(is_superuser=True).exists()
+    except (ProgrammingError, OperationalError):
+        # Migrations may not have run yet (e.g., first boot), so the user
+        # table can be missing temporarily.
+        return False
 
 
 def setup_wizard(request):
