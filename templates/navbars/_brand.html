@@ -28,5 +28,15 @@ The check at the top covers all "is there anything to show" cases:
             <span class="fs-4 {{ brand_text_class }}">{{ site.name }}</span>
         {% endif %}
     </a>
+{% elif edit_mode_active %}
+    <a href="{% url 'core:home' %}"
+       class="d-flex align-items-center text-decoration-none brand-editable {{ brand_class }}"
+       data-brand-name="{{ site.name|default:'My Site' }}"
+       data-brand-position="{{ site.brand_position|default:'left' }}"
+       data-brand-show-name="{{ site.show_brand_name|yesno:'1,0' }}"
+       data-brand-show-logo="{{ site.show_brand_logo|yesno:'1,0' }}"
+       data-brand-logo-url="{% if site.logo %}{{ site.logo.url }}{% endif %}">
+        <span class="badge text-bg-secondary fw-normal" style="font-size:0.7rem;opacity:0.7;">Brand (hidden)</span>
+    </a>
 {% endif %}
 {% endif %}
