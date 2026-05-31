@@ -62,7 +62,7 @@ Site Settings. All navbar presets use this same slot renderer.
                  data-chrome-slot-field="nav_auth_slot"
                  data-chrome-slot-value="{{ slot }}">
                 {% if request.user.is_authenticated %}
-                    {% if site.show_nav_profile %}
+                    {% if site.show_nav_profile or request.user.is_staff %}
                     <div class="dropdown">
                         <button class="btn btn-outline-primary btn-sm dropdown-toggle cbl-profile-btn" type="button"
                                 data-bs-toggle="dropdown" aria-expanded="false"
@@ -95,7 +95,7 @@ Site Settings. All navbar presets use this same slot renderer.
                     </form>
                     {% endif %}
                 {% else %}
-                    {% if site.show_nav_login %}<a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Login</a>{% endif %}
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Login</a>
                     {% if site.show_nav_register %}<a class="btn btn-primary btn-sm" href="/accounts/register/">Register</a>{% endif %}
                 {% endif %}
             </div>

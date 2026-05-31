@@ -598,9 +598,9 @@
       html.push(sectionShell('Login / profile',
         '<div class="edit-sidebar-section">' +
           '<h3>Visibility</h3>' +
-          '<div class="form-check mb-2"><input class="form-check-input sidebar-auth-login" type="checkbox" id="sidebar-auth-login" ' + (showLogin ? 'checked' : '') + '><label class="form-check-label small" for="sidebar-auth-login">Show login link</label></div>' +
+          '<div class="form-check mb-1"><input class="form-check-input" type="checkbox" checked disabled><label class="form-check-label small" for="sidebar-auth-login">Show login link <span class="text-body-secondary">(always on)</span></label></div>' +
           '<div class="form-check mb-2"><input class="form-check-input sidebar-auth-register" type="checkbox" id="sidebar-auth-register" ' + (showRegister ? 'checked' : '') + '><label class="form-check-label small" for="sidebar-auth-register">Show register link</label></div>' +
-          '<div class="form-check mb-2"><input class="form-check-input sidebar-auth-profile" type="checkbox" id="sidebar-auth-profile" ' + (showProfile ? 'checked' : '') + '><label class="form-check-label small" for="sidebar-auth-profile">Show profile / logout menu</label></div>' +
+          '<div class="form-check mb-1"><input class="form-check-input" type="checkbox" checked disabled><label class="form-check-label small">Show profile / logout menu <span class="text-body-secondary">(always on for admins)</span></label></div>' +
           '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-auth">Save</button>' +
         '</div>' +
         '<div class="edit-sidebar-section">' +
@@ -1453,12 +1453,10 @@
       var saveAuth = body.querySelector('.sidebar-save-auth');
       if (saveAuth) {
         saveAuth.addEventListener('click', function () {
-          var login = body.querySelector('.sidebar-auth-login');
           var reg = body.querySelector('.sidebar-auth-register');
-          var profile = body.querySelector('.sidebar-auth-profile');
-          postJson('/edit/site-chrome/update/', { field: 'show_nav_login', value: login && login.checked ? '1' : '0' })
+          postJson('/edit/site-chrome/update/', { field: 'show_nav_login', value: '1' })
             .then(function () { return postJson('/edit/site-chrome/update/', { field: 'show_nav_register', value: reg && reg.checked ? '1' : '0' }); })
-            .then(function () { return postJson('/edit/site-chrome/update/', { field: 'show_nav_profile', value: profile && profile.checked ? '1' : '0' }); })
+            .then(function () { return postJson('/edit/site-chrome/update/', { field: 'show_nav_profile', value: '1' }); })
             .then(function () { window.location.reload(); })
             .catch(alertError);
         });
