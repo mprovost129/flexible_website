@@ -43,19 +43,23 @@ class PageView(TemplateView):
 
         # Staff can view a disabled page (to edit it before publishing);
         # the public gets a 404 for disabled pages.
-        if self.request.user.is_authenticated and self.request.user.is_staff:
+        is_staff = self.request.user.is_authenticated and self.request.user.is_staff
+        in_edit_mode = is_staff and self.request.session.get('edit_mode', True)
+
+        if is_staff:
             page = get_object_or_404(Page, site=site, slug=slug)
-            sections = page.sections.all().prefetch_related('items')
         else:
             page = get_object_or_404(Page, site=site, slug=slug, is_enabled=True)
-            sections = page.sections.filter(is_visible=True).prefetch_related('items')
+
+        qs = page.sections.prefetch_related('items')
+        sections = qs.all() if in_edit_mode else qs.filter(is_visible=True)
 
         ctx['page'] = page
         ctx['sections'] = sections
 
         # For staff, attach the list of available layouts per section so the
         # live layout switcher can offer exactly the templates that exist.
-        if self.request.user.is_authenticated and self.request.user.is_staff:
+        if is_staff:
             from .edit_views import get_available_layouts
             for s in sections:
                 s.available_layouts = get_available_layouts(s.section_type)
