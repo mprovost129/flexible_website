@@ -159,9 +159,736 @@ CONTRACTOR_PACK = {
 }
 
 
+RESTAURANT_PACK = {
+    'key': 'restaurant',
+    'name': 'Restaurant / Cafe',
+    'description': 'For restaurants, cafes, food trucks, and catering businesses.',
+    'theme_key': 'sunset',
+    'navbar': 'app',
+    'footer': 'footer_4',
+    'brand_position': 'left',
+    'show_brand_logo': True,
+    'show_brand_name': True,
+    'tagline': 'Good food, great company.',
+    'pages': [
+        {
+            'page_type': 'home',
+            'slug': 'home',
+            'title': 'Home',
+            'order': 0,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_2',
+                    'heading': 'Fresh Food, Warm Atmosphere',
+                    'subheading': 'Made from scratch with locally sourced ingredients. Join us for breakfast, lunch, and dinner.',
+                    'items': [
+                        {'link_text': 'View Our Menu', 'link_url': '/menu/'},
+                        {'link_text': 'Reserve a Table', 'link_url': '/contact/'},
+                    ],
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'Why Guests Love Us',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'icon': 'egg-fried', 'title': 'Fresh Ingredients', 'text': 'Every dish is made to order with seasonal, locally sourced produce.'},
+                        {'icon': 'cup-hot', 'title': 'Craft Beverages', 'text': 'Specialty coffees, teas, and house-made drinks to complement every meal.'},
+                        {'icon': 'people', 'title': 'Great for Groups', 'text': 'Spacious dining room and private event space for parties of any size.'},
+                    ],
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Open Tuesday through Sunday',
+                    'subheading': 'Breakfast 7am–11am · Lunch 11am–3pm · Dinner 5pm–9pm',
+                    'items': [
+                        {'link_text': 'Make a Reservation', 'link_url': '/contact/'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'services',
+            'slug': 'menu',
+            'title': 'Menu',
+            'order': 1,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Our Menu',
+                    'subheading': 'Something for everyone — hearty plates, lighter bites, and daily specials.',
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'What We Serve',
+                    'config': {'columns_desktop': 2},
+                    'items': [
+                        {'icon': 'sunrise', 'title': 'Breakfast & Brunch', 'text': 'Eggs any style, pancakes, avocado toast, and weekend specials.'},
+                        {'icon': 'egg-fried', 'title': 'Lunch', 'text': 'Soups, salads, sandwiches, and seasonal grain bowls.'},
+                        {'icon': 'moon-stars', 'title': 'Dinner', 'text': 'Pasta, grilled mains, shareables, and rotating chef specials.'},
+                        {'icon': 'cup-hot', 'title': 'Drinks', 'text': 'House-roasted coffee, craft cocktails, wine, and local beers.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'about',
+            'slug': 'about',
+            'title': 'About',
+            'order': 2,
+            'sections': [
+                {
+                    'type': 'text_block',
+                    'layout': 'layout_2',
+                    'heading': 'Our Story',
+                    'subheading': 'We started as a small neighborhood cafe with a simple idea: serve honest food made with care.\n\nOver the years we have grown into a beloved local spot without ever losing what made us special — a warm welcome, a familiar face, and a meal worth coming back for.',
+                },
+                {
+                    'type': 'testimonials',
+                    'layout': 'layout_1',
+                    'heading': 'What Our Guests Say',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'title': 'Amanda R.', 'text': 'Best brunch in town, hands down. The eggs benedict alone is worth the trip.'},
+                        {'title': 'Carlos N.', 'text': 'We come every Sunday. The staff knows our order by heart. It feels like home.'},
+                        {'title': 'Priya L.', 'text': 'Fantastic vegetarian options and the coffee is incredible. My new regular spot.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'contact',
+            'slug': 'contact',
+            'title': 'Contact',
+            'order': 3,
+            'nav_slot': 'right',
+            'sections': [
+                {
+                    'type': 'contact_form',
+                    'layout': 'layout_1',
+                    'heading': 'Reservations & Inquiries',
+                    'subheading': 'Book a table, ask about private dining, or just say hello. We will get back to you within 24 hours.',
+                },
+            ],
+        },
+    ],
+}
+
+
+SALON_PACK = {
+    'key': 'salon',
+    'name': 'Salon & Spa',
+    'description': 'For hair salons, spas, nail studios, and beauty professionals.',
+    'theme_key': 'rose',
+    'navbar': 'app',
+    'footer': 'footer_4',
+    'brand_position': 'left',
+    'show_brand_logo': True,
+    'show_brand_name': True,
+    'tagline': 'Look your best, feel your best.',
+    'pages': [
+        {
+            'page_type': 'home',
+            'slug': 'home',
+            'title': 'Home',
+            'order': 0,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_2',
+                    'heading': 'Where Style Meets Relaxation',
+                    'subheading': 'Expert stylists, a calming atmosphere, and personalized service — all in one place.',
+                    'items': [
+                        {'link_text': 'Book an Appointment', 'link_url': '/contact/'},
+                        {'link_text': 'See Our Services', 'link_url': '/services/'},
+                    ],
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'The Experience You Deserve',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'icon': 'scissors', 'title': 'Expert Stylists', 'text': 'Our team brings years of training and a passion for making you look great.'},
+                        {'icon': 'stars', 'title': 'Premium Products', 'text': 'We use only top-quality, professional-grade products in every service.'},
+                        {'icon': 'heart', 'title': 'Personalized Care', 'text': 'Every appointment is tailored to your unique hair type, skin, and style goals.'},
+                    ],
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Ready for a Fresh Look?',
+                    'subheading': 'New clients welcome. Book online or give us a call to schedule your visit.',
+                    'items': [
+                        {'link_text': 'Book Now', 'link_url': '/contact/'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'services',
+            'slug': 'services',
+            'title': 'Services',
+            'order': 1,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Our Services',
+                    'subheading': 'From everyday cuts to special-occasion styling — we do it all.',
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'What We Offer',
+                    'config': {'columns_desktop': 2},
+                    'items': [
+                        {'icon': 'scissors', 'title': 'Cuts & Styling', 'text': "Haircuts, blowouts, and special-occasion styles for all hair types."},
+                        {'icon': 'palette', 'title': 'Color & Highlights', 'text': 'Balayage, full color, highlights, and corrective color by certified colorists.'},
+                        {'icon': 'flower1', 'title': 'Facials & Skincare', 'text': 'Customized facials, peels, and treatments for healthy, glowing skin.'},
+                        {'icon': 'hand-index-thumb', 'title': 'Nails', 'text': 'Manicures, pedicures, gel, and nail art by skilled nail technicians.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'about',
+            'slug': 'about',
+            'title': 'About',
+            'order': 2,
+            'sections': [
+                {
+                    'type': 'text_block',
+                    'layout': 'layout_2',
+                    'heading': 'About Us',
+                    'subheading': 'We opened our doors with one goal: to create a space where every client leaves feeling confident and cared for.\n\nOur team of licensed professionals stays current with the latest trends and techniques through ongoing education. Whether you are here for a quick trim or a full day of pampering, you are in good hands.',
+                },
+                {
+                    'type': 'testimonials',
+                    'layout': 'layout_1',
+                    'heading': 'Client Love',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'title': 'Jessica K.', 'text': 'I have been coming here for three years and I would never go anywhere else. They truly listen.'},
+                        {'title': 'Marcus D.', 'text': 'Got a balayage that turned out exactly as I hoped. The colorist is an absolute artist.'},
+                        {'title': 'Olivia S.', 'text': 'The atmosphere is so relaxing and the facial left my skin glowing for a week.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'contact',
+            'slug': 'contact',
+            'title': 'Book',
+            'order': 3,
+            'nav_slot': 'right',
+            'sections': [
+                {
+                    'type': 'contact_form',
+                    'layout': 'layout_1',
+                    'heading': 'Book an Appointment',
+                    'subheading': 'Tell us what service you are interested in and your preferred date and time. We will confirm within one business day.',
+                },
+            ],
+        },
+    ],
+}
+
+
+LAW_FIRM_PACK = {
+    'key': 'law_firm',
+    'name': 'Law Firm',
+    'description': 'For attorneys, legal practices, and professional services firms.',
+    'theme_key': 'midnight',
+    'navbar': 'app',
+    'footer': 'footer_4',
+    'brand_position': 'left',
+    'show_brand_logo': True,
+    'show_brand_name': True,
+    'tagline': 'Experienced counsel you can trust.',
+    'pages': [
+        {
+            'page_type': 'home',
+            'slug': 'home',
+            'title': 'Home',
+            'order': 0,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_2',
+                    'heading': 'Proven Advocacy. Trusted Results.',
+                    'subheading': 'We fight for our clients with diligence, integrity, and decades of courtroom experience.',
+                    'items': [
+                        {'link_text': 'Schedule a Consultation', 'link_url': '/contact/'},
+                    ],
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'Why Clients Choose Us',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'icon': 'shield-check', 'title': 'Experienced Attorneys', 'text': 'Our team has handled thousands of cases across a broad range of practice areas.'},
+                        {'icon': 'person-check', 'title': 'Client-First Approach', 'text': 'We return calls, explain every step, and keep you informed throughout your case.'},
+                        {'icon': 'award', 'title': 'Track Record of Success', 'text': 'Consistently strong outcomes achieved through thorough preparation and skilled advocacy.'},
+                    ],
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Your Case Starts with a Conversation',
+                    'subheading': 'Consultations are confidential. Reach out today and let us review your situation.',
+                    'items': [
+                        {'link_text': 'Request a Consultation', 'link_url': '/contact/'},
+                        {'link_text': 'Call Our Office', 'link_url': 'tel:5550000000'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'services',
+            'slug': 'practice-areas',
+            'title': 'Practice Areas',
+            'order': 1,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Practice Areas',
+                    'subheading': 'We bring focused expertise to the matters that affect you most.',
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'How We Can Help',
+                    'config': {'columns_desktop': 2},
+                    'items': [
+                        {'icon': 'briefcase', 'title': 'Business & Commercial', 'text': 'Contracts, disputes, mergers, and day-to-day business legal needs.'},
+                        {'icon': 'house', 'title': 'Real Estate', 'text': 'Transactions, closings, landlord-tenant matters, and property disputes.'},
+                        {'icon': 'people', 'title': 'Family Law', 'text': 'Divorce, custody, support, and adoption handled with care and discretion.'},
+                        {'icon': 'file-earmark-text', 'title': 'Estate Planning', 'text': 'Wills, trusts, powers of attorney, and probate administration.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'about',
+            'slug': 'about',
+            'title': 'About',
+            'order': 2,
+            'sections': [
+                {
+                    'type': 'text_block',
+                    'layout': 'layout_2',
+                    'heading': 'About Our Firm',
+                    'subheading': 'Founded on the principles of honest counsel and zealous advocacy, our firm has served clients in this community for over 25 years.\n\nWe believe every client deserves access to skilled legal representation, clear communication, and a lawyer who genuinely cares about the outcome. That commitment drives everything we do.',
+                },
+                {
+                    'type': 'testimonials',
+                    'layout': 'layout_1',
+                    'heading': 'Client Testimonials',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'title': 'Robert H.', 'text': 'They handled our business dispute quickly and professionally. An exceptional team.'},
+                        {'title': 'Maria G.', 'text': 'Going through a divorce is hard. This firm made a difficult process as smooth as possible.'},
+                        {'title': 'David P.', 'text': 'Clear, honest advice from day one. They told me exactly what to expect and delivered.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'contact',
+            'slug': 'contact',
+            'title': 'Contact',
+            'order': 3,
+            'nav_slot': 'right',
+            'sections': [
+                {
+                    'type': 'contact_form',
+                    'layout': 'layout_1',
+                    'heading': 'Schedule a Consultation',
+                    'subheading': 'All inquiries are confidential. Describe your situation and we will be in touch within one business day.',
+                },
+            ],
+        },
+    ],
+}
+
+
+MEDICAL_PACK = {
+    'key': 'medical',
+    'name': 'Medical / Dental Practice',
+    'description': 'For doctors, dentists, therapists, and healthcare clinics.',
+    'theme_key': 'ocean',
+    'navbar': 'app',
+    'footer': 'footer_4',
+    'brand_position': 'left',
+    'show_brand_logo': True,
+    'show_brand_name': True,
+    'tagline': 'Compassionate care for your whole family.',
+    'pages': [
+        {
+            'page_type': 'home',
+            'slug': 'home',
+            'title': 'Home',
+            'order': 0,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_2',
+                    'heading': 'Healthcare You Can Count On',
+                    'subheading': 'Welcoming new patients. Our team provides compassionate, comprehensive care for patients of all ages.',
+                    'items': [
+                        {'link_text': 'Request an Appointment', 'link_url': '/contact/'},
+                        {'link_text': 'Our Services', 'link_url': '/services/'},
+                    ],
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'Why Patients Trust Us',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'icon': 'heart-pulse', 'title': 'Experienced Providers', 'text': 'Board-certified physicians and specialists with years of hands-on clinical experience.'},
+                        {'icon': 'clock', 'title': 'Same-Day Appointments', 'text': 'We work hard to see urgent patients the same day whenever possible.'},
+                        {'icon': 'shield-plus', 'title': 'Most Insurance Accepted', 'text': 'We accept most major insurance plans and offer flexible payment options.'},
+                    ],
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Now Accepting New Patients',
+                    'subheading': 'Getting started is easy. Request an appointment online or call our front desk.',
+                    'items': [
+                        {'link_text': 'Book an Appointment', 'link_url': '/contact/'},
+                        {'link_text': 'Call Us', 'link_url': 'tel:5550000000'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'services',
+            'slug': 'services',
+            'title': 'Services',
+            'order': 1,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Our Services',
+                    'subheading': 'Comprehensive care from routine check-ups to specialized treatment.',
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'What We Offer',
+                    'config': {'columns_desktop': 2},
+                    'items': [
+                        {'icon': 'clipboard2-pulse', 'title': 'Preventive Care', 'text': 'Annual physicals, screenings, immunizations, and wellness visits.'},
+                        {'icon': 'bandaid', 'title': 'Acute & Urgent Care', 'text': 'Prompt diagnosis and treatment for illness and injury.'},
+                        {'icon': 'heart-pulse', 'title': 'Chronic Disease Management', 'text': 'Ongoing support for diabetes, hypertension, asthma, and more.'},
+                        {'icon': 'people', 'title': 'Family Medicine', 'text': 'Care for every member of your family, from pediatrics to senior health.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'about',
+            'slug': 'about',
+            'title': 'About',
+            'order': 2,
+            'sections': [
+                {
+                    'type': 'text_block',
+                    'layout': 'layout_2',
+                    'heading': 'About Our Practice',
+                    'subheading': 'We are an independent practice built on a simple belief: patients deserve more than a rushed appointment.\n\nOur providers take time to listen, explain, and involve you in every care decision. We combine the warmth of a community clinic with the capabilities of a modern medical facility.',
+                },
+                {
+                    'type': 'testimonials',
+                    'layout': 'layout_1',
+                    'heading': 'Patient Stories',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'title': 'Linda F.', 'text': 'My whole family comes here. The doctors listen and never make you feel rushed.'},
+                        {'title': 'Tom W.', 'text': 'Got a same-day appointment when I really needed one. This practice goes above and beyond.'},
+                        {'title': 'Angela M.', 'text': 'Compassionate, thorough, and genuinely kind. Exactly what healthcare should feel like.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'contact',
+            'slug': 'contact',
+            'title': 'Contact',
+            'order': 3,
+            'nav_slot': 'right',
+            'sections': [
+                {
+                    'type': 'contact_form',
+                    'layout': 'layout_1',
+                    'heading': 'Request an Appointment',
+                    'subheading': 'Fill out the form below and our team will contact you to confirm your appointment time.',
+                },
+            ],
+        },
+    ],
+}
+
+
+REAL_ESTATE_PACK = {
+    'key': 'real_estate',
+    'name': 'Real Estate Agent',
+    'description': 'For real estate agents, brokers, and property professionals.',
+    'theme_key': 'classic_blue',
+    'navbar': 'app',
+    'footer': 'footer_4',
+    'brand_position': 'left',
+    'show_brand_logo': True,
+    'show_brand_name': True,
+    'tagline': 'Your trusted guide to buying and selling.',
+    'pages': [
+        {
+            'page_type': 'home',
+            'slug': 'home',
+            'title': 'Home',
+            'order': 0,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_2',
+                    'heading': "Find the Home You Have Been Looking For",
+                    'subheading': 'Local expertise, honest guidance, and a relentless commitment to getting you the best deal.',
+                    'items': [
+                        {'link_text': 'View Listings', 'link_url': '/listings/'},
+                        {'link_text': 'Contact Me', 'link_url': '/contact/'},
+                    ],
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'Why Work With Me',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'icon': 'geo-alt', 'title': 'Local Market Expert', 'text': 'Deep knowledge of neighborhoods, pricing trends, and off-market opportunities.'},
+                        {'icon': 'graph-up', 'title': 'Proven Negotiator', 'text': 'Skilled at getting buyers the best price and maximizing sellers returns.'},
+                        {'icon': 'chat-dots', 'title': 'Always Responsive', 'text': 'You will always have a direct line to me — no assistants, no runaround.'},
+                    ],
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Buying or Selling? Let\'s Talk.',
+                    'subheading': 'Free consultations with no pressure and no obligation. I am here to help you make the right move.',
+                    'items': [
+                        {'link_text': 'Schedule a Call', 'link_url': '/contact/'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'services',
+            'slug': 'listings',
+            'title': 'Listings',
+            'order': 1,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Featured Listings',
+                    'subheading': 'Homes currently on the market — each one hand-selected for quality and value.',
+                },
+                {
+                    'type': 'image_grid',
+                    'layout': 'layout_1',
+                    'heading': 'Available Properties',
+                    'subheading': 'Contact me for showings, pricing details, and neighborhood information.',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'title': '4 Bed / 2 Bath Colonial', 'text': 'Quiet cul-de-sac, updated kitchen, large yard.'},
+                        {'title': '2 Bed / 2 Bath Condo', 'text': 'Downtown location, modern finishes, covered parking.'},
+                        {'title': '3 Bed / 1 Bath Ranch', 'text': 'Move-in ready, new roof, great starter home.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'about',
+            'slug': 'about',
+            'title': 'About',
+            'order': 2,
+            'sections': [
+                {
+                    'type': 'text_block',
+                    'layout': 'layout_2',
+                    'heading': 'About Me',
+                    'subheading': 'I have been helping families buy and sell homes in this area for over 15 years.\n\nReal estate is personal. Whether you are a first-time buyer, a growing family, or downsizing for retirement, I take the time to understand your goals and guide you every step of the way. My clients become lifelong connections.',
+                },
+                {
+                    'type': 'testimonials',
+                    'layout': 'layout_1',
+                    'heading': 'Client Testimonials',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'title': 'The Okafor Family', 'text': 'Found us our dream home in a tough market. Incredibly patient and knowledgeable.'},
+                        {'title': 'Sandra B.', 'text': 'Sold my house in 11 days above asking price. I could not be happier.'},
+                        {'title': 'Kevin & Dana L.', 'text': 'As first-time buyers we had so many questions. They answered every single one.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'contact',
+            'slug': 'contact',
+            'title': 'Contact',
+            'order': 3,
+            'nav_slot': 'right',
+            'sections': [
+                {
+                    'type': 'contact_form',
+                    'layout': 'layout_1',
+                    'heading': 'Get in Touch',
+                    'subheading': 'Looking to buy, sell, or just explore your options? Send me a message and I will reach out within one business day.',
+                },
+            ],
+        },
+    ],
+}
+
+
+FITNESS_PACK = {
+    'key': 'fitness',
+    'name': 'Fitness & Personal Training',
+    'description': 'For personal trainers, gyms, yoga studios, and wellness coaches.',
+    'theme_key': 'forest',
+    'navbar': 'app',
+    'footer': 'footer_4',
+    'brand_position': 'left',
+    'show_brand_logo': True,
+    'show_brand_name': True,
+    'tagline': 'Stronger every day.',
+    'pages': [
+        {
+            'page_type': 'home',
+            'slug': 'home',
+            'title': 'Home',
+            'order': 0,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_2',
+                    'heading': 'Your Fitness Goals Start Here',
+                    'subheading': 'Personalized training, real results, and a coach who is with you every rep of the way.',
+                    'items': [
+                        {'link_text': 'Start Your Free Session', 'link_url': '/contact/'},
+                        {'link_text': 'View Programs', 'link_url': '/programs/'},
+                    ],
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'What Sets Us Apart',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'icon': 'trophy', 'title': 'Real Results', 'text': 'Our clients average 20 lbs lost and measurable strength gains within their first 90 days.'},
+                        {'icon': 'lightning', 'title': 'Personalized Plans', 'text': 'No cookie-cutter workouts. Every program is built around your body, schedule, and goals.'},
+                        {'icon': 'people', 'title': 'Supportive Community', 'text': 'Train alongside motivated people who push each other to show up and level up.'},
+                    ],
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Ready to Make a Change?',
+                    'subheading': 'Your first session is free. No commitment, no pressure — just come in and see what it feels like.',
+                    'items': [
+                        {'link_text': 'Claim Your Free Session', 'link_url': '/contact/'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'services',
+            'slug': 'programs',
+            'title': 'Programs',
+            'order': 1,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Training Programs',
+                    'subheading': 'Built for every fitness level — from first-timers to competitive athletes.',
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'Find Your Program',
+                    'config': {'columns_desktop': 2},
+                    'items': [
+                        {'icon': 'person-walking', 'title': '1-on-1 Personal Training', 'text': 'Fully customized sessions with undivided coaching attention and detailed progress tracking.'},
+                        {'icon': 'people', 'title': 'Small Group Training', 'text': 'The energy of a class with the attention of personal training. Groups of 4–6.'},
+                        {'icon': 'calendar2-check', 'title': 'Online Coaching', 'text': 'Train anywhere with a structured plan, weekly check-ins, and direct coach access.'},
+                        {'icon': 'apple', 'title': 'Nutrition Coaching', 'text': 'Fuel your results with a personalized nutrition strategy built around your lifestyle.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'about',
+            'slug': 'about',
+            'title': 'About',
+            'order': 2,
+            'sections': [
+                {
+                    'type': 'text_block',
+                    'layout': 'layout_2',
+                    'heading': 'About Your Coach',
+                    'subheading': 'I became a personal trainer because fitness changed my life — and I want to share that with others.\n\nWith certifications in strength and conditioning, nutrition, and corrective exercise, I bring both the science and the motivation to every session. My philosophy is simple: build sustainable habits, celebrate every win, and never stop improving.',
+                },
+                {
+                    'type': 'testimonials',
+                    'layout': 'layout_1',
+                    'heading': 'Client Success Stories',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'title': 'Mike T.', 'text': 'Lost 35 pounds in six months and actually enjoyed the process. Best investment I have made.'},
+                        {'title': 'Rachel K.', 'text': 'I went from never working out to completing my first 5K. The accountability made all the difference.'},
+                        {'title': 'James & Tara W.', 'text': 'We train together as a couple. The programs keep it fresh and we push each other.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'contact',
+            'slug': 'contact',
+            'title': 'Contact',
+            'order': 3,
+            'nav_slot': 'right',
+            'sections': [
+                {
+                    'type': 'contact_form',
+                    'layout': 'layout_1',
+                    'heading': 'Let\'s Get Started',
+                    'subheading': 'Tell me about your goals and current fitness level. I will put together a plan and reach out within 24 hours.',
+                },
+            ],
+        },
+    ],
+}
+
+
 # Registry of all available packs, keyed by their `key`.
 PACKS = {
     CONTRACTOR_PACK['key']: CONTRACTOR_PACK,
+    RESTAURANT_PACK['key']: RESTAURANT_PACK,
+    SALON_PACK['key']:      SALON_PACK,
+    LAW_FIRM_PACK['key']:   LAW_FIRM_PACK,
+    MEDICAL_PACK['key']:    MEDICAL_PACK,
+    REAL_ESTATE_PACK['key']: REAL_ESTATE_PACK,
+    FITNESS_PACK['key']:    FITNESS_PACK,
 }
 
 
