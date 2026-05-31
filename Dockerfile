@@ -18,6 +18,8 @@ RUN SECRET_KEY=build-only-secret-key \
     DB_NAME=build \
     DB_USER=build \
     DB_PASSWORD=build \
+    ALLOWED_HOSTS=localhost \
+    DJANGO_SETTINGS_MODULE=config.Settings.prod \
     python manage.py collectstatic --noinput
 
 EXPOSE 8000
