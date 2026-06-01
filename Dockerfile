@@ -14,6 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN mkdir -p logs
+
 RUN SECRET_KEY=build-only-secret-key \
     DB_NAME=build \
     DB_USER=build \
