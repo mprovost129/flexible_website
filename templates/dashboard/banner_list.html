@@ -1,0 +1,47 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Banners | CBL{% endblock %}
+{% block heading %}Banners{% endblock %}
+{% block content %}
+<div class="cbl-card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-0">Announcement Banners</h2>
+            <div class="text-muted small">Strips shown above or below the navbar. Choose which pages each one appears on.</div>
+        </div>
+        <a href="{% url 'core:dashboard_banner_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Banner</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table cbl-table mb-0">
+            <thead>
+                <tr><th>Message</th><th>Position</th><th>Shows on</th><th>Status</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+            {% for banner in banners %}
+            <tr>
+                <td><strong>{{ banner.message|truncatechars:60 }}</strong></td>
+                <td>{{ banner.get_position_display }}</td>
+                <td>
+                    {% if banner.display_mode == 'all' %}
+                        <span class="text-muted">All pages</span>
+                    {% else %}
+                        {% for p in banner.pages.all %}<span class="badge text-bg-light border">{{ p.title|default:p.slug }}</span> {% empty %}<span class="text-warning small">No pages selected</span>{% endfor %}
+                    {% endif %}
+                </td>
+                <td>{% if banner.is_enabled %}<span class="badge text-bg-success">Enabled</span>{% else %}<span class="badge text-bg-secondary">Off</span>{% endif %}</td>
+                <td>
+                    <div class="cbl-actions">
+                        <a href="{% url 'core:dashboard_banner_edit' banner.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'core:dashboard_banner_delete' banner.pk %}" onsubmit="return confirm('Delete this banner?');">
+                            {% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-muted py-4 text-center">No banners yet. <a href="{% url 'core:dashboard_banner_create' %}">Create your first banner →</a></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

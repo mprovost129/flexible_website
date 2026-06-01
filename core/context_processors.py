@@ -36,6 +36,7 @@ def site_context(request):
         edit_mode_active = request.session.get('edit_mode', True)
 
     active_theme = site.theme if site else None
+    current_page = None
     if site:
         match = getattr(request, 'resolver_match', None)
         url_name = getattr(match, 'url_name', '') if match else ''
@@ -44,9 +45,11 @@ def site_context(request):
             page_qs = Page.objects.filter(site=site, slug=slug).select_related('theme')
             if not (getattr(request, 'user', None) and request.user.is_authenticated and request.user.is_staff):
                 page_qs = page_qs.filter(is_enabled=True)
-            page = page_qs.first()
-            if page and not page.inherit_site_theme and page.theme_id:
-                active_theme = page.theme
+            current_page = page_qs.first()
+            if current_page and not current_page.inherit_site_theme and current_page.theme_id:
+                active_theme = current_page.theme
+
+    banners_above, banners_below = _resolve_banners(site, current_page)
 
     return {
         'site': site,
@@ -54,4 +57,31 @@ def site_context(request):
         'active_theme': active_theme,
         'edit_mode_active': edit_mode_active,
         'asset_version': ASSET_VERSION,
+        'banners_above': banners_above,
+        'banners_below': banners_below,
     }
+
+
+def _resolve_banners(site, current_page):
+    """Return (above, below) lists of enabled banners that apply to current_page.
+
+    'all' banners always show. 'selected' banners show only when the current
+    page is in their `pages` set (so they never appear on non-CMS routes like
+    the cart or blog list, where current_page is None).
+    """
+    if not site:
+        return [], []
+    page_id = current_page.pk if current_page else None
+    above, below = [], []
+    banners = site.banners.filter(is_enabled=True).prefetch_related('pages')
+    for banner in banners:
+        if banner.display_mode == 'all':
+            visible = True
+        elif page_id is None:
+            visible = False
+        else:
+            visible = any(p.pk == page_id for p in banner.pages.all())
+        if not visible:
+            continue
+        (above if banner.position == 'above_navbar' else below).append(banner)
+    return above, below

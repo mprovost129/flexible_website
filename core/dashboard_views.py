@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .dashboard_forms import (
+    BannerForm,
     BlogPostForm,
     FooterColumnForm,
     FooterLinkForm,
@@ -18,7 +19,7 @@ from .dashboard_forms import (
     SectionForm,
     SiteSettingsForm,
 )
-from .models import BlogPost, FooterColumn, FooterLink, NavLink, Order, Page, Product, Section, Site
+from .models import Banner, BlogPost, FooterColumn, FooterLink, NavLink, Order, Page, Product, Section, Site
 from .site_resolver import get_active_site
 
 
@@ -597,3 +598,60 @@ def order_list(request):
     site = get_active_site(request)
     orders = Order.objects.filter(site=site).order_by('-created_at')
     return render(request, 'dashboard/order_list.html', _dashboard_context(request, orders=orders))
+
+
+# ---------------------------------------------------------------------------
+# Banners
+# ---------------------------------------------------------------------------
+
+@staff_required
+def banner_list(request):
+    site = get_active_site(request)
+    banners = Banner.objects.filter(site=site).prefetch_related('pages')
+    return render(request, 'dashboard/banner_list.html', _dashboard_context(request, banners=banners))
+
+
+@staff_required
+def banner_create(request):
+    site = get_active_site(request)
+    if request.method == 'POST':
+        form = BannerForm(request.POST, site=site)
+        if form.is_valid():
+            banner = form.save(commit=False)
+            banner.site = site
+            banner.save()
+            form.save_m2m()
+            messages.success(request, 'Banner created.')
+            return redirect('core:dashboard_banners')
+    else:
+        form = BannerForm(site=site)
+    return render(request, 'dashboard/banner_form.html', _dashboard_context(
+        request, form=form, title='New Banner', back_url=reverse('core:dashboard_banners'),
+    ))
+
+
+@staff_required
+def banner_edit(request, pk):
+    site = get_active_site(request)
+    banner = get_object_or_404(Banner, pk=pk, site=site)
+    if request.method == 'POST':
+        form = BannerForm(request.POST, instance=banner, site=site)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Banner saved.')
+            return redirect('core:dashboard_banners')
+    else:
+        form = BannerForm(instance=banner, site=site)
+    return render(request, 'dashboard/banner_form.html', _dashboard_context(
+        request, form=form, title='Edit Banner', back_url=reverse('core:dashboard_banners'),
+    ))
+
+
+@staff_required
+@require_POST
+def banner_delete(request, pk):
+    site = get_active_site(request)
+    banner = get_object_or_404(Banner, pk=pk, site=site)
+    banner.delete()
+    messages.success(request, 'Banner deleted.')
+    return redirect('core:dashboard_banners')

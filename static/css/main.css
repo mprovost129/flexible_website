@@ -1580,6 +1580,44 @@ body:not(.edit-mode) .nav-drag-handle {
     background: rgba(0, 0, 0, .95);
 }
 
+/* ── Announcement banners (above / below navbar) ──────────────────────────── */
+.cbl-banner {
+    width: 100%;
+    font-size: .9rem;
+    line-height: 1.4;
+}
+.cbl-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    padding: .55rem 1rem;
+    position: relative;
+    text-align: center;
+}
+.cbl-banner-msg { flex: 1 1 auto; }
+.cbl-banner-link {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+.cbl-banner-close {
+    position: absolute;
+    right: .5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    color: inherit;
+    font-size: 1.4rem;
+    line-height: 1;
+    opacity: .7;
+    cursor: pointer;
+    padding: 0 .4rem;
+}
+.cbl-banner-close:hover { opacity: 1; }
+
 /* ── Icon picker (item inspector) ─────────────────────────────────────────── */
 .cbl-icon-preview {
     display: inline-flex;

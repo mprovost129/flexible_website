@@ -1,7 +1,7 @@
 from django import forms
 import re
 
-from .models import BlogPost, FooterColumn, FooterLink, NavLink, Page, Product, Section, Site
+from .models import Banner, BlogPost, FooterColumn, FooterLink, NavLink, Page, Product, Section, Site
 
 
 class BootstrapModelForm(forms.ModelForm):
@@ -237,6 +237,38 @@ class FooterColumnForm(BootstrapModelForm):
     class Meta:
         model = FooterColumn
         fields = ['heading', 'order', 'is_visible']
+
+
+class BannerForm(BootstrapModelForm):
+    class Meta:
+        model = Banner
+        fields = [
+            'position', 'message', 'link_text', 'link_url',
+            'bg_color', 'text_color', 'is_enabled', 'dismissible',
+            'display_mode', 'pages', 'order',
+        ]
+        widgets = {
+            'pages': forms.CheckboxSelectMultiple,
+        }
+        labels = {
+            'is_enabled': 'Enabled (visible on the site)',
+            'dismissible': 'Let visitors dismiss it',
+            'display_mode': 'Show on',
+            'pages': 'Pages',
+            'bg_color': 'Background color',
+            'text_color': 'Text color',
+        }
+        help_texts = {
+            'pages': 'Only used when "Show on" is set to "Only selected pages".',
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.site = kwargs.pop('site', None)
+        super().__init__(*args, **kwargs)
+        if self.site:
+            self.fields['pages'].queryset = Page.objects.filter(site=self.site).order_by('order', 'title')
+        # CheckboxSelectMultiple shouldn't get the form-select class
+        self.fields['pages'].widget.attrs.pop('class', None)
 
 
 class ProductForm(BootstrapModelForm):

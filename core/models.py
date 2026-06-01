@@ -317,6 +317,44 @@ class Page(models.Model):
         return self.theme or self.site.theme
 
 
+class Banner(models.Model):
+    """A site-wide announcement banner rendered above or below the navbar.
+
+    Targeting: `display_mode='all'` shows on every page; `display_mode='selected'`
+    shows only on the pages listed in `pages`.
+    """
+    POSITION_CHOICES = [
+        ('above_navbar', 'Above navbar'),
+        ('below_navbar', 'Below navbar'),
+    ]
+    DISPLAY_CHOICES = [
+        ('all', 'All pages'),
+        ('selected', 'Only selected pages'),
+    ]
+
+    site         = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='banners')
+    position     = models.CharField(max_length=20, choices=POSITION_CHOICES, default='above_navbar')
+    message      = models.CharField(max_length=300, help_text='The banner text.')
+    link_text    = models.CharField(max_length=80, blank=True, default='', help_text='Optional call-to-action label.')
+    link_url     = models.CharField(max_length=500, blank=True, default='', help_text='Where the CTA / banner links to.')
+    bg_color     = models.CharField(max_length=30, blank=True, default='', help_text='Background color (hex or CSS). Blank = brand color.')
+    text_color   = models.CharField(max_length=30, blank=True, default='', help_text='Text color. Blank = white.')
+    is_enabled   = models.BooleanField(default=True)
+    dismissible  = models.BooleanField(default=False, help_text='Let visitors close the banner.')
+    display_mode = models.CharField(max_length=10, choices=DISPLAY_CHOICES, default='all')
+    pages        = models.ManyToManyField('Page', blank=True, related_name='banners',
+                                          help_text='Pages this banner shows on (when "Only selected pages" is chosen).')
+    order        = models.IntegerField(default=0)
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['position', 'order', 'id']
+
+    def __str__(self):
+        return f'{self.get_position_display()}: {self.message[:40]}'
+
+
 class SoftDeleteManager(models.Manager):
     """Default manager that hides soft-deleted rows (deleted_at is not null)."""
     def get_queryset(self):

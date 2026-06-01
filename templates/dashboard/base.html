@@ -43,6 +43,7 @@
             <a href="{% url 'core:dashboard_pages' %}" class="{% if 'dashboard_page' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Pages</a>
             <a href="{% url 'core:dashboard_blog' %}" class="{% if 'dashboard_blog' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-newspaper"></i> Blog</a>
             <a href="{% url 'core:dashboard_nav' %}" class="{% if 'dashboard_nav' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-menu-button-wide"></i> Navigation</a>
+            <a href="{% url 'core:dashboard_banners' %}" class="{% if 'dashboard_banner' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-megaphone"></i> Banners</a>
             <a href="{% url 'core:dashboard_footer' %}" class="{% if 'dashboard_footer' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-layout-three-columns"></i> Footer</a>
             <a href="{% url 'core:dashboard_products' %}" class="{% if 'dashboard_product' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-bag"></i> Products</a>
             <a href="{% url 'core:dashboard_orders' %}" class="{% if request.resolver_match.url_name == 'dashboard_orders' %}active{% endif %}"><i class="bi bi-receipt"></i> Orders</a>

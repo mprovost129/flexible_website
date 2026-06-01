@@ -1,0 +1,15 @@
+{% comment %}Renders one announcement Banner. Expects `banner` in context.{% endcomment %}
+<div class="cbl-banner" data-banner-id="{{ banner.id }}"
+     style="background: {% if banner.bg_color %}{{ banner.bg_color }}{% else %}var(--bs-primary){% endif %}; color: {% if banner.text_color %}{{ banner.text_color }}{% else %}#fff{% endif %};">
+    <div class="container cbl-banner-inner">
+        <span class="cbl-banner-msg">
+            {{ banner.message }}
+            {% if banner.link_text and banner.link_url %}
+                <a href="{{ banner.link_url }}" class="cbl-banner-link">{{ banner.link_text }}</a>
+            {% endif %}
+        </span>
+        {% if banner.dismissible %}
+            <button type="button" class="cbl-banner-close" data-banner-dismiss="{{ banner.id }}" aria-label="Dismiss">&times;</button>
+        {% endif %}
+    </div>
+</div>
