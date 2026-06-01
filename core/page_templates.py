@@ -54,7 +54,7 @@ PAGE_TEMPLATES = [
                 'subheading': 'Three reasons your customers will love working with you.',
                 'items': [
                     {'icon': 'lightning-charge-fill', 'title': 'Fast',     'text': 'Describe your first key benefit here.'},
-                    {'icon': 'shield-check-fill',      'title': 'Reliable', 'text': 'Describe your second key benefit here.'},
+                    {'icon': 'shield-fill-check',      'title': 'Reliable', 'text': 'Describe your second key benefit here.'},
                     {'icon': 'heart-fill',             'title': 'Loved',    'text': 'Describe your third key benefit here.'},
                 ],
             },
@@ -318,7 +318,7 @@ PAGE_TEMPLATES = [
                 'heading': 'Why Shop With Us',
                 'subheading': '',
                 'items': [
-                    {'icon': 'shield-check-fill', 'title': 'Secure Checkout',  'text': 'Your payment information is encrypted and processed securely by Stripe.'},
+                    {'icon': 'shield-fill-check', 'title': 'Secure Checkout',  'text': 'Your payment information is encrypted and processed securely by Stripe.'},
                     {'icon': 'truck',              'title': 'Fast Shipping',    'text': 'Orders ship within 1–2 business days with tracking included.'},
                     {'icon': 'arrow-return-left',  'title': 'Easy Returns',     'text': '30-day hassle-free returns. Not happy? We will make it right.'},
                 ],

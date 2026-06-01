@@ -1023,7 +1023,7 @@ ECOMMERCE_PACK = {
                     'heading': 'Why Shop With Us',
                     'config': {'columns_desktop': 3},
                     'items': [
-                        {'icon': 'shield-check-fill', 'title': 'Secure Checkout',  'text': 'Payments processed securely by Stripe.'},
+                        {'icon': 'shield-fill-check', 'title': 'Secure Checkout',  'text': 'Payments processed securely by Stripe.'},
                         {'icon': 'truck',              'title': 'Fast Shipping',    'text': 'Orders ship within 1–2 business days.'},
                         {'icon': 'arrow-return-left',  'title': 'Easy Returns',     'text': '30-day hassle-free returns.'},
                     ],

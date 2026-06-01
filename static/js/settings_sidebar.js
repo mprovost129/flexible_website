@@ -2002,7 +2002,7 @@
   // Curated common Bootstrap icons offered in the picker. Power users can still
   // type any valid bootstrap-icons name into the field.
   var ICON_CHOICES = [
-    'star-fill', 'heart-fill', 'lightning-charge-fill', 'shield-check-fill',
+    'star-fill', 'heart-fill', 'lightning-charge-fill', 'shield-fill-check',
     'check-circle-fill', 'trophy-fill', 'gem', 'rocket-takeoff-fill',
     'gear-fill', 'people-fill', 'person-fill', 'chat-dots-fill',
     'envelope-fill', 'telephone-fill', 'geo-alt-fill', 'clock-fill',
