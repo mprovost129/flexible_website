@@ -1,0 +1,77 @@
+/* =============================================================================
+   Sandbox styles
+   ============================================================================= */
+
+/* ── Toolbar ────────────────────────────────────────────────────────────────── */
+#sandbox-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9998;   /* below the edit sidebar (9999) */
+    background: #1e293b;
+    color: #fff;
+    padding: .55rem 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+}
+
+.sandbox-toolbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1320px;
+    margin: 0 auto;
+    gap: 1rem;
+}
+
+.sandbox-toolbar-label {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-weight: 600;
+    font-size: .88rem;
+    color: rgba(255, 255, 255, .85);
+    white-space: nowrap;
+}
+
+/* Push page content below the sandbox toolbar */
+body.cbl-sandbox-mode #page-sections,
+body.cbl-sandbox-mode #add-section-bar,
+body.cbl-sandbox-mode .cbl-navbar-shell,
+body.cbl-sandbox-mode #footer-region {
+    margin-top: 0;
+}
+
+body.cbl-sandbox-mode {
+    padding-top: 48px;    /* height of sandbox toolbar */
+}
+
+/* Hide the main staff toolbar when sandbox toolbar is showing */
+body.cbl-sandbox-mode #staff-toolbar {
+    display: none !important;
+}
+
+/* ── Landing page ────────────────────────────────────────────────────────────── */
+.sandbox-landing {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+}
+
+/* ── Sidebar restrictions in sandbox mode ────────────────────────────────────── */
+
+/* The sidebar still renders all sections, but we hide the ones that
+   make no sense in a sandbox via sandbox_cleanup.js (MutationObserver).
+   These CSS rules provide a belt-and-suspenders fallback. */
+
+body.cbl-sandbox-mode .sidebar-new-page-btn,
+body.cbl-sandbox-mode .sidebar-delete-page,
+body.cbl-sandbox-mode .sidebar-save-seo,
+body.cbl-sandbox-mode .sidebar-save-page-design {
+    display: none !important;
+}
+
+/* The "Add section" bar label */
+#add-section-bar {
+    /* Inherits styles from main.css; no change needed */
+}

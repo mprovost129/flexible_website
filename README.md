@@ -1,217 +1,372 @@
-# CBL - Create Build Launch
+# CBL — Create · Build · Launch
 
-CBL is a self-hosted Django website builder you can purchase once, customize, and publish wherever you want. It uses a dynamic dashboard, editable pages, reusable sections, configurable navigation, footer controls, themes, and inline media editing so buyers do not need to edit code for normal website changes.
+A self-hosted Django website builder. Build professional websites with a visual editor, no coding required. Includes a blog, shop with Stripe checkout, and a full dashboard — all manageable from the browser.
 
-## What you get
+---
 
-- 8 color themes, easy to customize or add your own
-- One universal navbar engine with five starting presets
-- 5 footer styles
-- Pre-built section types (hero, image grid, feature list, CTA banner, text block) that you mix and match per page
-- Dynamic content: add 3 images to a grid or 30, the layout adapts
-- Cloudinary integration for fast image hosting
+## Table of Contents
 
-## Quick Start
+1. [What's included](#whats-included)
+2. [Before you start — accounts to create](#before-you-start)
+3. [Quick start with Docker](#quick-start-with-docker) ← **recommended for testing**
+4. [Manual setup (without Docker)](#manual-setup)
+5. [Deploying to Render (free hosting)](#deploying-to-render)
+6. [First-time site setup](#first-time-site-setup)
+7. [Using the site](#using-the-site)
+8. [Environment variables reference](#environment-variables-reference)
+9. [Architecture](#architecture)
 
-You have three deployment paths. Pick the one that fits your situation.
+---
 
-### Option 1: One-click deploy to Render (recommended)
+## What's included
 
-Render hosts your site for free on a `.onrender.com` subdomain. Best if you want to be live fast without managing infrastructure.
+| Feature | Details |
+|---|---|
+| **Visual page editor** | Click anything on your page to edit it — text, images, buttons, layout |
+| **Pages & sections** | Build pages from reusable sections (hero, features, gallery, testimonials, pricing, contact form, and more) |
+| **Blog** | Write, publish, and manage posts. Embedded in the visual editor. |
+| **Shop / Ecommerce** | Product catalog, session-based cart, Stripe Checkout. No monthly fees. |
+| **Payments (Stripe)** | Paste your Stripe keys in the dashboard — money goes straight to you |
+| **Navigation editor** | Live navbar editing with multiple layout presets |
+| **Footer editor** | 5 footer styles, social links, multi-column link lists |
+| **Themes** | 8 built-in color themes, customizable |
+| **Image hosting** | Cloudinary integration — images served from a global CDN |
+| **Contact forms** | Every submission saved to the database; optional email notification |
+| **SEO** | Per-page title, description, and Open Graph image |
+| **Responsive** | Bootstrap 5, mobile-first out of the box |
 
-1. Create a free account at [render.com](https://render.com)
-2. Push this code to a GitHub repository (private is fine)
-3. In Render, click **New → Blueprint** and connect your repo
-4. Render reads `render.yaml` and creates your web service plus database automatically
-5. When prompted, paste in your Cloudinary credentials (see [Cloudinary Setup](#cloudinary-setup) below)
-6. Wait 3-5 minutes for the first deploy to finish
-7. Visit `your-site.onrender.com` - you will land on a setup screen in your browser
+---
 
-That setup screen creates your admin account, names your site, and lets you pick a starting point (blank or an industry pack). No shell commands, no `manage.py`. When you submit it, you are logged in and dropped straight onto your live site in edit mode. The setup screen disappears permanently once your admin account exists.
+## Before you start
 
-### Option 2: Run locally
+You will need to create accounts with two services before everything works. Both have generous free tiers.
 
-Useful if you want to develop and customize before deploying, or you want to host elsewhere.
+### 1. Cloudinary — image uploads (free)
 
-You'll need: Python 3.12+, PostgreSQL running locally.
+All uploaded images (logos, section photos, blog thumbnails, product photos) are stored on Cloudinary.
+
+1. Go to **[cloudinary.com](https://cloudinary.com)** and click **Sign up for free**
+2. After signing in, go to your dashboard
+3. Copy three values: **Cloud Name**, **API Key**, and **API Secret**
+4. Paste them into your `.env` file (or the Render dashboard if deploying there)
+
+> **Without Cloudinary:** The site still runs — you just cannot upload images. You can add Cloudinary keys at any time and nothing breaks.
+
+---
+
+### 2. Stripe — payments (free account, pay-per-transaction)
+
+Only needed if you want the shop to accept real payments. You can skip this entirely if you are just testing or building a non-ecommerce site.
+
+1. Go to **[stripe.com](https://stripe.com)** and create a free account
+2. Complete the identity verification to activate your account (takes ~5 minutes)
+3. In your Stripe dashboard go to **Developers → API keys**
+4. You will see two keys:
+   - **Publishable key** — starts with `pk_live_...` (or `pk_test_...` for testing)
+   - **Secret key** — starts with `sk_live_...` (or `sk_test_...` for testing)
+5. You can enter these inside CBL at any time — go to **Dashboard → Payments** after logging in
+
+> **Start with test keys** (`pk_test_...` / `sk_test_...`). They look and feel identical to real payments but no money moves. Test card: `4242 4242 4242 4242`, any future expiry, any 3-digit CVV. Switch to live keys when you are ready to go live.
+
+> **Stripe's fee:** ~2.9% + 30¢ per successful transaction. No monthly fee. CBL takes nothing — money goes directly from your customer to your Stripe account.
+
+---
+
+## Quick start with Docker
+
+**Requirements:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running. That's it — no Python, PostgreSQL, or anything else needed locally.
 
 ```bash
-# Clone or unzip into a directory, then:
-cd cbl
-python -m venv venv
-source venv/bin/activate         # Windows: venv\Scripts\activate
+# 1. Get the code
+git clone <repo-url>
+cd flexible_website      # or whatever the folder is named
 
-# Runtime deps only:
+# 2. (Optional) Add your Cloudinary keys for image uploads
+#    Skip this step to test without images first
+cp .env.example .env
+# Open .env and fill in CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+
+# 3. Start everything
+docker-compose up --build
+```
+
+Wait about 60 seconds on first run (it downloads PostgreSQL and installs Python packages). You will see:
+
+```
+web-1  | Django version 6.0.3, using settings 'config.Settings.docker'
+web-1  | Starting development server at http://0.0.0.0:8000/
+```
+
+**4. Open your browser:** [http://localhost:8000/setup/](http://localhost:8000/setup/)
+
+You will land on the first-time setup screen. See [First-time site setup](#first-time-site-setup) for what to do there.
+
+### Stopping and restarting
+
+```bash
+# Stop
+docker-compose down
+
+# Restart (your database is preserved in a Docker volume)
+docker-compose up
+
+# Full reset — deletes the database and starts fresh
+docker-compose down -v
+docker-compose up --build
+```
+
+### Making code changes
+
+The project folder is mounted as a volume, so any file you edit is immediately reflected — Django's dev server restarts automatically.
+
+---
+
+## Manual setup
+
+Use this if you prefer not to use Docker, or you want to develop locally with your own PostgreSQL.
+
+**Requirements:**
+- Python 3.12 or 3.13
+- PostgreSQL 15+ running locally
+
+```bash
+# 1. Create a virtual environment
+python -m venv .venv
+source .venv/bin/activate       # Windows: .venv\Scripts\activate
+
+# 2. Install dependencies
 pip install -r requirements.txt
-# ...or, if you plan to develop/run tests, get the dev tooling too:
+# For development tools (linter, tests, debug toolbar):
 # pip install -r requirements-dev.txt
 
-# Copy the env template and fill in values
-cp .env.example .env             # Windows: copy .env.example .env
-# Edit .env with your editor of choice
+# 3. Create the database
+createdb cbl_db                  # or use pgAdmin
 
-# Create the database (one-time)
-createdb cbl            # or use pgAdmin / your tool of choice
+# 4. Set up your environment
+cp .env.example .env
+# Edit .env — set DB_NAME, DB_USER, DB_PASSWORD, and your Cloudinary keys
 
-# Apply the schema and run it
+# 5. Run migrations
 python manage.py migrate
+
+# 6. Start the development server
 python manage.py runserver
 ```
 
-Visit `http://localhost:8000/`. You will land on the browser setup screen the first time. (Prefer the command line? `python manage.py setup_site` still works as an interactive alternative.)
+Visit [http://localhost:8000/setup/](http://localhost:8000/setup/) on first run.
 
-### Option 3: Deploy elsewhere
+---
 
-Any host that runs Django works. The essentials:
+## Deploying to Render (free hosting)
 
-- Python 3.12+
-- PostgreSQL database
-- Environment variables (see `.env.example`)
-- Run `python manage.py migrate` after first deploy, then finish setup in the browser at `/`
+Render hosts your site on a free `.onrender.com` subdomain with a managed PostgreSQL database.
 
-Common targets: Railway, Fly.io, DigitalOcean App Platform, Heroku, your own VPS.
+1. Push this code to a **GitHub** or **GitLab** repository (private is fine)
+2. Create a free account at **[render.com](https://render.com)**
+3. In Render: **New → Blueprint** → connect your repository
+4. Render reads `render.yaml` and creates the web service and database automatically
+5. In the Render dashboard, add these environment variables manually:
+   - `CLOUDINARY_CLOUD_NAME`
+   - `CLOUDINARY_API_KEY`
+   - `CLOUDINARY_API_SECRET`
+6. Wait 3–5 minutes for the first deploy
+7. Visit `your-site.onrender.com/setup/` to finish setup
 
-## Cloudinary Setup
+> **Free tier note:** Render's free web service spins down after 15 minutes of inactivity. The first request after spin-down takes ~30 seconds. Upgrade to a paid plan ($7/month) to keep it always-on.
 
-Cloudinary hosts your images and gives you a generous free tier (25GB storage and bandwidth, plenty for most sites).
+---
 
-1. Sign up at [cloudinary.com](https://cloudinary.com)
-2. From your dashboard, copy three values: **Cloud Name**, **API Key**, **API Secret**
-3. Paste them into your `.env` file (local) or your host's environment variables (production)
+## First-time site setup
 
-Without Cloudinary, image uploads will fail. Everything else still works.
+When you visit the site for the very first time you will see a setup screen. It runs once — after you complete it, it disappears permanently.
 
-## Contact Form & Email
+**What the setup screen does:**
 
-The contact form works out of the box: every submission is saved to your database, so you never lose a lead. You can read submissions any time under **Contact submissions** in `/admin/`.
+1. **Creates your admin account** — enter an email and password. This is how you log into the dashboard.
+2. **Names your site** — sets the site name shown in the navbar and browser tab.
+3. **Picks a starting point** — choose a pre-built industry template (coffee shop, agency, portfolio, etc.) or start blank. You can always change everything later.
 
-To also get an email each time someone submits, configure SMTP. Until you do, submissions are still saved (and printed to your server logs in development), they just are not emailed.
+After completing setup you will be logged in and dropped onto your site in **edit mode**, ready to start customizing.
 
-Add these to your `.env` (local) or host environment variables (production):
+---
 
-```
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.yourprovider.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your-smtp-username
-EMAIL_HOST_PASSWORD=your-smtp-password
-DEFAULT_FROM_EMAIL=noreply@yourdomain.com
-```
+## Using the site
 
-Any SMTP provider works (a transactional service such as Mailgun, SendGrid, Postmark, or Amazon SES is recommended over a personal Gmail account for deliverability). Set the recipient address per contact section in its `config` (`to_email`); it defaults to `DEFAULT_FROM_EMAIL`.
+### The dashboard — `/cbl/`
 
-## Customizing Your Site
+The dashboard is where you manage everything behind the scenes:
 
-After finishing the browser setup, log in at `/admin/` (or edit live on the page in edit mode). The interesting models:
+| Section | What it does |
+|---|---|
+| **Pages** | Add, edit, delete, publish/unpublish pages |
+| **Blog** | Write and publish blog posts |
+| **Products** | Add products to your shop |
+| **Orders** | See customer orders |
+| **Payments** | Connect Stripe — paste your keys here |
+| **Navigation** | Manage navbar links |
+| **Footer** | Manage footer links and columns |
+| **Site Settings** | Name, logo, theme, navbar style, social links |
 
-- **Site**: change site name, tagline, theme, universal navbar controls, footer, social links, copyright
-- **Pages**: add, remove, reorder pages
-- **Sections**: each page is built from sections (hero, image grid, etc.). Drag to reorder, toggle visibility, add as many items as you want inside each
-- **Themes**: 8 pre-built themes. Edit colors and fonts, or create your own
-- **Contact submissions**: read-only log of everyone who has used a contact form
+### Edit mode — editing your site visually
 
-### Adding images to a grid
+Toggle edit mode using the **"Edit"** button in the floating toolbar at the top of any page (visible only when logged in as staff).
 
-1. Go to **Pages → Home**, click into a section like "Our Work" (Image Grid)
-2. Scroll to the SectionItems section at the bottom
-3. Click "Add another Section item" and upload an image
-4. The grid reflows automatically based on how many items you have
+In edit mode:
+- **Click any text** to edit it inline
+- **Click any image** to replace it
+- **Click a button/CTA** to change its text, link, color, size, hover effect
+- **Click a section heading** to change it
+- **Click a nav link** to edit its label or URL
+- **Hover over an intercepted link** — a small **"→ Visit"** badge appears so you can follow it and navigate to another page while staying in edit mode
+- **Use the "Switch page" dropdown** in the toolbar to jump to any page
 
-To control how many columns the grid uses, edit the section's `config` field (under "Advanced") to something like `{"columns_desktop": 4}` for 4 across.
+**Adding and removing sections:**
+
+Each page is built from sections stacked vertically. In edit mode, hover over any section and a toolbar appears. Use it to:
+- Add a new section (Hero, Feature list, Gallery, Blog posts, Product grid, Pricing, etc.)
+- Delete a section (with undo)
+- Show/hide a section without deleting it
+- Change the section layout
+
+**CTA buttons:** Click any button in edit mode to open the Button panel where you can change:
+- Button text and link URL
+- Color (Primary, Secondary, Outline, Light, Dark, Red, Green, etc.)
+- Size (Small / Regular / Large)
+- Shape (Default / Pill / Square)
+- Shadow (None / Small / Medium / Large)
+- Hover effect (None / Lift / Glow / Pulse)
+
+### Setting up the blog
+
+1. Go to **Dashboard → Blog → New Post**
+2. Write your post (HTML is supported in the body)
+3. Set the status to **Published** and set a publish date
+4. Save — the post appears at `/blog/`
+
+To add a "Recent Posts" section to any page, go into edit mode, hover over the add-section bar at the bottom of the page, and choose **Recent Blog Posts**.
+
+### Setting up the shop
+
+1. Go to **Dashboard → Payments** and paste your Stripe API keys
+2. Go to **Dashboard → Products → Add Product** — add name, price, description, and a photo
+3. Add a **Product Grid** section to any page (or use the "Shop" page template from the new-page picker)
+4. Customers can browse products, add to cart, and check out via Stripe's hosted payment page
+5. Completed orders appear in **Dashboard → Orders**
+
+> Use Stripe test keys and test card `4242 4242 4242 4242` to verify the whole flow before going live.
+
+---
+
+## Environment variables reference
+
+All variables go in your `.env` file (local) or your hosting provider's environment settings (production). Copy `.env.example` as your starting point.
+
+| Variable | Required | Description |
+|---|---|---|
+| `SECRET_KEY` | **Yes** | Long random string. Generate: `python -c "import secrets; print(secrets.token_urlsafe(50))"` |
+| `DB_NAME` | **Yes** | PostgreSQL database name |
+| `DB_USER` | **Yes** | PostgreSQL username |
+| `DB_PASSWORD` | **Yes** | PostgreSQL password |
+| `DB_HOST` | No | Database host (default: `localhost`) |
+| `DB_PORT` | No | Database port (default: `5432`) |
+| `DATABASE_URL` | No | Full connection string — overrides the `DB_*` vars above. Used on Render/Heroku. |
+| `CLOUDINARY_CLOUD_NAME` | No* | From cloudinary.com dashboard |
+| `CLOUDINARY_API_KEY` | No* | From cloudinary.com dashboard |
+| `CLOUDINARY_API_SECRET` | No* | From cloudinary.com dashboard |
+| `ALLOWED_HOSTS` | Prod | Comma-separated hostnames, e.g. `mysite.com,www.mysite.com` |
+| `CSRF_TRUSTED_ORIGINS` | Prod | Comma-separated origins, e.g. `https://mysite.com` |
+| `EMAIL_BACKEND` | No | Default: console (prints to logs). Use `django.core.mail.backends.smtp.EmailBackend` for real email |
+| `EMAIL_HOST` | No | SMTP server, e.g. `smtp.gmail.com` |
+| `EMAIL_PORT` | No | Default `587` |
+| `EMAIL_HOST_USER` | No | SMTP username |
+| `EMAIL_HOST_PASSWORD` | No | SMTP password |
+| `DEFAULT_FROM_EMAIL` | No | From address for outgoing email |
+| `REDIS_URL` | No | Redis connection string for production caching |
+| `DJANGO_LOG_LEVEL` | No | Default `INFO` |
+
+\* Required for image uploads. Everything else still works without these.
+
+---
 
 ## Architecture
 
-- Django 6 with PostgreSQL
-- Bootstrap 5.3, themed via CSS variables (no SCSS compilation needed)
-- Cloudinary for media storage
-- WhiteNoise for static file serving
-- django-axes for brute-force login protection
-- Designed for Render's free tier, runs anywhere Django runs
-
-## File structure
-
 ```
-cbl/
-├── config/              # Django settings (base.py, dev.py, prod.py)
-├── core/                # Site, Page, Section, Theme models
-├── users/               # Custom user model with email login
+flexible_website/
+├── config/
+│   ├── Settings/
+│   │   ├── base.py        # Shared settings
+│   │   ├── dev.py         # Local development (with debug toolbar)
+│   │   ├── docker.py      # Docker / tester environment
+│   │   └── prod.py        # Production (Render, etc.)
+│   └── urls.py
+├── core/                  # Main app
+│   ├── models.py          # Site, Page, Section, SectionItem, BlogPost,
+│   │                      #   Product, Order, Theme, NavLink, FooterLink…
+│   ├── views.py           # Public page views, blog, shop
+│   ├── dashboard_views.py # Staff dashboard views
+│   ├── edit_views.py      # Inline edit API endpoints
+│   ├── nav_views.py       # Nav/footer editing API
+│   ├── cart.py            # Session-based shopping cart
+│   └── templatetags/
+│       └── core_extras.py # Template filters (btn_size, get_products, …)
+├── users/                 # Custom user model (email login)
 ├── templates/
-│   ├── base.html        # Site shell with theme CSS injection
-│   ├── navbars/         # Universal navbar engine + shared navbar components
-│   ├── footers/         # 5 footer variations
-│   ├── sections/        # Section type templates (hero, image_grid, etc.)
-│   └── core/page.html   # Universal page renderer
-├── static/              # CSS/JS that ships with the app
-├── render.yaml          # Render deployment blueprint
+│   ├── base.html          # Site shell with theme, navbar, footer
+│   ├── dashboard/         # CBL dashboard templates
+│   ├── navbars/           # Universal navbar engine
+│   ├── footers/           # 5 footer styles
+│   ├── sections/          # Section type templates
+│   ├── blog/              # Public blog templates
+│   └── shop/              # Cart, checkout, order confirmation
+├── static/
+│   ├── css/main.css
+│   └── js/
+│       ├── settings_sidebar.js  # Edit mode inspector sidebar
+│       ├── structural_edit.js   # Add/delete sections in edit mode
+│       └── inline_edit.js       # Inline text editing
+├── Dockerfile
+├── docker-compose.yml
 ├── requirements.txt
+├── requirements-dev.txt
 └── manage.py
 ```
 
-## Updating
+**Tech stack:**
+- Django 6 + PostgreSQL
+- Bootstrap 5.3 (themed via CSS custom properties — no SCSS compilation)
+- Cloudinary for media storage
+- Stripe Checkout for payments
+- WhiteNoise for static file serving in production
+- django-axes for brute-force login protection
 
-When new versions of this template are released, you'll get an email with a link to the new zip. To update:
+---
 
-1. Back up your database
-2. Download the new zip
-3. Copy your `.env` file from the old version
-4. Replace the old files with new ones
-5. Run `pip install -r requirements.txt && python manage.py migrate`
+## Common questions
 
-Your content (pages, sections, themes) lives in the database, not in the code, so it survives updates.
+**Can I add my own section types?**
+Yes. Create a template at `templates/sections/<your_type>/layout_1.html`, add the type to `Section.SECTION_TYPES` in `models.py`, run a migration, and add it to `ADDABLE_SECTION_TYPES` in `edit_views.py` and `SECTION_TYPES` in `structural_edit.js`.
+
+**Where do I change fonts and colors?**
+Dashboard → Site Settings → Theme. Or go to the visual editor and click the Page panel (click empty space outside any section) to access theme swatches.
+
+**How do I change the site name / logo?**
+Click the logo or site name in the navbar while in edit mode, or go to Dashboard → Site Settings.
+
+**The site is slow on first load (Render free tier)**
+Render's free plan spins down inactive services. Upgrade to the $7/month plan or use another host to avoid the cold-start delay.
+
+**Can I use my own domain?**
+Yes. Add your domain in your hosting provider's settings, then add it to `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` in your environment variables.
+
+**I forgot my admin password**
+```bash
+python manage.py changepassword <your-email>
+# Docker:
+docker-compose exec web python manage.py changepassword <your-email>
+```
+
+---
 
 ## Support
 
-Questions about CBL? Email [your-email-here].
-
-## CBL Dashboard
-
-CBL now includes an in-site staff dashboard at:
-
-```text
-/cbl/
-```
-
-Use this dashboard instead of Django Admin for day-to-day site management.
-
-Current dashboard areas:
-
-- Dashboard overview
-- Site Settings
-- Pages
-- Page publish / unpublish controls
-- Page add / edit / delete controls
-- Section add / edit / delete controls
-- Navigation link add / edit / delete controls
-- Footer column and footer link add / edit / delete controls
-
-Django Admin is still available at `/admin/` for advanced maintenance.
-
-
-## Universal Navbar Engine
-
-CBL no longer treats each navbar option as a separate template. There is one universal navbar renderer:
-
-```text
-templates/navbars/navbar_dynamic.html
-templates/navbars/_navbar_slot.html
-```
-
-The five navbar choices are now starting presets, not separate code paths. Every preset supports the same feature set:
-
-- logo
-- website name
-- menu links
-- dropdown links
-- search bar
-- login link
-- register link
-- signed-in profile dropdown
-- optional CTA button
-- left / center / right placement
-- sticky on/off
-- contained/full-width layout
-- light/dark/brand/transparent style
-
-Use `/cbl/settings/` to control global navbar features. Use `/cbl/navigation/` to add, edit, delete, hide, and position menu links.
-
-This avoids redundant navbar templates and keeps CBL flexible: future navbar features only need to be built once.
+Questions or issues? Email [your-support-email-here].

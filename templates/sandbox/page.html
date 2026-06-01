@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sandbox{% if cms_site %} | {{ cms_site.name }}{% endif %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'sandbox/css/sandbox.css' %}">
+{% if sandbox_edit %}
+{# Set up fetch interceptor and sandbox mode flag BEFORE sidebar JS loads #}
+<script>
+(function () {
+    'use strict';
+
+    // Tell CSS and sidebar cleanup which mode we're in
+    document.addEventListener('DOMContentLoaded', function () {
+        document.body.classList.add('cbl-sandbox-mode');
+    });
+
+    // ── Fetch interceptor ─────────────────────────────────────────────────
+    // Redirect every /edit/<path> call to /sandbox/api/<path> so the existing
+    // settings_sidebar.js and structural_edit.js work without modification.
+    var _EDIT_PREFIX   = '/edit/';
+    var _SANDBOX_API   = '/sandbox/api/';
+
+    // Page-level and nav/footer actions that make no sense in the sandbox —
+    // return a silent success so the sidebar doesn't show error messages.
+    var _NOOP_PREFIXES = [
+        '/sandbox/api/page/',
+        '/sandbox/api/nav-link/',
+        '/sandbox/api/footer-',
+        '/sandbox/api/site-',
+        '/sandbox/api/navbar/',
+        '/sandbox/api/footer/',
+        '/sandbox/api/site/',
+        '/sandbox/api/toggle-mode',
+    ];
+
+    var _origFetch = window.fetch;
+    window.fetch = function (url, opts) {
+        if (typeof url === 'string' && url.startsWith(_EDIT_PREFIX)) {
+            url = _SANDBOX_API + url.slice(_EDIT_PREFIX.length);
+        }
+        return _origFetch.call(window, url, opts);
+    };
+})();
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+{# ── Sandbox toolbar ───────────────────────────────────────────────────────── #}
+<div id="sandbox-toolbar">
+    <div class="sandbox-toolbar-inner">
+        <span class="sandbox-toolbar-label">
+            <i class="bi bi-{% if sandbox_edit %}pencil-square{% else %}eye{% endif %}"></i>
+            {% if sandbox_edit %}Editing sandbox{% else %}Previewing{% endif %}
+        </span>
+
+        <div class="d-flex gap-2">
+            <form method="post" action="{% url 'sandbox:toggle_preview' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm {% if sandbox_edit %}btn-outline-light{% else %}btn-warning{% endif %}">
+                    {% if sandbox_edit %}
+                        <i class="bi bi-eye me-1"></i>Preview
+                    {% else %}
+                        <i class="bi bi-pencil me-1"></i>Edit
+                    {% endif %}
+                </button>
+            </form>
+
+            <form method="post" action="{% url 'sandbox:exit' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-danger">
+                    <i class="bi bi-x-lg me-1"></i>Exit Sandbox
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{# ── Page sections ─────────────────────────────────────────────────────────── #}
+{% if sandbox_edit %}
+
+<div id="page-sections"
+     data-page-id="{{ page.id }}"
+     data-page-slug="sandbox"
+     data-page-title="Sandbox"
+     data-page-published="0"
+     data-page-in-navbar="0"
+     data-page-in-footer="0"
+     data-page-og-title=""
+     data-page-og-description=""
+     data-section-spacing="normal"
+     data-body-bg="">
+
+    {% for section in sections %}
+    {% with cfg=section.config %}
+    {% with pt=cfg.padding_top pb=cfg.padding_bottom bw=cfg.border_width bc=cfg.border_color bs=cfg.border_style br=cfg.border_radius %}
+    <div class="section-wrap{% if not section.is_visible %} section-hidden{% endif %}{% if cfg.item_style and cfg.item_style != 'none' %} cbl-items-{{ cfg.item_style }}{% endif %}"
+         {% if pt or pb or bw or br %}style="{% if pt %}padding-top:{{ pt }}rem;{% endif %}{% if pb %}padding-bottom:{{ pb }}rem;{% endif %}{% if bw and bs and bs != 'none' %}border:{{ bw }}px {{ bs }} {{ bc|default:'#dee2e6' }};{% endif %}{% if br %}border-radius:{{ br }}px;{% endif %}"{% endif %}
+         data-section-id="{{ section.id }}"
+         data-section-type="{{ section.section_type }}"
+         data-section-layout="{{ section.layout }}"
+         data-section-layouts="{{ section.available_layouts|join:',' }}"
+         data-section-columns="{{ cfg.columns_desktop|default:'' }}"
+         data-section-padding-top="{{ cfg.padding_top|default:'' }}"
+         data-section-padding-bottom="{{ cfg.padding_bottom|default:'' }}"
+         data-section-border-style="{{ cfg.border_style|default:'' }}"
+         data-section-border-width="{{ cfg.border_width|default:'' }}"
+         data-section-border-color="{{ cfg.border_color|default:'' }}"
+         data-section-border-radius="{{ cfg.border_radius|default:'' }}"
+         data-section-item-style="{{ cfg.item_style|default:'' }}"
+         data-section-bg="{{ section.background_color }}"
+         data-section-visible="{{ section.is_visible|yesno:'1,0' }}"
+         data-section-heading="{{ section.heading }}"
+         data-section-subheading="{{ section.subheading }}"
+         data-section-image-url="{% if section.primary_image %}{{ section.primary_image.url }}{% endif %}">
+        {% include section.template_path %}
+    </div>
+    {% endwith %}
+    {% endwith %}
+    {% endfor %}
+
+</div>
+
+<div id="add-section-bar" data-add-url="{% url 'core:add_section' page.id %}">
+    <button type="button" id="add-section-btn" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Add section
+    </button>
+</div>
+
+{% else %}
+{# Preview mode #}
+{% for section in sections %}
+    {% include section.template_path %}
+{% endfor %}
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if sandbox_edit %}
+<script src="{% static 'sandbox/js/sandbox_cleanup.js' %}"></script>
+{% endif %}
+{% endblock %}

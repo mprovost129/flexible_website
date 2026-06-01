@@ -1,33 +1,54 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Local / tester development stack
+#
+# Quick start (no .env file required for basic testing):
+#   docker-compose up --build
+#   Visit http://localhost:8000/setup/ to create your admin account.
+#
+# For image uploads and payments, copy .env.example → .env and add your
+# Cloudinary and Stripe keys, then restart: docker-compose up --build
+# ─────────────────────────────────────────────────────────────────────────────
+
 services:
+
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: cbl_db
+      POSTGRES_USER: cbl_user
+      POSTGRES_PASSWORD: cbl_local_pw
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cbl_user -d cbl_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    env_file: .env
-    environment:
-      DJANGO_SETTINGS_MODULE: config.Settings.dev
+    command: >
+      sh -c "mkdir -p logs &&
+             python manage.py migrate --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
       - "8000:8000"
+    env_file:
+      - path: .env
+        required: false          # .env is optional — pre-set defaults cover basics
+    environment:
+      DJANGO_SETTINGS_MODULE: config.Settings.docker
+      SECRET_KEY: "local-dev-only-please-change-before-any-public-deployment"
+      DB_NAME: cbl_db
+      DB_USER: cbl_user
+      DB_PASSWORD: cbl_local_pw
+      DB_HOST: db
+      DB_PORT: "5432"
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
 
 volumes:
   postgres_data:

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Live Demo | {% if cms_site %}{{ cms_site.name }}{% else %}CBL{% endif %}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'sandbox/css/sandbox.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="sandbox-landing">
+    <div class="container text-center py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+
+                <div class="mb-4">
+                    <span class="badge text-bg-primary fs-6 px-3 py-2 rounded-pill mb-3 d-inline-block">
+                        <i class="bi bi-play-circle me-1"></i> Interactive Demo
+                    </span>
+                    <h1 class="display-4 fw-bold mb-3">Try the page builder</h1>
+                    <p class="lead text-body-secondary mb-4">
+                        Get a hands-on feel for editing. Click anything to change it — text, images, layouts,
+                        colors, and buttons. Nothing is saved when you leave.
+                    </p>
+                </div>
+
+                <form method="post" action="{% url 'sandbox:enter' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-lg px-5 shadow">
+                        <i class="bi bi-pencil-square me-2"></i>Enter Edit Mode
+                    </button>
+                </form>
+
+                <div class="row g-4 mt-5 text-start">
+                    <div class="col-md-4">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0 text-primary fs-3"><i class="bi bi-cursor-fill"></i></div>
+                            <div>
+                                <div class="fw-semibold mb-1">Click to edit</div>
+                                <div class="small text-body-secondary">Click any text, button, or image to change it directly on the page.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0 text-primary fs-3"><i class="bi bi-layout-wtf"></i></div>
+                            <div>
+                                <div class="fw-semibold mb-1">Add sections</div>
+                                <div class="small text-body-secondary">Use the + bar at the bottom to add hero sections, galleries, pricing tables, and more.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0 text-primary fs-3"><i class="bi bi-arrow-counterclockwise"></i></div>
+                            <div>
+                                <div class="fw-semibold mb-1">Resets automatically</div>
+                                <div class="small text-body-secondary">Nothing saves. Close the tab or click "Exit Sandbox" and everything returns to the default.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

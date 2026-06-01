@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     # Local
     'users',
     'core',
+    'sandbox',   # Interactive demo (excluded from git archive via .gitattributes)
 ]
 
 AUTHENTICATION_BACKENDS = [
