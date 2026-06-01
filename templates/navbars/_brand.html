@@ -23,7 +23,9 @@ The check at the top covers all "is there anything to show" cases:
        data-brand-logo-url="{% if site.logo %}{{ site.logo.url }}{% endif %}"
        data-brand-logo-height="{{ site.brand_logo_height|default:32 }}">
         {% if site.show_brand_logo and site.logo %}
-            <img src="{{ site.logo.url }}" alt="{{ site.name }}" height="{{ site.brand_logo_height|default:32 }}"{% if site.show_brand_name and site.name %} class="me-2"{% endif %}>
+            <img src="{{ site.logo.url }}" alt="{{ site.name }}"
+                 class="cbl-brand-logo{% if site.show_brand_name and site.name %} me-2{% endif %}"
+                 style="--cbl-brand-h: {{ site.brand_logo_height|default:32 }}px;">
         {% endif %}
         {% if site.show_brand_name and site.name %}
             <span class="fs-4 {{ brand_text_class }}">{{ site.name }}</span>

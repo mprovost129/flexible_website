@@ -30,7 +30,9 @@ from core.edit_views import (
     get_available_layouts,
     sanitize_rich_text,
 )
-from core.models import Page, Section, SectionItem
+from core.models import (
+    FooterColumn, FooterLink, NavLink, Page, Section, SectionItem, Site,
+)
 from core.site_resolver import get_active_site
 
 from .models import SandboxSession
@@ -94,6 +96,68 @@ SANDBOX_DEFAULT = [
 SESSION_KEY = 'cbl_sandbox_key'
 
 
+def _clone_site_for_sandbox(source):
+    """Create a throwaway Site row that mirrors `source`, plus copies of its
+    nav links and footer columns/links. Returns the new Site.
+
+    Everything the sandbox visitor edits (navbar, brand, footer) happens on this
+    clone, so the real site is never touched and multiple visitors stay isolated.
+    The clone is deleted on exit/cleanup, which cascades to all its child rows.
+    """
+    # The singleton Site is force-created with explicit pk=1 (Site.get_current),
+    # which leaves Postgres's auto-increment sequence behind. Sync it so the
+    # first auto-inserted clone doesn't collide on id=1.
+    from django.core.management.color import no_style
+    from django.db import connection
+    reset_sql = connection.ops.sequence_reset_sql(no_style(), [Site])
+    if reset_sql:
+        with connection.cursor() as cursor:
+            for sql in reset_sql:
+                cursor.execute(sql)
+
+    clone = Site()
+    for f in Site._meta.fields:
+        if f.primary_key:
+            continue
+        setattr(clone, f.attname, getattr(source, f.attname))
+    clone.pk = None
+    clone.domain = ''                 # never let a clone shadow the real domain
+    clone.onboarding_complete = True
+    clone.save()
+
+    # Clone nav links in two passes so parent/child relationships remap cleanly.
+    id_map = {}
+    source_links = list(NavLink.objects.filter(site=source).order_by('parent_id', 'order'))
+    for link in source_links:
+        new_link = NavLink(
+            site=clone, parent=None,
+            label=link.label, page_id=link.page_id, url=link.url,
+            is_button=link.is_button, open_new_tab=link.open_new_tab,
+            slot=link.slot, order=link.order, is_visible=link.is_visible,
+        )
+        new_link.save()
+        id_map[link.pk] = new_link
+    for link in source_links:
+        if link.parent_id and link.parent_id in id_map:
+            child = id_map[link.pk]
+            child.parent = id_map[link.parent_id]
+            child.save(update_fields=['parent'])
+
+    # Clone footer columns + their links.
+    for col in FooterColumn.objects.filter(site=source).order_by('order'):
+        new_col = FooterColumn(
+            site=clone, heading=col.heading, order=col.order, is_visible=col.is_visible,
+        )
+        new_col.save()
+        for fl in FooterLink.objects.filter(column=col).order_by('order'):
+            FooterLink(
+                column=new_col, label=fl.label, page_id=fl.page_id, url=fl.url,
+                open_new_tab=fl.open_new_tab, order=fl.order, is_visible=fl.is_visible,
+            ).save()
+
+    return clone
+
+
 def _sandbox_auth(request):
     """Return (SandboxSession, None) or (None, JsonResponse error)."""
     key = request.session.get(SESSION_KEY)
@@ -113,21 +177,28 @@ def _verify_item(sandbox, pk):
     return SectionItem.all_objects.filter(pk=pk, section__page_id=sandbox.page_id).first()
 
 
+def _verify_navlink(sandbox, pk):
+    return NavLink.all_objects.filter(pk=pk, site_id=sandbox.site_id).first()
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Visitor views
 # ─────────────────────────────────────────────────────────────────────────────
 
 def sandbox_home(request):
     """Landing page / active sandbox page."""
-    site = get_active_site(request)
     key  = request.session.get(SESSION_KEY)
     sandbox = SandboxSession.objects.filter(session_key=key).first() if key else None
 
     if not sandbox:
-        return render(request, 'sandbox/landing.html', {'cms_site': site})
+        return render(request, 'sandbox/landing.html', {'cms_site': get_active_site(request)})
 
     from django.utils import timezone as tz
     SandboxSession.objects.filter(pk=sandbox.pk).update(last_active=tz.now())
+
+    # The per-session site clone drives the navbar/brand/footer; fall back to the
+    # global site for legacy sessions that predate per-session sites.
+    site = Site.objects.filter(pk=sandbox.site_id).first() or get_active_site(request)
 
     try:
         page = Page.objects.get(pk=sandbox.page_id)
@@ -144,6 +215,7 @@ def sandbox_home(request):
             s.available_layouts = get_available_layouts(s.section_type)
 
     return render(request, 'sandbox/page.html', {
+        'site':             site,
         'cms_site':         site,
         'page':             page,
         'sections':         sections,
@@ -158,7 +230,7 @@ def sandbox_enter(request):
     """Create a fresh sandbox session for this browser."""
     SandboxSession.cleanup_stale()
 
-    site = get_active_site(request)
+    global_site = get_active_site(request)
 
     # Guarantee a session key exists
     if not request.session.session_key:
@@ -171,7 +243,11 @@ def sandbox_enter(request):
         request.session[SESSION_KEY] = key
         return redirect('sandbox:home')
 
-    # Create the temporary page
+    # Each session gets its own Site clone so navbar/brand/footer edits are
+    # isolated and never touch the real site.
+    site = _clone_site_for_sandbox(global_site)
+
+    # Create the temporary page under the cloned site
     page = Page.objects.create(
         site=site,
         page_type='about',    # any valid type; identified by SandboxSession
@@ -204,20 +280,24 @@ def sandbox_enter(request):
                 link_style=i_def.get('link_style', ''),
             )
 
-    SandboxSession.objects.create(session_key=key, page_id=page.pk)
+    SandboxSession.objects.create(session_key=key, site_id=site.pk, page_id=page.pk)
     request.session[SESSION_KEY] = key
     return redirect('sandbox:home')
 
 
 @require_POST
 def sandbox_exit(request):
-    """Delete the sandbox page and clear the session."""
+    """Delete the sandbox's site clone (cascades page/sections/nav/footer) and
+    clear the session."""
     key = request.session.pop(SESSION_KEY, None)
     if key:
         session = SandboxSession.objects.filter(session_key=key).first()
         if session:
             try:
-                Page.objects.filter(pk=session.page_id).delete()
+                if session.site_id:
+                    Site.objects.filter(pk=session.site_id).delete()
+                else:
+                    Page.objects.filter(pk=session.page_id).delete()
             except Exception:
                 pass
             session.delete()
@@ -265,6 +345,145 @@ def api_sandbox_set_theme(request):
     theme_id = request.POST.get('theme_id', '')
     if theme_id:
         request.session['sandbox_theme_id'] = theme_id
+    return JsonResponse({'success': True})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Nav link API — operates on the session site's cloned NavLinks
+# ─────────────────────────────────────────────────────────────────────────────
+
+NAVLINK_FIELDS = {'label', 'url', 'is_button', 'open_new_tab', 'is_visible', 'slot', 'page_id'}
+
+
+def _coerce(value):
+    if value in ('true', 'True', '1', 'on'):
+        return True
+    if value in ('false', 'False', '0', 'off', ''):
+        return False
+    return value
+
+
+@require_POST
+def api_nav_update(request, pk):
+    sb, err = _sandbox_auth(request)
+    if err:
+        return err
+    link = _verify_navlink(sb, pk)
+    if not link:
+        return JsonResponse({'error': 'Nav link not found'}, status=404)
+    field = request.POST.get('field', '')
+    if field not in NAVLINK_FIELDS:
+        return JsonResponse({'error': f'Field "{field}" is not editable'}, status=400)
+
+    value = _coerce(request.POST.get('value', ''))
+    if field == 'slot':
+        value = (value or '').strip().lower()
+        if value not in {'left', 'center', 'right'}:
+            return JsonResponse({'error': 'Invalid slot'}, status=400)
+    if field == 'page_id':
+        raw_id = (request.POST.get('value') or '').strip()
+        if raw_id:
+            page = Page.objects.filter(pk=raw_id, site_id=sb.site_id).first()
+            if not page:
+                return JsonResponse({'error': 'Invalid page_id'}, status=400)
+            link.page = page
+            link.url = ''
+        else:
+            link.page = None
+        link.save(update_fields=['page', 'url'])
+        return JsonResponse({'success': True, 'id': link.pk, 'field': field, 'href': link.href})
+
+    setattr(link, field, value)
+    link.save(update_fields=[field])
+    return JsonResponse({'success': True, 'id': link.pk, 'field': field, 'value': value, 'href': link.href})
+
+
+@require_POST
+def api_nav_add(request):
+    sb, err = _sandbox_auth(request)
+    if err:
+        return err
+    label = request.POST.get('label', 'New Link').strip() or 'New Link'
+    url = request.POST.get('url', '#').strip() or '#'
+    slot = (request.POST.get('slot') or 'left').strip().lower()
+    if slot not in {'left', 'center', 'right'}:
+        slot = 'left'
+    is_button = bool(_coerce(request.POST.get('is_button', '0')))
+
+    parent = None
+    parent_id = request.POST.get('parent_id')
+    if parent_id:
+        parent = _verify_navlink(sb, parent_id)
+        if not parent:
+            return JsonResponse({'error': 'Parent not found'}, status=404)
+
+    last = NavLink.objects.filter(site_id=sb.site_id, parent=parent, slot=slot).order_by('-order').first()
+    link = NavLink.objects.create(
+        site_id=sb.site_id, parent=parent, label=label, url=url,
+        order=(last.order + 1) if last else 0, is_visible=True,
+        slot=slot, is_button=is_button,
+    )
+    return JsonResponse({
+        'success': True, 'created': True, 'id': link.pk,
+        'label': link.label, 'href': link.href, 'is_dropdown': link.is_dropdown,
+    })
+
+
+@require_POST
+def api_nav_delete(request, pk):
+    sb, err = _sandbox_auth(request)
+    if err:
+        return err
+    link = _verify_navlink(sb, pk)
+    if not link:
+        return JsonResponse({'error': 'Nav link not found'}, status=404)
+    from django.utils import timezone
+    now = timezone.now()
+    child_ids = list(
+        NavLink.all_objects.filter(parent=link, deleted_at__isnull=True).values_list('pk', flat=True)
+    )
+    link.deleted_at = now
+    link.save(update_fields=['deleted_at'])
+    NavLink.all_objects.filter(pk__in=child_ids).update(deleted_at=now)
+    return JsonResponse({'success': True, 'id': link.pk, 'child_ids': child_ids})
+
+
+@require_POST
+def api_nav_undo(request, pk):
+    sb, err = _sandbox_auth(request)
+    if err:
+        return err
+    NavLink.all_objects.filter(pk=pk, site_id=sb.site_id).update(deleted_at=None)
+    raw = request.POST.get('child_ids', '').strip()
+    if raw:
+        try:
+            ids = [int(x) for x in raw.split(',') if x]
+            NavLink.all_objects.filter(pk__in=ids, site_id=sb.site_id).update(deleted_at=None)
+        except ValueError:
+            pass
+    return JsonResponse({'success': True, 'id': pk})
+
+
+@require_POST
+def api_nav_reorder(request):
+    sb, err = _sandbox_auth(request)
+    if err:
+        return err
+    raw = request.POST.get('order', '')
+    try:
+        ids = [int(x) for x in raw.split(',') if x]
+    except ValueError:
+        return JsonResponse({'error': 'Invalid order'}, status=400)
+    parent = None
+    parent_raw = (request.POST.get('parent_id') or '').strip()
+    if parent_raw and parent_raw.lower() != 'null':
+        parent = _verify_navlink(sb, parent_raw)
+    scoped = set(
+        NavLink.objects.filter(site_id=sb.site_id, parent=parent, pk__in=ids).values_list('pk', flat=True)
+    )
+    for i, pk in enumerate(ids):
+        if pk in scoped:
+            NavLink.objects.filter(pk=pk).update(order=i)
     return JsonResponse({'success': True})
 
 

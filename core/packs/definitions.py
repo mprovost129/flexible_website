@@ -880,6 +880,242 @@ FITNESS_PACK = {
 }
 
 
+BLOG_PACK = {
+    'key': 'blog',
+    'name': 'Blog / Content Site',
+    'description': 'A clean site built around publishing. Home page, blog, about, and contact.',
+    'theme_key': 'ocean',
+    'navbar': 'classic',
+    'footer': 'footer_2',
+    'brand_position': 'left',
+    'show_brand_logo': True,
+    'show_brand_name': True,
+    'tagline': 'Ideas worth sharing.',
+    'pages': [
+        {
+            'page_type': 'home',
+            'slug': 'home',
+            'title': 'Home',
+            'order': 0,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Ideas Worth Sharing',
+                    'subheading': 'Insights, stories, and guides from our team. Fresh content every week.',
+                    'items': [
+                        {'link_text': 'Read the Blog', 'link_url': '/blog/'},
+                        {'link_text': 'About Us', 'link_url': '/about/', 'link_style': 'btn-outline-secondary'},
+                    ],
+                },
+                {
+                    'type': 'recent_posts',
+                    'layout': 'layout_1',
+                    'heading': 'Latest Posts',
+                    'config': {'post_count': 3},
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Have a question or topic request?',
+                    'subheading': 'We love hearing from our readers.',
+                    'items': [
+                        {'link_text': 'Get in Touch', 'link_url': '/contact/'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'blog',
+            'slug': 'blog',
+            'title': 'Blog',
+            'order': 1,
+            'nav_label': 'Blog',
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'The Blog',
+                    'subheading': 'Articles, guides, and stories from our team.',
+                },
+            ],
+        },
+        {
+            'page_type': 'about',
+            'slug': 'about',
+            'title': 'About',
+            'order': 2,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'About Us',
+                    'subheading': 'We write about things we care about. Here is who we are.',
+                },
+                {
+                    'type': 'text_block',
+                    'layout': 'layout_1',
+                    'heading': 'Our Story',
+                    'subheading': 'Tell your story here. Why did you start writing? What do you cover? Who is your audience?',
+                },
+            ],
+        },
+        {
+            'page_type': 'contact',
+            'slug': 'contact',
+            'title': 'Contact',
+            'order': 3,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Get in Touch',
+                    'subheading': 'Questions, feedback, or just want to say hello — we would love to hear from you.',
+                },
+                {
+                    'type': 'contact_form',
+                    'layout': 'layout_2',
+                    'heading': 'Send a Message',
+                },
+            ],
+        },
+    ],
+}
+
+
+ECOMMERCE_PACK = {
+    'key': 'ecommerce',
+    'name': 'Online Store',
+    'description': 'A storefront ready for products and Stripe checkout. Shop, about, and contact pages.',
+    'theme_key': 'slate',
+    'navbar': 'app',
+    'footer': 'footer_2',
+    'brand_position': 'left',
+    'show_brand_logo': True,
+    'show_brand_name': True,
+    'tagline': 'Quality products, delivered.',
+    'pages': [
+        {
+            'page_type': 'home',
+            'slug': 'home',
+            'title': 'Home',
+            'order': 0,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Shop Our Products',
+                    'subheading': 'Quality you can trust, shipped straight to your door.',
+                    'items': [
+                        {'link_text': 'Browse Products', 'link_url': '/shop/'},
+                        {'link_text': 'Our Story', 'link_url': '/about/', 'link_style': 'btn-outline-secondary'},
+                    ],
+                },
+                {
+                    'type': 'product_grid',
+                    'layout': 'layout_1',
+                    'heading': 'Featured Products',
+                    'config': {'columns_desktop': 3},
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'Why Shop With Us',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'icon': 'shield-check-fill', 'title': 'Secure Checkout',  'text': 'Payments processed securely by Stripe.'},
+                        {'icon': 'truck',              'title': 'Fast Shipping',    'text': 'Orders ship within 1–2 business days.'},
+                        {'icon': 'arrow-return-left',  'title': 'Easy Returns',     'text': '30-day hassle-free returns.'},
+                    ],
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Questions Before You Buy?',
+                    'subheading': 'We are happy to help.',
+                    'items': [
+                        {'link_text': 'Contact Us', 'link_url': '/contact/'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'ecommerce',
+            'slug': 'shop',
+            'title': 'Shop',
+            'order': 1,
+            'nav_label': 'Shop',
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Our Products',
+                    'subheading': 'Browse everything we carry.',
+                },
+                {
+                    'type': 'product_grid',
+                    'layout': 'layout_1',
+                    'heading': '',
+                    'config': {'columns_desktop': 3},
+                },
+            ],
+        },
+        {
+            'page_type': 'about',
+            'slug': 'about',
+            'title': 'About',
+            'order': 2,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'About Us',
+                    'subheading': 'We are a small team that cares deeply about what we make.',
+                },
+                {
+                    'type': 'text_block',
+                    'layout': 'layout_1',
+                    'heading': 'Our Story',
+                    'subheading': 'Tell your story here — why you started, what you stand for, who you make things for.',
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_2',
+                    'heading': 'Our Values',
+                    'items': [
+                        {'icon': 'award-fill',     'title': 'Quality First',    'text': 'We only sell what we would be proud to own ourselves.'},
+                        {'icon': 'people-fill',    'title': 'Customer Focus',   'text': 'Your satisfaction is the only metric that matters.'},
+                        {'icon': 'recycle',        'title': 'Sustainability',   'text': 'We are committed to responsible sourcing and packaging.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'contact',
+            'slug': 'contact',
+            'title': 'Contact',
+            'order': 3,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Get in Touch',
+                    'subheading': 'Questions about an order, a product, or anything else — we are here.',
+                },
+                {
+                    'type': 'contact_form',
+                    'layout': 'layout_2',
+                    'heading': 'Send a Message',
+                    'items': [
+                        {'icon': 'envelope-fill', 'title': 'Email', 'text': 'hello@example.com', 'link_url': 'mailto:hello@example.com'},
+                    ],
+                },
+            ],
+        },
+    ],
+}
+
+
 # Registry of all available packs, keyed by their `key`.
 PACKS = {
     CONTRACTOR_PACK['key']: CONTRACTOR_PACK,
@@ -889,6 +1125,8 @@ PACKS = {
     MEDICAL_PACK['key']:    MEDICAL_PACK,
     REAL_ESTATE_PACK['key']: REAL_ESTATE_PACK,
     FITNESS_PACK['key']:    FITNESS_PACK,
+    BLOG_PACK['key']:       BLOG_PACK,
+    ECOMMERCE_PACK['key']:  ECOMMERCE_PACK,
 }
 
 

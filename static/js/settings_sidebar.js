@@ -1687,6 +1687,8 @@
     var shadow    = r ? r.dataset.navShadow      === '1'        : true;
     var container = r ? (r.dataset.navContainer  || 'container'): 'container';
     var height    = r ? (r.dataset.navHeight     || '76')       : '76';
+    var padY      = r ? (r.dataset.navPadY       || '0.4')      : '0.4';
+    var gap       = r ? (r.dataset.navGap        || '12')       : '12';
     var bg        = r ? (r.dataset.navBg         || '')         : '';
     var textCol   = r ? (r.dataset.navTextColor  || '')         : '';
     var linkCol   = r ? (r.dataset.navLinkColor  || '')         : '';
@@ -1726,6 +1728,16 @@
         '<h3>Layout</h3>' +
         '<label class="form-label small mb-1">Height (px)</label>' +
         '<input type="number" class="form-control form-control-sm mb-2 sidebar-navbar-height" value="' + escapeHtml(height) + '" min="48" max="180">' +
+        '<div class="d-flex gap-2 mb-2">' +
+          '<div class="flex-fill">' +
+            '<label class="form-label small mb-1">Vertical padding (rem)</label>' +
+            '<input type="number" class="form-control form-control-sm sidebar-navbar-pad-y" value="' + escapeHtml(padY) + '" min="0" max="3" step="0.1">' +
+          '</div>' +
+          '<div class="flex-fill">' +
+            '<label class="form-label small mb-1">Item spacing (px)</label>' +
+            '<input type="number" class="form-control form-control-sm sidebar-navbar-gap" value="' + escapeHtml(gap) + '" min="0" max="64">' +
+          '</div>' +
+        '</div>' +
         '<label class="form-label small mb-1">Width</label>' +
         '<select class="form-select form-select-sm mb-2 sidebar-navbar-container">' +
           '<option value="container"' + (container === 'container' ? ' selected' : '') + '>Contained</option>' +
@@ -1780,6 +1792,8 @@
       var textCol      = body.querySelector('.sidebar-navbar-text-color');
       var linkCol      = body.querySelector('.sidebar-navbar-link-color');
       var height       = body.querySelector('.sidebar-navbar-height');
+      var padY         = body.querySelector('.sidebar-navbar-pad-y');
+      var gap          = body.querySelector('.sidebar-navbar-gap');
       var container    = body.querySelector('.sidebar-navbar-container');
       var mobile         = body.querySelector('.sidebar-navbar-mobile');
       var sticky         = body.querySelector('.sidebar-navbar-sticky');
@@ -1807,7 +1821,9 @@
         .then(function () { return cfg('bg_color',        bg           ? bg.value.trim()        : ''); })
         .then(function () { return cfg('text_color',      textCol      ? textCol.value.trim()   : ''); })
         .then(function () { return cfg('link_color',      linkCol      ? linkCol.value.trim()   : ''); })
-        .then(function () { return cfg('height_px',       height       ? height.value           : '76'); });
+        .then(function () { return cfg('height_px',       height       ? height.value           : '76'); })
+        .then(function () { return cfg('padding_y',       padY         ? padY.value             : '0.4'); })
+        .then(function () { return cfg('gap_px',          gap          ? gap.value              : '12'); });
 
       req.then(function () { window.location.reload(); }).catch(alertError);
     });

@@ -1458,6 +1458,16 @@ body:not(.edit-mode) .nav-drag-handle {
     margin-left: 0 !important;
     border-radius: 999px;
 }
+/* Brand logo: respects the configured height but never taller than the navbar
+   inner area, so growing the logo can't force the navbar taller. To make the
+   logo bigger, raise the navbar height. */
+.cbl-brand-logo {
+    height: var(--cbl-brand-h, 32px);
+    max-height: calc(var(--cbl-nav-height, 76px) - (var(--cbl-nav-pad-y, 0.4rem) * 2) - 8px);
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
 .cbl-navbar-mobile .navbar-brand,
 .cbl-navbar-zone .navbar-brand {
     margin-right: 0;
