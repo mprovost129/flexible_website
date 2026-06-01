@@ -18,16 +18,16 @@ left, center, or right through Site Settings and NavLink.slot.
         --cbl-nav-text: {% if nc.text_color %}{{ nc.text_color }}{% elif theme == 'light' %}#212529{% else %}#ffffff{% endif %};
         --cbl-nav-link: {% if nc.link_color %}{{ nc.link_color }}{% else %}currentColor{% endif %};
         --cbl-nav-link-hover: {% if nc.link_hover_color %}{{ nc.link_hover_color }}{% else %}currentColor{% endif %};
-        --cbl-nav-height: {{ nc.height_px|default:76 }}px;
-        --cbl-nav-pad-x: {{ nc.padding_x|default:0 }}rem;
-        --cbl-nav-pad-y: {{ nc.padding_y|default:0.4 }}rem;
-        --cbl-nav-gap: {{ nc.gap_px|default:12 }}px;
-        --cbl-nav-brand-size: {{ nc.brand_size_rem|default:1.6 }}rem;
-        --cbl-nav-link-size: {{ nc.link_size_rem|default:1 }}rem;
-        --cbl-nav-brand-weight: {{ nc.brand_weight|default:600 }};
-        --cbl-nav-radius: {{ nc.radius_px|default:999 }}px;
-        --cbl-nav-border-width: {{ nc.border_width_px|default:0 }}px;
-        --cbl-nav-container-max: {{ nc.container_max_px|default:1320 }}px;
+        --cbl-nav-height: {{ nc.height_px|default_if_none:76 }}px;
+        --cbl-nav-pad-x: {{ nc.padding_x|default_if_none:0 }}rem;
+        --cbl-nav-pad-y: {{ nc.padding_y|default_if_none:0.4 }}rem;
+        --cbl-nav-gap: {{ nc.gap_px|default_if_none:12 }}px;
+        --cbl-nav-brand-size: {{ nc.brand_size_rem|default_if_none:1.6 }}rem;
+        --cbl-nav-link-size: {{ nc.link_size_rem|default_if_none:1 }}rem;
+        --cbl-nav-brand-weight: {{ nc.brand_weight|default_if_none:600 }};
+        --cbl-nav-radius: {{ nc.radius_px|default_if_none:999 }}px;
+        --cbl-nav-border-width: {{ nc.border_width_px|default_if_none:0 }}px;
+        --cbl-nav-container-max: {{ nc.container_max_px|default_if_none:1320 }}px;
         {# Theme-driven shell colors are intentionally authoritative so theme
            switching visibly updates navbar/footer every time. #}
         ">
