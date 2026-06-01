@@ -123,6 +123,10 @@ class Site(models.Model):
         max_length=10, choices=BRAND_POSITION_CHOICES, default='left',
         help_text='Where the logo and/or site name appear in the navbar.',
     )
+    brand_logo_height = models.PositiveSmallIntegerField(
+        default=32,
+        help_text='Logo height in pixels in the navbar (16–120).',
+    )
 
     navbar_variant = models.CharField(max_length=20, choices=NAVBAR_CHOICES, default='classic', help_text='Navbar preset. Presets change settings only; all presets use the same universal navbar engine.')
 

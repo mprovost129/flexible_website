@@ -20,9 +20,10 @@ The check at the top covers all "is there anything to show" cases:
        data-brand-position="{{ site.brand_position|default:'left' }}"
        data-brand-show-name="{{ site.show_brand_name|yesno:'1,0' }}"
        data-brand-show-logo="{{ site.show_brand_logo|yesno:'1,0' }}"
-       data-brand-logo-url="{% if site.logo %}{{ site.logo.url }}{% endif %}">
+       data-brand-logo-url="{% if site.logo %}{{ site.logo.url }}{% endif %}"
+       data-brand-logo-height="{{ site.brand_logo_height|default:32 }}">
         {% if site.show_brand_logo and site.logo %}
-            <img src="{{ site.logo.url }}" alt="{{ site.name }}" height="32"{% if site.show_brand_name and site.name %} class="me-2"{% endif %}>
+            <img src="{{ site.logo.url }}" alt="{{ site.name }}" height="{{ site.brand_logo_height|default:32 }}"{% if site.show_brand_name and site.name %} class="me-2"{% endif %}>
         {% endif %}
         {% if site.show_brand_name and site.name %}
             <span class="fs-4 {{ brand_text_class }}">{{ site.name }}</span>
@@ -35,7 +36,8 @@ The check at the top covers all "is there anything to show" cases:
        data-brand-position="{{ site.brand_position|default:'left' }}"
        data-brand-show-name="{{ site.show_brand_name|yesno:'1,0' }}"
        data-brand-show-logo="{{ site.show_brand_logo|yesno:'1,0' }}"
-       data-brand-logo-url="{% if site.logo %}{{ site.logo.url }}{% endif %}">
+       data-brand-logo-url="{% if site.logo %}{{ site.logo.url }}{% endif %}"
+       data-brand-logo-height="{{ site.brand_logo_height|default:32 }}">
         <span class="badge text-bg-secondary fw-normal" style="font-size:0.7rem;opacity:0.7;">Brand (hidden)</span>
     </a>
 {% endif %}

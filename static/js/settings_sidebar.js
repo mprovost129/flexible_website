@@ -335,10 +335,8 @@
         '<h3>Image</h3>' +
         imgHtml +
         '<input type="file" class="sidebar-section-img-file" accept="image/*" style="display:none">' +
-        '<div class="d-flex gap-2 mb-1">' +
-          '<button type="button" class="btn btn-sm btn-outline-primary flex-fill sidebar-upload-section-img">Upload image</button>' +
-          (imageUrl ? '<button type="button" class="btn btn-sm btn-outline-danger sidebar-remove-section-img">Remove</button>' : '') +
-        '</div>' +
+        '<button type="button" class="btn btn-sm btn-outline-primary w-100 mb-1 sidebar-upload-section-img">Upload image</button>' +
+        (imageUrl ? '<button type="button" class="btn btn-sm btn-outline-danger w-100 mb-1 sidebar-remove-section-img">Remove image</button>' : '') +
         '<div class="small text-danger sidebar-section-img-status"></div>' +
       '</div>' +
       '<div class="edit-sidebar-section">' +
@@ -519,7 +517,8 @@
   }
 
   function renderBrand(brand) {
-    var logoUrl = brand.dataset.brandLogoUrl || '';
+    var logoUrl    = brand.dataset.brandLogoUrl    || '';
+    var logoHeight = brand.dataset.brandLogoHeight || '32';
     var logoHtml = logoUrl
       ? '<img src="' + escapeHtml(logoUrl) + '" alt="Logo" style="max-height:48px;max-width:100%;border-radius:4px;" class="mb-2 d-block">'
       : '<p class="small text-body-secondary mb-2">No logo uploaded.</p>';
@@ -529,11 +528,11 @@
         '<h3>Logo</h3>' +
         logoHtml +
         '<input type="file" class="sidebar-brand-logo-file" accept="image/*" style="display:none">' +
-        '<div class="d-flex gap-2 mb-1">' +
-          '<button type="button" class="btn btn-sm btn-outline-primary flex-fill sidebar-upload-logo">Upload logo</button>' +
-          (logoUrl ? '<button type="button" class="btn btn-sm btn-outline-danger sidebar-remove-logo">Remove</button>' : '') +
-        '</div>' +
+        '<button type="button" class="btn btn-sm btn-outline-primary w-100 mb-1 sidebar-upload-logo">Upload logo</button>' +
+        (logoUrl ? '<button type="button" class="btn btn-sm btn-outline-danger w-100 mb-1 sidebar-remove-logo">Remove logo</button>' : '') +
         '<div class="small text-danger sidebar-logo-status"></div>' +
+        '<label class="form-label small mb-1 mt-2">Logo height (px)</label>' +
+        '<input type="number" class="form-control form-control-sm mb-2 sidebar-brand-logo-height" min="16" max="120" value="' + escapeHtml(logoHeight) + '">' +
       '</div>' +
       '<div class="edit-sidebar-section">' +
         '<h3>Content</h3>' +
@@ -1009,6 +1008,7 @@
     }
     if (removeImgBtn) {
       removeImgBtn.addEventListener('click', function () {
+        if (!confirm('Remove the section image?')) return;
         postJson('/edit/section/' + sectionId + '/image/remove/')
           .then(function () { window.location.reload(); })
           .catch(alertError);
@@ -1391,6 +1391,7 @@
 
     if (removeBtn) {
       removeBtn.addEventListener('click', function () {
+        if (!confirm('Remove the logo?')) return;
         postJson('/edit/site-logo/remove/')
           .then(function () { window.location.reload(); })
           .catch(alertError);
@@ -1400,14 +1401,16 @@
     var save = body.querySelector('.sidebar-save-brand');
     if (!save) return;
     save.addEventListener('click', function () {
-      var name     = body.querySelector('.sidebar-brand-name');
-      var position = body.querySelector('.sidebar-brand-position');
-      var showLogo = body.querySelector('.sidebar-brand-show-logo');
-      var showName = body.querySelector('.sidebar-brand-show-name');
-      postJson('/edit/site-brand/update/', { field: 'name',           value: name     ? name.value     : '' })
-        .then(function () { return postJson('/edit/site-brand/update/', { field: 'brand_position', value: position ? position.value : 'left' }); })
+      var name       = body.querySelector('.sidebar-brand-name');
+      var position   = body.querySelector('.sidebar-brand-position');
+      var showLogo   = body.querySelector('.sidebar-brand-show-logo');
+      var showName   = body.querySelector('.sidebar-brand-show-name');
+      var logoHeight = body.querySelector('.sidebar-brand-logo-height');
+      postJson('/edit/site-brand/update/', { field: 'name',             value: name       ? name.value       : '' })
+        .then(function () { return postJson('/edit/site-brand/update/', { field: 'brand_position',  value: position   ? position.value   : 'left' }); })
         .then(function () { return postJson('/edit/site-brand/update/', { field: 'show_brand_logo', value: showLogo && showLogo.checked ? '1' : '0' }); })
         .then(function () { return postJson('/edit/site-brand/update/', { field: 'show_brand_name', value: showName && showName.checked ? '1' : '0' }); })
+        .then(function () { return postJson('/edit/site-brand/update/', { field: 'brand_logo_height', value: logoHeight ? logoHeight.value : '32' }); })
         .then(function () { window.location.reload(); })
         .catch(alertError);
     });

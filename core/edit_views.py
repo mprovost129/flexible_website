@@ -51,15 +51,24 @@ def _cloudinary_upload_or_error(file_obj, **kwargs):
     """Upload and normalize known Cloudinary/network errors for JSON responses."""
     if not _cloudinary_env_ready():
         return None, 'Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.'
+    _NETWORK_PERMISSION_MSG = (
+        'Upload blocked by a local network permission restriction (firewall / antivirus / proxy). '
+        'Allow outbound HTTPS from python.exe and try again.'
+    )
+
+    def _is_permission_denied(exc):
+        cause = exc
+        while cause is not None:
+            if isinstance(cause, PermissionError) or getattr(cause, 'errno', None) == 13:
+                return True
+            cause = getattr(cause, '__cause__', None) or getattr(cause, '__context__', None)
+        return False
+
     try:
         return cloudinary.uploader.upload(file_obj, **kwargs), None
-    except PermissionError:
-        return None, 'Cloudinary upload failed due to a local network permission restriction. Check firewall/antivirus/proxy rules for outbound HTTPS.'
-    except OSError as e:
-        if getattr(e, 'errno', None) == 13:
-            return None, 'Cloudinary upload failed due to a local network permission restriction (errno 13). Check firewall/antivirus/proxy rules for outbound HTTPS.'
-        return None, f'Cloudinary upload failed: {e}'
     except Exception as e:
+        if _is_permission_denied(e):
+            return None, _NETWORK_PERMISSION_MSG
         return None, f'Cloudinary upload failed: {e}'
 
 

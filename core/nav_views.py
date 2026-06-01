@@ -230,7 +230,7 @@ from django.utils import timezone
 NAVLINK_FIELDS = {'label', 'url', 'is_button', 'open_new_tab', 'is_visible', 'slot', 'page_id'}
 FOOTERLINK_FIELDS = {'label', 'url', 'open_new_tab', 'is_visible', 'page_id'}
 FOOTERCOLUMN_FIELDS = {'heading', 'is_visible'}
-BRAND_FIELDS = {'name', 'brand_position', 'show_brand_name', 'show_brand_logo'}
+BRAND_FIELDS = {'name', 'brand_position', 'show_brand_name', 'show_brand_logo', 'brand_logo_height'}
 CHROME_BOOLEAN_FIELDS = {
     'show_navbar',
     'show_footer',
@@ -601,6 +601,11 @@ def update_site_brand(request):
         value = (value or '').strip() or site.name
     if field == 'brand_position' and value not in {'left', 'center', 'right'}:
         return JsonResponse({'error': 'Invalid brand position'}, status=400)
+    if field == 'brand_logo_height':
+        try:
+            value = max(16, min(120, int(value)))
+        except (TypeError, ValueError):
+            return JsonResponse({'error': 'Invalid logo height'}, status=400)
 
     setattr(site, field, value)
     site.save(update_fields=[field])
