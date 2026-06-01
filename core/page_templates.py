@@ -286,6 +286,76 @@ PAGE_TEMPLATES = [
     },
 
     # ------------------------------------------------------------------
+    # Shop / Ecommerce
+    # ------------------------------------------------------------------
+    {
+        'key': 'ecommerce',
+        'name': 'Shop',
+        'description': 'A working storefront — add products in the dashboard, accept payments via Stripe.',
+        'icon': 'bag-fill',
+        'page_type': 'ecommerce',
+        'suggested_slug': 'shop',
+        'sections': [
+            {
+                'section_type': 'hero',
+                'layout': 'layout_1',
+                'heading': 'Shop Our Products',
+                'subheading': 'Quality you can trust, shipped straight to your door.',
+                'items': [
+                    {'link_text': 'Browse Products', 'link_url': '#products'},
+                ],
+            },
+            {
+                'section_type': 'product_grid',
+                'layout': 'layout_1',
+                'heading': 'Our Products',
+                'subheading': '',
+                'config': {'columns_desktop': 3},
+            },
+            {
+                'section_type': 'feature_list',
+                'layout': 'layout_1',
+                'heading': 'Why Shop With Us',
+                'subheading': '',
+                'items': [
+                    {'icon': 'shield-check-fill', 'title': 'Secure Checkout',  'text': 'Your payment information is encrypted and processed securely by Stripe.'},
+                    {'icon': 'truck',              'title': 'Fast Shipping',    'text': 'Orders ship within 1–2 business days with tracking included.'},
+                    {'icon': 'arrow-return-left',  'title': 'Easy Returns',     'text': '30-day hassle-free returns. Not happy? We will make it right.'},
+                ],
+            },
+            {
+                'section_type': 'cta_banner',
+                'layout': 'layout_1',
+                'heading': 'Questions Before You Buy?',
+                'subheading': 'We are happy to help.',
+                'items': [
+                    {'link_text': 'Contact Us', 'link_url': '/contact/'},
+                ],
+            },
+        ],
+    },
+
+    # ------------------------------------------------------------------
+    # Blog
+    # ------------------------------------------------------------------
+    {
+        'key': 'blog',
+        'name': 'Blog',
+        'description': 'A blog for articles, news, and updates. Manage posts from the Blog section of the dashboard.',
+        'icon': 'newspaper',
+        'page_type': 'blog',
+        'suggested_slug': 'blog',
+        'sections': [
+            {
+                'section_type': 'hero',
+                'layout': 'layout_1',
+                'heading': 'Blog',
+                'subheading': 'Articles, updates, and ideas from our team.',
+            },
+        ],
+    },
+
+    # ------------------------------------------------------------------
     # Blank page
     # ------------------------------------------------------------------
     {

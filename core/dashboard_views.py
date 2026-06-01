@@ -1,19 +1,24 @@
+import stripe
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from .dashboard_forms import (
+    BlogPostForm,
     FooterColumnForm,
     FooterLinkForm,
     NavLinkForm,
     PageForm,
+    ProductForm,
     SectionForm,
     SiteSettingsForm,
 )
-from .models import FooterColumn, FooterLink, NavLink, Page, Section, Site
+from .models import BlogPost, FooterColumn, FooterLink, NavLink, Order, Page, Product, Section, Site
 from .site_resolver import get_active_site
 
 
@@ -362,3 +367,233 @@ def footer_link_delete(request, pk):
     link.delete()
     messages.success(request, 'Footer link deleted.')
     return redirect('core:dashboard_footer')
+
+
+# ---------------------------------------------------------------------------
+# Blog
+# ---------------------------------------------------------------------------
+
+@staff_required
+def blog_list(request):
+    site = get_active_site(request)
+    posts = BlogPost.objects.filter(site=site).order_by('-published_at', '-created_at')
+    return render(request, 'dashboard/blog_list.html', _dashboard_context(request, posts=posts))
+
+
+@staff_required
+def blog_create(request):
+    site = get_active_site(request)
+    if request.method == 'POST':
+        form = BlogPostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.site = site
+            post.author = request.user
+            post.save()
+            messages.success(request, f'Post "{post.title}" created.')
+            return redirect('core:dashboard_blog_edit', pk=post.pk)
+    else:
+        form = BlogPostForm()
+    return render(request, 'dashboard/blog_edit.html', _dashboard_context(
+        request, form=form, post=None,
+        title='New Post', back_url=reverse('core:dashboard_blog'),
+    ))
+
+
+@staff_required
+def blog_edit(request, pk):
+    site = get_active_site(request)
+    post = get_object_or_404(BlogPost, pk=pk, site=site)
+    if request.method == 'POST':
+        form = BlogPostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Post saved.')
+            return redirect('core:dashboard_blog_edit', pk=post.pk)
+    else:
+        form = BlogPostForm(instance=post)
+    return render(request, 'dashboard/blog_edit.html', _dashboard_context(
+        request, form=form, post=post,
+        title=post.title, back_url=reverse('core:dashboard_blog'),
+    ))
+
+
+@staff_required
+@require_POST
+def blog_delete(request, pk):
+    site = get_active_site(request)
+    post = get_object_or_404(BlogPost, pk=pk, site=site)
+    title = post.title
+    post.delete()
+    messages.success(request, f'Post "{title}" deleted.')
+    return redirect('core:dashboard_blog')
+
+
+# ---------------------------------------------------------------------------
+# Stripe / Payments setup
+# ---------------------------------------------------------------------------
+
+def _validate_stripe_keys(publishable_key, secret_key):
+    """Call Stripe API with the provided secret key.
+
+    Returns (account_name, error_message). One of them will be None.
+    """
+    if not secret_key or not secret_key.startswith('sk_'):
+        return None, 'Secret key must start with sk_live_ or sk_test_.'
+    try:
+        acct = stripe.Account.retrieve(api_key=secret_key)
+        name = (
+            acct.get('business_profile', {}).get('name')
+            or acct.get('settings', {}).get('dashboard', {}).get('display_name')
+            or acct.get('email')
+            or 'Stripe account'
+        )
+        return name, None
+    except stripe.AuthenticationError:
+        return None, 'Invalid secret key — Stripe rejected it. Double-check you copied the full key.'
+    except stripe.PermissionError:
+        return None, 'Key does not have permission to read account details. Use a Standard (not Restricted) key.'
+    except Exception as e:
+        return None, f'Could not reach Stripe: {e}'
+
+
+def _mask_secret(key):
+    """Return a masked version showing only the last 4 characters."""
+    if not key:
+        return ''
+    if len(key) <= 8:
+        return '••••' + key[-4:]
+    prefix = key.split('_')[0] + '_' + key.split('_')[1] + '_' if key.count('_') >= 2 else ''
+    return prefix + '••••••••' + key[-4:]
+
+
+@staff_required
+def stripe_setup(request):
+    site = get_active_site(request)
+    validation_result = None  # {'ok': bool, 'message': str}
+
+    if request.method == 'POST':
+        pub = request.POST.get('stripe_publishable_key', '').strip()
+        sec = request.POST.get('stripe_secret_key', '').strip()
+
+        # If the secret field was left showing the masked placeholder, keep the existing key.
+        if sec.startswith('••') or sec == _mask_secret(site.stripe_secret_key):
+            sec = site.stripe_secret_key
+
+        # Validate before saving if a secret key was provided.
+        if sec:
+            account_name, err = _validate_stripe_keys(pub, sec)
+            if err:
+                validation_result = {'ok': False, 'message': err}
+            else:
+                validation_result = {'ok': True, 'message': f'Connected to {account_name}'}
+                site.stripe_publishable_key = pub
+                site.stripe_secret_key = sec
+                site.save(update_fields=['stripe_publishable_key', 'stripe_secret_key'])
+                messages.success(request, f'Stripe connected — {account_name}.')
+        else:
+            # Clearing keys.
+            site.stripe_publishable_key = pub
+            site.stripe_secret_key = ''
+            site.save(update_fields=['stripe_publishable_key', 'stripe_secret_key'])
+            messages.success(request, 'Stripe keys cleared.')
+
+    mode = None
+    if site.stripe_secret_key.startswith('sk_live_'):
+        mode = 'live'
+    elif site.stripe_secret_key.startswith('sk_test_'):
+        mode = 'test'
+
+    return render(request, 'dashboard/stripe_setup.html', _dashboard_context(
+        request,
+        pub_key=site.stripe_publishable_key,
+        masked_secret=_mask_secret(site.stripe_secret_key),
+        has_keys=bool(site.stripe_secret_key),
+        mode=mode,
+        validation_result=validation_result,
+    ))
+
+
+@staff_required
+def stripe_validate(request):
+    """AJAX endpoint — validate keys without saving. Returns JSON."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    pub = request.POST.get('publishable_key', '').strip()
+    sec = request.POST.get('secret_key', '').strip()
+    if not sec:
+        return JsonResponse({'ok': False, 'message': 'Please enter your secret key.'})
+    account_name, err = _validate_stripe_keys(pub, sec)
+    if err:
+        return JsonResponse({'ok': False, 'message': err})
+    return JsonResponse({'ok': True, 'message': f'Connected to {account_name}'})
+
+
+# ---------------------------------------------------------------------------
+# Products
+# ---------------------------------------------------------------------------
+
+@staff_required
+def product_list(request):
+    site = get_active_site(request)
+    products = Product.objects.filter(site=site).order_by('name')
+    return render(request, 'dashboard/product_list.html', _dashboard_context(request, products=products))
+
+
+@staff_required
+def product_create(request):
+    site = get_active_site(request)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.site = site
+            product.save()
+            messages.success(request, f'Product "{product.name}" created.')
+            return redirect('core:dashboard_product_edit', pk=product.pk)
+    else:
+        form = ProductForm()
+    return render(request, 'dashboard/product_edit.html', _dashboard_context(
+        request, form=form, product=None,
+        title='New Product', back_url=reverse('core:dashboard_products'),
+    ))
+
+
+@staff_required
+def product_edit(request, pk):
+    site = get_active_site(request)
+    product = get_object_or_404(Product, pk=pk, site=site)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Product saved.')
+            return redirect('core:dashboard_product_edit', pk=product.pk)
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'dashboard/product_edit.html', _dashboard_context(
+        request, form=form, product=product,
+        title=product.name, back_url=reverse('core:dashboard_products'),
+    ))
+
+
+@staff_required
+@require_POST
+def product_delete(request, pk):
+    site = get_active_site(request)
+    product = get_object_or_404(Product, pk=pk, site=site)
+    name = product.name
+    product.delete()
+    messages.success(request, f'Product "{name}" deleted.')
+    return redirect('core:dashboard_products')
+
+
+# ---------------------------------------------------------------------------
+# Orders
+# ---------------------------------------------------------------------------
+
+@staff_required
+def order_list(request):
+    site = get_active_site(request)
+    orders = Order.objects.filter(site=site).order_by('-created_at')
+    return render(request, 'dashboard/order_list.html', _dashboard_context(request, orders=orders))

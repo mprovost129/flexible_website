@@ -1,0 +1,46 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Orders | CBL{% endblock %}
+{% block heading %}Orders{% endblock %}
+{% block content %}
+<div class="cbl-card p-3">
+    <div class="mb-3">
+        <h2 class="h5 mb-0">Orders</h2>
+        <div class="text-muted small">All orders placed through your shop.</div>
+    </div>
+    <div class="table-responsive">
+        <table class="table cbl-table mb-0">
+            <thead>
+                <tr><th>#</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th></tr>
+            </thead>
+            <tbody>
+            {% for order in orders %}
+            <tr>
+                <td class="text-muted small">{{ order.pk }}</td>
+                <td>
+                    <div>{{ order.customer_name|default:"—" }}</div>
+                    <div class="text-muted small">{{ order.customer_email }}</div>
+                </td>
+                <td>
+                    <ul class="list-unstyled mb-0 small">
+                        {% for item in order.line_items %}
+                        <li>{{ item.quantity }}× {{ item.name }} <span class="text-muted">${{ item.price_cents|floatformat:0 }}</span></li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>{{ order.total_display }}</td>
+                <td>
+                    {% if order.status == 'paid' %}<span class="badge text-bg-success">Paid</span>
+                    {% elif order.status == 'refunded' %}<span class="badge text-bg-warning">Refunded</span>
+                    {% elif order.status == 'failed' %}<span class="badge text-bg-danger">Failed</span>
+                    {% else %}<span class="badge text-bg-secondary">Pending</span>{% endif %}
+                </td>
+                <td class="small text-muted">{{ order.created_at|date:"M j, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-muted py-4 text-center">No orders yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

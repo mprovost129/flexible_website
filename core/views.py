@@ -5,11 +5,14 @@ from django.contrib import messages
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
-from .models import ContactSubmission, Page, Section, Site
+import stripe as stripe_lib
+
+from .cart import Cart
+from .models import BlogPost, ContactSubmission, Order, Page, Product, Section, Site
 from .site_resolver import get_active_site
 
 
@@ -180,6 +183,172 @@ def _client_ip(request):
     if forwarded_for:
         return forwarded_for.split(',')[0].strip()
     return request.META.get('REMOTE_ADDR', 'unknown')
+
+
+def blog_list_public(request):
+    """Public blog listing — paginated, published posts only (staff sees all)."""
+    site = get_active_site(request)
+    is_staff = request.user.is_authenticated and request.user.is_staff
+    qs = BlogPost.objects.filter(site=site)
+    if not is_staff:
+        qs = qs.filter(status=BlogPost.STATUS_PUBLISHED)
+    qs = qs.order_by('-published_at', '-created_at')
+
+    from django.core.paginator import Paginator
+    paginator = Paginator(qs, 10)
+    page_num  = request.GET.get('page', 1)
+    page_obj  = paginator.get_page(page_num)
+
+    return render(request, 'blog/list.html', {
+        'page_obj': page_obj,
+        'posts':    page_obj.object_list,
+    })
+
+
+def blog_post_detail(request, slug):
+    """Public post detail. Staff may preview drafts; visitors see 404 for drafts."""
+    site     = get_active_site(request)
+    is_staff = request.user.is_authenticated and request.user.is_staff
+    qs = BlogPost.objects.filter(site=site, slug=slug)
+    if not is_staff:
+        qs = qs.filter(status=BlogPost.STATUS_PUBLISHED)
+    post = get_object_or_404(qs)
+    return render(request, 'blog/post.html', {'post': post})
+
+
+# ---------------------------------------------------------------------------
+# Shop / cart
+# ---------------------------------------------------------------------------
+
+def _shop_render(request, template, ctx):
+    site = get_active_site(request)
+    cart = Cart(request)
+    ctx.update({'cart': cart, 'cart_count': cart.count()})
+    return render(request, template, ctx)
+
+
+def cart_view(request):
+    site = get_active_site(request)
+    cart = Cart(request)
+    items = cart.items(site)
+    total_cents = sum(i['subtotal_cents'] for i in items)
+    return _shop_render(request, 'shop/cart.html', {
+        'items': items,
+        'total_cents': total_cents,
+        'total_display': f'${total_cents / 100:.2f}',
+        'stripe_configured': bool(site.stripe_secret_key),
+    })
+
+
+@require_POST
+def cart_add(request):
+    site = get_active_site(request)
+    try:
+        product = get_object_or_404(Product, pk=request.POST.get('product_id'), site=site, is_active=True)
+        qty = max(1, int(request.POST.get('quantity', 1)))
+    except (ValueError, TypeError):
+        return redirect('core:cart')
+    cart = Cart(request)
+    cart.add(product, qty)
+    messages.success(request, f'"{product.name}" added to your cart.')
+    return redirect(request.POST.get('next') or 'core:cart')
+
+
+@require_POST
+def cart_update(request):
+    try:
+        product_id = int(request.POST.get('product_id'))
+        qty = int(request.POST.get('quantity', 0))
+    except (ValueError, TypeError):
+        return redirect('core:cart')
+    Cart(request).update(product_id, qty)
+    return redirect('core:cart')
+
+
+@require_POST
+def cart_remove(request):
+    try:
+        product_id = int(request.POST.get('product_id'))
+    except (ValueError, TypeError):
+        return redirect('core:cart')
+    Cart(request).remove(product_id)
+    return redirect('core:cart')
+
+
+@require_POST
+def checkout(request):
+    site = get_active_site(request)
+    cart = Cart(request)
+
+    if cart.is_empty():
+        messages.error(request, 'Your cart is empty.')
+        return redirect('core:cart')
+
+    if not site.stripe_secret_key:
+        messages.error(request, 'Payments are not configured yet. Please contact the site owner.')
+        return redirect('core:cart')
+
+    line_items = cart.line_items_for_stripe(site)
+    if not line_items:
+        messages.error(request, 'No purchasable items in your cart.')
+        return redirect('core:cart')
+
+    base = request.build_absolute_uri('/').rstrip('/')
+    try:
+        session = stripe_lib.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
+            mode='payment',
+            success_url=base + '/shop/checkout/success/?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=base + '/shop/cart/',
+            api_key=site.stripe_secret_key,
+        )
+    except stripe_lib.StripeError as e:
+        messages.error(request, f'Could not start checkout: {e.user_message or str(e)}')
+        return redirect('core:cart')
+
+    # Store snapshot in session so success page can record the order
+    request.session['pending_order'] = {
+        'session_id': session.id,
+        'snapshot': cart.snapshot(site),
+        'total_cents': cart.total_cents(site),
+    }
+    return redirect(session.url, permanent=False)
+
+
+def checkout_success(request):
+    site = get_active_site(request)
+    session_id = request.GET.get('session_id', '')
+    pending = request.session.pop('pending_order', None)
+
+    order = None
+    if session_id:
+        # Avoid duplicate order records on page refresh
+        order = Order.objects.filter(site=site, stripe_session_id=session_id).first()
+        if not order and pending and pending.get('session_id') == session_id:
+            try:
+                session = stripe_lib.checkout.Session.retrieve(
+                    session_id, api_key=site.stripe_secret_key
+                )
+                if session.payment_status == 'paid':
+                    order = Order.objects.create(
+                        site=site,
+                        stripe_session_id=session_id,
+                        status=Order.STATUS_PAID,
+                        customer_email=session.customer_details.email or '',
+                        customer_name=session.customer_details.name or '',
+                        total_cents=pending.get('total_cents', 0),
+                        line_items=pending.get('snapshot', []),
+                    )
+                    Cart(request).clear()
+            except stripe_lib.StripeError:
+                pass
+
+    return _shop_render(request, 'shop/checkout_success.html', {'order': order})
+
+
+def checkout_cancel(request):
+    return _shop_render(request, 'shop/checkout_cancel.html', {})
 
 
 def healthz(request):

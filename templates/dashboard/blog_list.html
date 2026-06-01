@@ -1,0 +1,60 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Blog | CBL{% endblock %}
+{% block heading %}Blog{% endblock %}
+{% block content %}
+<div class="cbl-card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-0">Blog Posts</h2>
+            <div class="text-muted small">Write, publish, and manage your posts.</div>
+        </div>
+        <a href="{% url 'core:dashboard_blog_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Post</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table cbl-table mb-0">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Published</th>
+                    <th>Author</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for post in posts %}
+            <tr>
+                <td>
+                    <strong>{{ post.title }}</strong><br>
+                    <span class="text-muted small">/blog/{{ post.slug }}/</span>
+                </td>
+                <td>
+                    {% if post.is_published %}
+                        <span class="badge text-bg-success">Published</span>
+                    {% else %}
+                        <span class="badge text-bg-secondary">Draft</span>
+                    {% endif %}
+                </td>
+                <td>{{ post.published_at|date:"M j, Y"|default:"—" }}</td>
+                <td>{{ post.author.get_full_name|default:post.author.username|default:"—" }}</td>
+                <td>
+                    <div class="cbl-actions">
+                        {% if post.is_published %}
+                            <a href="/blog/{{ post.slug }}/" class="btn btn-sm btn-outline-secondary" target="_blank">View</a>
+                        {% endif %}
+                        <a href="{% url 'core:dashboard_blog_edit' post.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'core:dashboard_blog_delete' post.pk %}" onsubmit="return confirm('Delete this post?');">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-muted py-4 text-center">No posts yet. <a href="{% url 'core:dashboard_blog_create' %}">Write your first post →</a></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

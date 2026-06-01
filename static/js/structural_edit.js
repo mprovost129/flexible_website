@@ -36,6 +36,8 @@
     ['contact_form', 'Contact Form'],
     ['video_embed', 'Video Embed'],
     ['pricing_table', 'Pricing Table'],
+    ['recent_posts', 'Recent Blog Posts'],
+    ['product_grid', 'Product Grid'],
   ];
 
   function getCsrf() {

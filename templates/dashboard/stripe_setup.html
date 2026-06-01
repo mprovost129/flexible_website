@@ -1,0 +1,284 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Payments | CBL{% endblock %}
+{% block heading %}Payments{% endblock %}
+{% block content %}
+
+{% if has_keys %}
+{# ── Connected banner ── #}
+<div class="alert d-flex align-items-center gap-3 mb-4
+    {% if mode == 'live' %}alert-success{% elif mode == 'test' %}alert-warning{% else %}alert-secondary{% endif %}">
+    <i class="bi {% if mode == 'live' %}bi-check-circle-fill{% elif mode == 'test' %}bi-exclamation-triangle-fill{% else %}bi-credit-card{% endif %} fs-4 flex-shrink-0"></i>
+    <div>
+        {% if mode == 'live' %}
+            <strong>Stripe is connected — Live mode.</strong> Your site can accept real payments.
+        {% elif mode == 'test' %}
+            <strong>Stripe is connected — Test mode.</strong>
+            You're using test keys. Real customers cannot pay until you switch to live keys.
+        {% else %}
+            Stripe keys saved.
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+
+    {# ── Left: Instructions ── #}
+    <div class="col-lg-6">
+        <div class="cbl-card p-4 h-100">
+            <h2 class="h5 fw-bold mb-4"><i class="bi bi-list-ol me-2 text-primary"></i>How to connect Stripe</h2>
+
+            <ol class="list-unstyled mb-0" style="counter-reset:steps">
+
+                <li class="d-flex gap-3 mb-4" style="counter-increment:steps">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold"
+                         style="width:32px;height:32px;font-size:.85rem">1</div>
+                    <div>
+                        <div class="fw-semibold mb-1">Create a free Stripe account</div>
+                        <p class="text-muted small mb-2">
+                            If you don't have one yet, go to
+                            <a href="https://dashboard.stripe.com/register" target="_blank" rel="noopener">
+                                stripe.com/register <i class="bi bi-box-arrow-up-right" style="font-size:.75rem"></i>
+                            </a>
+                            and sign up. It takes about 2 minutes.
+                            You'll need your business name, email, and bank account details to start accepting real payments.
+                        </p>
+                        <div class="alert alert-light border small py-2 px-3 mb-0">
+                            <i class="bi bi-info-circle me-1 text-primary"></i>
+                            Stripe is free to create. They charge a small fee per successful payment
+                            (<a href="https://stripe.com/pricing" target="_blank" rel="noopener">see pricing</a>).
+                            There are no monthly fees.
+                        </div>
+                    </div>
+                </li>
+
+                <li class="d-flex gap-3 mb-4" style="counter-increment:steps">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold"
+                         style="width:32px;height:32px;font-size:.85rem">2</div>
+                    <div>
+                        <div class="fw-semibold mb-1">Go to your API keys page</div>
+                        <p class="text-muted small mb-2">
+                            In your Stripe dashboard, click
+                            <strong>Developers → API keys</strong> in the left sidebar.
+                            Or use this direct link:
+                        </p>
+                        <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener"
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>Open Stripe API Keys
+                        </a>
+                    </div>
+                </li>
+
+                <li class="d-flex gap-3 mb-4">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold"
+                         style="width:32px;height:32px;font-size:.85rem">3</div>
+                    <div>
+                        <div class="fw-semibold mb-1">Copy your two keys</div>
+                        <p class="text-muted small mb-2">You'll see two keys on that page:</p>
+                        <div class="mb-2 p-3 rounded border bg-light">
+                            <div class="d-flex align-items-start gap-2 mb-2">
+                                <span class="badge text-bg-secondary font-monospace" style="font-size:.7rem;white-space:nowrap">pk_live_…</span>
+                                <span class="small"><strong>Publishable key</strong> — safe to show publicly. Starts with <code>pk_live_</code> (or <code>pk_test_</code> for testing).</span>
+                            </div>
+                            <div class="d-flex align-items-start gap-2">
+                                <span class="badge text-bg-danger font-monospace" style="font-size:.7rem;white-space:nowrap">sk_live_…</span>
+                                <span class="small"><strong>Secret key</strong> — keep this private. Click <em>"Reveal live key"</em> to see it. Starts with <code>sk_live_</code>.</span>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning border small py-2 px-3 mb-0">
+                            <i class="bi bi-shield-exclamation me-1"></i>
+                            <strong>Never share your secret key</strong> — treat it like a password. We store it securely and never display it in full after you save.
+                        </div>
+                    </div>
+                </li>
+
+                <li class="d-flex gap-3">
+                    <div class="flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold"
+                         style="width:32px;height:32px;font-size:.85rem">4</div>
+                    <div>
+                        <div class="fw-semibold mb-1">Paste both keys here and save</div>
+                        <p class="text-muted small mb-0">
+                            Paste them into the form on the right and click <strong>Save &amp; Verify</strong>.
+                            We'll confirm the connection with Stripe before saving.
+                        </p>
+                    </div>
+                </li>
+
+            </ol>
+
+            <hr class="my-4">
+
+            <div class="small">
+                <div class="fw-semibold mb-2">
+                    <i class="bi bi-question-circle me-1 text-primary"></i>Test keys vs. Live keys
+                </div>
+                <p class="text-muted mb-2">
+                    Stripe gives you two sets of keys: <strong>test</strong> (for trying things out — no real money moves)
+                    and <strong>live</strong> (for real payments from real customers).
+                </p>
+                <p class="text-muted mb-0">
+                    While building your store, use test keys. Switch to live keys when you're ready to go live.
+                    Test card numbers: <code>4242 4242 4242 4242</code>, any future date, any 3-digit CVC.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {# ── Right: Key entry form ── #}
+    <div class="col-lg-6">
+        <div class="cbl-card p-4">
+            <h2 class="h5 fw-bold mb-4">
+                <i class="bi bi-key-fill me-2 text-primary"></i>Your Stripe keys
+            </h2>
+
+            {% if validation_result %}
+            <div class="alert {% if validation_result.ok %}alert-success{% else %}alert-danger{% endif %} d-flex align-items-center gap-2 mb-4">
+                <i class="bi {% if validation_result.ok %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %}"></i>
+                {{ validation_result.message }}
+            </div>
+            {% endif %}
+
+            <form method="post" id="stripe-form">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" for="stripe_publishable_key">
+                        Publishable key
+                        <span class="badge text-bg-light border text-muted fw-normal ms-1" style="font-size:.7rem">pk_live_… or pk_test_…</span>
+                    </label>
+                    <input type="text" class="form-control font-monospace" id="stripe_publishable_key"
+                           name="stripe_publishable_key"
+                           value="{{ pub_key }}"
+                           placeholder="pk_live_…"
+                           autocomplete="off" spellcheck="false">
+                    <div class="form-text">Safe to share publicly — used in your checkout page code.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" for="stripe_secret_key">
+                        Secret key
+                        <span class="badge text-bg-danger fw-normal ms-1" style="font-size:.7rem">Keep private</span>
+                    </label>
+                    <div class="input-group">
+                        <input type="password" class="form-control font-monospace" id="stripe_secret_key"
+                               name="stripe_secret_key"
+                               value="{{ masked_secret }}"
+                               placeholder="sk_live_…"
+                               autocomplete="off" spellcheck="false">
+                        <button type="button" class="btn btn-outline-secondary" id="toggle-secret"
+                                title="Show / hide key">
+                            <i class="bi bi-eye" id="toggle-secret-icon"></i>
+                        </button>
+                    </div>
+                    {% if has_keys %}
+                    <div class="form-text">
+                        <i class="bi bi-lock-fill me-1 text-success"></i>
+                        A key is saved. Clear this field and save to remove it.
+                        To replace it, paste your new key here.
+                    </div>
+                    {% else %}
+                    <div class="form-text">Never stored in logs or emails.</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check2-circle me-1"></i>Save &amp; Verify
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="btn-test-only">
+                        <i class="bi bi-send me-1"></i>Test connection only
+                    </button>
+                    {% if has_keys %}
+                    <button type="button" class="btn btn-outline-danger ms-auto" id="btn-clear-keys">
+                        <i class="bi bi-trash me-1"></i>Remove keys
+                    </button>
+                    {% endif %}
+                </div>
+
+                <div id="validate-result" class="mt-3" style="display:none"></div>
+            </form>
+
+            {% if has_keys %}
+            <hr class="my-4">
+            <div class="small text-muted">
+                <i class="bi bi-info-circle me-1"></i>
+                Payments from your customers go directly to your Stripe account.
+                This site does not handle or see any payment data.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+(function () {
+    // Show / hide secret key toggle
+    var secretInput  = document.getElementById('stripe_secret_key');
+    var toggleBtn    = document.getElementById('toggle-secret');
+    var toggleIcon   = document.getElementById('toggle-secret-icon');
+    if (toggleBtn && secretInput) {
+        toggleBtn.addEventListener('click', function () {
+            var isHidden = secretInput.type === 'password';
+            secretInput.type = isHidden ? 'text' : 'password';
+            toggleIcon.className = isHidden ? 'bi bi-eye-slash' : 'bi bi-eye';
+        });
+    }
+
+    // Clear keys: blank both fields then submit
+    var clearBtn = document.getElementById('btn-clear-keys');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            if (!confirm('Remove your Stripe keys? Your site will not be able to process payments until you add them again.')) return;
+            document.getElementById('stripe_publishable_key').value = '';
+            secretInput.value = '';
+            document.getElementById('stripe-form').submit();
+        });
+    }
+
+    // Test connection without saving
+    var testBtn    = document.getElementById('btn-test-only');
+    var resultDiv  = document.getElementById('validate-result');
+    if (testBtn) {
+        testBtn.addEventListener('click', function () {
+            var pub = document.getElementById('stripe_publishable_key').value.trim();
+            var sec = secretInput.value.trim();
+            if (!sec) { showResult(false, 'Please enter your secret key first.'); return; }
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Testing…';
+            var body = 'publishable_key=' + encodeURIComponent(pub) + '&secret_key=' + encodeURIComponent(sec);
+            fetch('{% url "core:dashboard_stripe_validate" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCsrf(),
+                },
+                body: body,
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (d) { showResult(d.ok, d.message); })
+            .catch(function () { showResult(false, 'Network error — could not reach server.'); })
+            .finally(function () {
+                testBtn.disabled = false;
+                testBtn.innerHTML = '<i class="bi bi-send me-1"></i>Test connection only';
+            });
+        });
+    }
+
+    function showResult(ok, msg) {
+        resultDiv.style.display = 'block';
+        resultDiv.className = 'mt-3 alert ' + (ok ? 'alert-success' : 'alert-danger') + ' d-flex align-items-center gap-2';
+        resultDiv.innerHTML = '<i class="bi ' + (ok ? 'bi-check-circle-fill' : 'bi-x-circle-fill') + '"></i><span>' + escHtml(msg) + '</span>';
+    }
+
+    function escHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function getCsrf() {
+        var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : '';
+    }
+})();
+</script>
+{% endblock %}

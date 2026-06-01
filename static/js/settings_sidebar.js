@@ -38,7 +38,9 @@
     { key: 'about',     name: 'About Page',      icon: 'people-fill',          description: 'Your story, values, and team highlights.' },
     { key: 'contact',   name: 'Contact Page',    icon: 'envelope-fill',        description: 'Working contact form with your details.' },
     { key: 'services',  name: 'Services Page',   icon: 'briefcase-fill',       description: 'What you offer, how it works, pricing.' },
-    { key: 'portfolio', name: 'Portfolio',        icon: 'images',               description: 'Gallery of your work with CTA.' },
+    { key: 'portfolio',  name: 'Portfolio',   icon: 'images',               description: 'Gallery of your work with CTA.' },
+    { key: 'ecommerce', name: 'Shop',        icon: 'bag-fill',             description: 'Storefront with product highlights and checkout.' },
+    { key: 'blog',      name: 'Blog',        icon: 'newspaper',            description: 'A blog for articles, news, and updates.' },
     { key: 'blank',     name: 'Blank Page',       icon: 'file-earmark-plus',    description: 'Empty page - add exactly what you need.' },
   ];
 
@@ -178,7 +180,107 @@
     }, true);
 
     defaultSelection();
+    setupPageNav(state.page);
+    setupFollowHint();
   }
+
+  // ---------------------------------------------------------------------------
+  // Page navigation select — injected into #staff-toolbar in edit mode
+  // ---------------------------------------------------------------------------
+  function setupPageNav(page) {
+    var toolbar = document.getElementById('staff-toolbar');
+    if (!toolbar) return;
+
+    var sel = document.createElement('select');
+    sel.id = 'staff-page-nav';
+    sel.title = 'Go to page';
+    sel.innerHTML = '<option value="">Switch page…</option>';
+
+    fetchPages(function (pages) {
+      var currentSlug = page ? page.slug : '';
+      pages.forEach(function (p) {
+        var opt = document.createElement('option');
+        opt.value = p.url;
+        opt.textContent = (p.title || p.slug) + (p.published ? '' : ' • draft');
+        if (p.slug === currentSlug) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    });
+
+    sel.addEventListener('change', function () {
+      if (sel.value) window.location.href = sel.value;
+    });
+
+    // Insert before the admin gear link
+    var gearLink = toolbar.querySelector('a[href="/admin/"]');
+    if (gearLink) toolbar.insertBefore(sel, gearLink);
+    else toolbar.appendChild(sel);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Follow hint — floating "Visit →" badge that appears on hover over any
+  // link that edit mode intercepts, so users can still navigate the site.
+  // ---------------------------------------------------------------------------
+  function setupFollowHint() {
+    var hint = document.createElement('a');
+    hint.id = 'cbl-follow-hint';
+    hint.innerHTML = '<i class="bi bi-arrow-right-short" style="font-size:14px"></i>Visit';
+    document.body.appendChild(hint);
+
+    var hideTimer = null;
+
+    function show(el, href) {
+      clearTimeout(hideTimer);
+      hint.href = href;
+      hint.style.display = 'flex';
+      var rect = el.getBoundingClientRect();
+      var w = hint.offsetWidth || 72;
+      hint.style.left = Math.min(rect.right - w, window.innerWidth - w - 8) + 'px';
+      hint.style.top  = Math.max(rect.top - 30, 4) + 'px';
+    }
+
+    function hide() {
+      hideTimer = setTimeout(function () { hint.style.display = 'none'; }, 160);
+    }
+
+    hint.addEventListener('mouseenter', function () { clearTimeout(hideTimer); });
+    hint.addEventListener('mouseleave', hide);
+
+    document.addEventListener('mouseover', function (e) {
+      // Navbar links
+      var navEl = e.target.closest('.nav-editable');
+      if (navEl) {
+        var a = navEl.tagName === 'A' ? navEl : navEl.querySelector('a[href]');
+        var href = a && a.getAttribute('href');
+        if (href && href !== '#' && !/^javascript/i.test(href)) {
+          show(navEl, href);
+          navEl.addEventListener('mouseleave', hide, { once: true });
+        }
+        return;
+      }
+      // Footer links
+      var footEl = e.target.closest('.footer-link-editable');
+      if (footEl) {
+        var a = footEl.tagName === 'A' ? footEl : footEl.querySelector('a[href]');
+        var href = a && a.getAttribute('href');
+        if (href && href !== '#' && !/^javascript/i.test(href)) {
+          show(footEl, href);
+          footEl.addEventListener('mouseleave', hide, { once: true });
+        }
+        return;
+      }
+      // CTA buttons (a.edit-wrap)
+      var btnEl = e.target.closest('a.edit-wrap[data-edit-model="item"]');
+      if (btnEl) {
+        var href = btnEl.getAttribute('href');
+        if (href && href !== '#' && !/^javascript/i.test(href)) {
+          show(btnEl, href);
+          btnEl.addEventListener('mouseleave', hide, { once: true });
+        }
+      }
+    });
+  }
+
 
   function readPageState() {
     var ps = document.getElementById('page-sections');
@@ -1875,6 +1977,10 @@
         var imgHtml = d.image_url
           ? '<img src="' + escapeHtml(d.image_url) + '" alt="" style="max-height:60px;max-width:100%;border-radius:4px;object-fit:cover;" class="mb-2 d-block">'
           : '<p class="small text-body-secondary mb-1">No image.</p>';
+        var cfg = d.link_config || {};
+        function cfgSel(key, val) { return cfg[key] === val ? ' selected' : ''; }
+        function cfgIs(key, val)  { return cfg[key] === val; }
+
         shell.innerHTML =
           '<h3>Item</h3>' +
           '<div class="mb-2">' + imgHtml +
@@ -1888,10 +1994,77 @@
           renderRichTextEditor('sidebar-item-text', d.text || '') +
           '<label class="form-label small mb-1">Icon <span class="text-body-secondary">(Bootstrap icon name)</span></label>' +
           '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-icon" placeholder="star-fill" value="' + escapeHtml(d.icon || '') + '">' +
+
+          '<hr class="my-2">' +
+          '<div class="small fw-semibold mb-2 text-body-secondary text-uppercase" style="letter-spacing:.05em;font-size:.7rem">Button</div>' +
+
           '<label class="form-label small mb-1">Link URL</label>' +
           '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-link-url" value="' + escapeHtml(d.link_url || '') + '">' +
-          '<label class="form-label small mb-1">Link text</label>' +
+          '<label class="form-label small mb-1">Button text</label>' +
           '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-link-text" value="' + escapeHtml(d.link_text || '') + '">' +
+
+          '<label class="form-label small mb-1">Color</label>' +
+          '<select class="form-select form-select-sm mb-2 sidebar-item-link-style">' +
+            '<option value=""'                      + (!d.link_style                          ? ' selected' : '') + '>Default (auto)</option>' +
+            '<option value="btn-primary"'           + (d.link_style === 'btn-primary'           ? ' selected' : '') + '>Primary</option>' +
+            '<option value="btn-secondary"'         + (d.link_style === 'btn-secondary'         ? ' selected' : '') + '>Secondary</option>' +
+            '<option value="btn-outline-primary"'   + (d.link_style === 'btn-outline-primary'   ? ' selected' : '') + '>Outline — Primary</option>' +
+            '<option value="btn-outline-secondary"' + (d.link_style === 'btn-outline-secondary' ? ' selected' : '') + '>Outline — Secondary</option>' +
+            '<option value="btn-light"'             + (d.link_style === 'btn-light'             ? ' selected' : '') + '>Light</option>' +
+            '<option value="btn-outline-light"'     + (d.link_style === 'btn-outline-light'     ? ' selected' : '') + '>Outline — Light</option>' +
+            '<option value="btn-dark"'              + (d.link_style === 'btn-dark'              ? ' selected' : '') + '>Dark</option>' +
+            '<option value="btn-outline-dark"'      + (d.link_style === 'btn-outline-dark'      ? ' selected' : '') + '>Outline — Dark</option>' +
+            '<option value="btn-success"'           + (d.link_style === 'btn-success'           ? ' selected' : '') + '>Green</option>' +
+            '<option value="btn-danger"'            + (d.link_style === 'btn-danger'            ? ' selected' : '') + '>Red</option>' +
+            '<option value="btn-warning"'           + (d.link_style === 'btn-warning'           ? ' selected' : '') + '>Yellow</option>' +
+            '<option value="btn-link"'              + (d.link_style === 'btn-link'              ? ' selected' : '') + '>Plain link</option>' +
+          '</select>' +
+
+          '<div class="d-flex gap-2 mb-2">' +
+            '<div class="flex-fill">' +
+              '<label class="form-label small mb-1">Size</label>' +
+              '<select class="form-select form-select-sm sidebar-item-cfg-size">' +
+                '<option value=""'  + cfgSel('size', '')   + '>Large</option>' +
+                '<option value="md"'+ cfgSel('size', 'md') + '>Regular</option>' +
+                '<option value="sm"'+ cfgSel('size', 'sm') + '>Small</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="flex-fill">' +
+              '<label class="form-label small mb-1">Shape</label>' +
+              '<select class="form-select form-select-sm sidebar-item-cfg-shape">' +
+                '<option value=""'      + cfgSel('shape', '')       + '>Default</option>' +
+                '<option value="pill"'  + cfgSel('shape', 'pill')   + '>Pill</option>' +
+                '<option value="square"'+ cfgSel('shape', 'square') + '>Square</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="d-flex gap-2 mb-2">' +
+            '<div class="flex-fill">' +
+              '<label class="form-label small mb-1">Shadow</label>' +
+              '<select class="form-select form-select-sm sidebar-item-cfg-shadow">' +
+                '<option value=""'  + cfgSel('shadow', '')   + '>None</option>' +
+                '<option value="sm"'+ cfgSel('shadow', 'sm') + '>Small</option>' +
+                '<option value="md"'+ cfgSel('shadow', 'md') + '>Medium</option>' +
+                '<option value="lg"'+ cfgSel('shadow', 'lg') + '>Large</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="flex-fill">' +
+              '<label class="form-label small mb-1">Hover effect</label>' +
+              '<select class="form-select form-select-sm sidebar-item-cfg-hover">' +
+                '<option value=""'       + cfgSel('hover', '')       + '>None</option>' +
+                '<option value="lift"'   + cfgSel('hover', 'lift')   + '>Lift</option>' +
+                '<option value="glow"'   + cfgSel('hover', 'glow')   + '>Glow</option>' +
+                '<option value="pulse"'  + cfgSel('hover', 'pulse')  + '>Pulse</option>' +
+              '</select>' +
+            '</div>' +
+          '</div>' +
+
+          '<div class="form-check mb-3">' +
+            '<input type="checkbox" class="form-check-input sidebar-item-cfg-fullwidth" id="sifw-' + escapeHtml(String(itemId)) + '"' + (cfg.full_width ? ' checked' : '') + '>' +
+            '<label class="form-check-label small" for="sifw-' + escapeHtml(String(itemId)) + '">Full width</label>' +
+          '</div>' +
+
           '<button type="button" class="btn btn-sm btn-primary w-100 mb-2 sidebar-save-item">Save</button>' +
           '<button type="button" class="btn btn-sm btn-outline-danger w-100 sidebar-delete-item">Delete item</button>';
 
@@ -1900,16 +2073,30 @@
         var save = shell.querySelector('.sidebar-save-item');
         if (save) {
           save.addEventListener('click', function () {
-            var title   = shell.querySelector('.sidebar-item-title');
-            var text    = getEditorContent(shell, '.sidebar-item-text');
-            var icon    = shell.querySelector('.sidebar-item-icon');
-            var linkUrl = shell.querySelector('.sidebar-item-link-url');
-            var linkTxt = shell.querySelector('.sidebar-item-link-text');
-            postJson('/edit/item/' + itemId + '/field/title/',     { value: title   ? title.value   : '' })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/text/',      { value: text }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/icon/',      { value: icon    ? icon.value    : '' }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_url/',  { value: linkUrl ? linkUrl.value : '' }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_text/', { value: linkTxt ? linkTxt.value : '' }); })
+            var title     = shell.querySelector('.sidebar-item-title');
+            var text      = getEditorContent(shell, '.sidebar-item-text');
+            var icon      = shell.querySelector('.sidebar-item-icon');
+            var linkUrl   = shell.querySelector('.sidebar-item-link-url');
+            var linkTxt   = shell.querySelector('.sidebar-item-link-text');
+            var linkStyle = shell.querySelector('.sidebar-item-link-style');
+            var cfgSize   = shell.querySelector('.sidebar-item-cfg-size');
+            var cfgShape  = shell.querySelector('.sidebar-item-cfg-shape');
+            var cfgShadow = shell.querySelector('.sidebar-item-cfg-shadow');
+            var cfgHover  = shell.querySelector('.sidebar-item-cfg-hover');
+            var cfgFull   = shell.querySelector('.sidebar-item-cfg-fullwidth');
+            postJson('/edit/item/' + itemId + '/field/title/',      { value: title     ? title.value     : '' })
+              .then(function () { return postJson('/edit/item/' + itemId + '/field/text/',       { value: text }); })
+              .then(function () { return postJson('/edit/item/' + itemId + '/field/icon/',       { value: icon      ? icon.value      : '' }); })
+              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_url/',   { value: linkUrl   ? linkUrl.value   : '' }); })
+              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_text/',  { value: linkTxt   ? linkTxt.value   : '' }); })
+              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_style/', { value: linkStyle ? linkStyle.value : '' }); })
+              .then(function () { return postJson('/edit/item/' + itemId + '/config/', {
+                size:       cfgSize   ? cfgSize.value   : '',
+                shape:      cfgShape  ? cfgShape.value  : '',
+                shadow:     cfgShadow ? cfgShadow.value : '',
+                hover:      cfgHover  ? cfgHover.value  : '',
+                full_width: cfgFull && cfgFull.checked ? '1' : '0',
+              }); })
               .then(function () { window.location.reload(); })
               .catch(alertError);
           });

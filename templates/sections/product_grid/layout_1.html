@@ -1,0 +1,73 @@
+{% load core_extras %}
+{% get_products as products %}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+
+        {% if section.heading %}
+        <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+            <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+        </div>
+        {% endif %}
+        {% if section.subheading %}
+        <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+            <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|safe }}</p>
+        </div>
+        {% endif %}
+
+        {% if products %}
+        <div class="row g-4">
+            {% for product in products %}
+            <div class="{{ section.bootstrap_col_class }}">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% if product.featured_image %}
+                    <img src="{{ product.featured_image.url }}" alt="{{ product.name }}"
+                         class="card-img-top" style="height:220px;object-fit:cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                         style="height:220px">
+                        <i class="bi bi-bag text-secondary" style="font-size:2.5rem"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="h5 card-title mb-1">{{ product.name }}</h3>
+                        {% if product.description %}
+                        <p class="card-text text-muted small flex-grow-1">{{ product.description|truncatewords:20 }}</p>
+                        {% endif %}
+                        <div class="d-flex align-items-center justify-content-between mt-3 gap-2">
+                            <span class="fs-5 fw-bold">{{ product.price_display }}</span>
+                            {% if product.in_stock %}
+                            <form method="post" action="/shop/cart/add/">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.pk }}">
+                                <input type="hidden" name="quantity" value="1">
+                                <input type="hidden" name="next" value="{{ request.path }}">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-bag-plus me-1"></i>Add to Cart
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="badge text-bg-secondary">Out of stock</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="/shop/cart/" class="btn btn-outline-primary">
+                <i class="bi bi-bag me-1"></i>View Cart
+            </a>
+        </div>
+
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-bag d-block mb-2" style="font-size:2.5rem"></i>
+            <p class="mb-1 fw-semibold">No products yet.</p>
+            <p class="small"><a href="/cbl/products/add/">Add your first product</a> in the dashboard.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>

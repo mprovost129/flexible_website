@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title_fallback %}Your Cart | {% if cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <h1 class="h2 fw-bold mb-4">Your Cart</h1>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+
+            {% if items %}
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-0">
+                    {% for item in items %}
+                    <div class="d-flex align-items-center gap-3 p-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        {% if item.product.featured_image %}
+                        <img src="{{ item.product.featured_image.url }}" alt="{{ item.product.name }}"
+                             style="width:72px;height:72px;object-fit:cover;border-radius:8px;flex-shrink:0">
+                        {% else %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center flex-shrink-0"
+                             style="width:72px;height:72px">
+                            <i class="bi bi-bag text-secondary fs-4"></i>
+                        </div>
+                        {% endif %}
+
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">{{ item.product.name }}</div>
+                            <div class="text-muted small">{{ item.product.price_display }} each</div>
+                        </div>
+
+                        <form method="post" action="{% url 'core:cart_update' %}" class="d-flex align-items-center gap-2">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ item.product.pk }}">
+                            <input type="number" name="quantity" value="{{ item.quantity }}"
+                                   min="0" max="99"
+                                   class="form-control form-control-sm text-center"
+                                   style="width:64px"
+                                   onchange="this.form.submit()">
+                        </form>
+
+                        <div class="fw-semibold text-end" style="min-width:64px">{{ item.subtotal_display }}</div>
+
+                        <form method="post" action="{% url 'core:cart_remove' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ item.product.pk }}">
+                            <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Remove">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="text-muted">Total</span>
+                <span class="fs-4 fw-bold">{{ total_display }}</span>
+            </div>
+
+            {% if stripe_configured %}
+            <form method="post" action="{% url 'core:checkout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-lock-fill me-2"></i>Proceed to Checkout
+                </button>
+            </form>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Checkout is not available — payments have not been configured yet.
+            </div>
+            {% endif %}
+
+            <div class="text-center mt-3">
+                <a href="javascript:history.back()" class="text-muted small">← Continue shopping</a>
+            </div>
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-bag text-secondary" style="font-size:3rem"></i>
+                <h2 class="h4 mt-3 mb-2">Your cart is empty</h2>
+                <p class="text-muted">Browse the shop and add something you like.</p>
+                <a href="/shop/" class="btn btn-primary">Go to Shop</a>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

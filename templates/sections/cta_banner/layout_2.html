@@ -16,15 +16,15 @@
                 {% endif %}
             </div>
             <div class="col-lg-4 text-lg-end">
+                {% load core_extras %}
                 <div class="d-grid gap-2 d-lg-inline-flex flex-lg-column">
-                    {% for item in section.items.all %}
-                        {% if item.link_text %}
-                            <a href="{{ item.link_url|default:'#' }}"
-                               class="btn btn-lg {% if forloop.first %}btn-primary{% else %}btn-outline-light{% endif %}">
-                                {{ item.link_text }}
-                            </a>
-                        {% endif %}
-                    {% endfor %}
+                    {% for item in section.items.all %}{% if item.link_text %}
+                        <a href="{{ item.link_url|default:'#' }}"
+                           class="btn {{ item.link_config|btn_size }} {% if item.link_style %}{{ item.link_style }}{% elif forloop.first %}btn-primary{% else %}btn-outline-light{% endif %} {{ item.link_config|btn_extra_classes }} edit-wrap"
+                           data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">
+                            {{ item.link_text }}
+                        </a>
+                    {% endif %}{% endfor %}
                 </div>
             </div>
         </div>

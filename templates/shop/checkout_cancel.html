@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title_fallback %}Checkout Cancelled | {% if cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+            <i class="bi bi-x-circle text-secondary" style="font-size:3rem"></i>
+            <h1 class="h2 fw-bold mt-3 mb-2">Checkout cancelled</h1>
+            <p class="text-muted">Your cart is still saved — come back whenever you're ready.</p>
+            <a href="{% url 'core:cart' %}" class="btn btn-primary">Return to Cart</a>
+            <a href="/shop/" class="btn btn-outline-secondary ms-2">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,7 +1,7 @@
 from django import forms
 import re
 
-from .models import FooterColumn, FooterLink, NavLink, Page, Section, Site
+from .models import BlogPost, FooterColumn, FooterLink, NavLink, Page, Product, Section, Site
 
 
 class BootstrapModelForm(forms.ModelForm):
@@ -237,6 +237,55 @@ class FooterColumnForm(BootstrapModelForm):
     class Meta:
         model = FooterColumn
         fields = ['heading', 'order', 'is_visible']
+
+
+class ProductForm(BootstrapModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'slug', 'description', 'price', 'stock', 'featured_image', 'is_active']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
+        }
+        labels = {
+            'is_active': 'Active (visible in shop)',
+            'stock': 'Stock quantity',
+        }
+        help_texts = {
+            'slug': 'URL-safe identifier — auto-filled from name.',
+            'price': 'Price in dollars, e.g. 9.99',
+            'stock': 'Leave blank for unlimited.',
+        }
+
+
+class BlogPostForm(BootstrapModelForm):
+    class Meta:
+        model = BlogPost
+        fields = [
+            'title', 'slug', 'status', 'published_at',
+            'excerpt', 'body', 'featured_image',
+            'meta_title', 'meta_description',
+        ]
+        widgets = {
+            'excerpt': forms.Textarea(attrs={'rows': 3}),
+            'body': forms.Textarea(attrs={'rows': 20, 'class': 'form-control font-monospace'}),
+            'meta_description': forms.Textarea(attrs={'rows': 3}),
+            'published_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+        }
+        labels = {
+            'meta_title': 'SEO title',
+            'meta_description': 'SEO description',
+            'published_at': 'Publish date/time',
+        }
+        help_texts = {
+            'slug': 'URL-safe identifier. Auto-filled from title — only change if needed.',
+            'excerpt': 'Shown on the blog listing page. If blank, the first paragraph of the body is used.',
+            'body': 'Full post content. HTML is supported.',
+            'meta_title': 'Overrides the title in search results. Leave blank to use the post title.',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['published_at'].input_formats = ['%Y-%m-%dT%H:%M', '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M']
 
 
 class FooterLinkForm(BootstrapModelForm):

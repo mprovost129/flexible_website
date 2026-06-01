@@ -35,6 +35,17 @@ urlpatterns = [
     path('cbl/footer/columns/<int:column_pk>/links/add/', dashboard_views.footer_link_create,      name='dashboard_footer_link_create'),
     path('cbl/footer/links/<int:pk>/edit/',           dashboard_views.footer_link_edit,            name='dashboard_footer_link_edit'),
     path('cbl/footer/links/<int:pk>/delete/',         dashboard_views.footer_link_delete,          name='dashboard_footer_link_delete'),
+    path('cbl/payments/',                             dashboard_views.stripe_setup,                name='dashboard_stripe'),
+    path('cbl/payments/validate/',                    dashboard_views.stripe_validate,             name='dashboard_stripe_validate'),
+    path('cbl/products/',                             dashboard_views.product_list,                name='dashboard_products'),
+    path('cbl/products/add/',                         dashboard_views.product_create,              name='dashboard_product_create'),
+    path('cbl/products/<int:pk>/edit/',               dashboard_views.product_edit,                name='dashboard_product_edit'),
+    path('cbl/products/<int:pk>/delete/',             dashboard_views.product_delete,              name='dashboard_product_delete'),
+    path('cbl/orders/',                               dashboard_views.order_list,                  name='dashboard_orders'),
+    path('cbl/blog/',                                 dashboard_views.blog_list,                   name='dashboard_blog'),
+    path('cbl/blog/add/',                             dashboard_views.blog_create,                 name='dashboard_blog_create'),
+    path('cbl/blog/<int:pk>/edit/',                   dashboard_views.blog_edit,                   name='dashboard_blog_edit'),
+    path('cbl/blog/<int:pk>/delete/',                 dashboard_views.blog_delete,                 name='dashboard_blog_delete'),
 
     # Home page (hardcoded slug so / works)
     path('', views.PageView.as_view(), {'slug': 'home'}, name='home'),
@@ -56,6 +67,7 @@ urlpatterns = [
     path('edit/section/<int:section_pk>/item/add/',  edit_views.add_item,             name='add_item'),
     path('edit/item/<int:pk>/delete/',               edit_views.delete_item,          name='delete_item'),
     path('edit/item/<int:pk>/',                      edit_views.get_item_data,        name='get_item_data'),
+    path('edit/item/<int:pk>/config/',               edit_views.set_item_config,      name='set_item_config'),
 
     # Page-level + section config editing live
     path('edit/page/<int:pk>/delete/',               edit_views.delete_page,          name='delete_page'),
@@ -116,6 +128,19 @@ urlpatterns = [
 
     # Contact form submission (section type: contact_form)
     path('contact/submit/', views.contact_submit, name='contact_submit'),
+
+    # Shop public routes -- must come before the generic <slug:slug> catch-all
+    path('shop/cart/',               views.cart_view,         name='cart'),
+    path('shop/cart/add/',           views.cart_add,          name='cart_add'),
+    path('shop/cart/update/',        views.cart_update,       name='cart_update'),
+    path('shop/cart/remove/',        views.cart_remove,       name='cart_remove'),
+    path('shop/checkout/',           views.checkout,          name='checkout'),
+    path('shop/checkout/success/',   views.checkout_success,  name='checkout_success'),
+    path('shop/checkout/cancel/',    views.checkout_cancel,   name='checkout_cancel'),
+
+    # Blog public routes -- must come before the generic <slug:slug> catch-all
+    path('blog/', views.blog_list_public, name='blog_list'),
+    path('blog/<slug:slug>/', views.blog_post_detail, name='blog_post_detail'),
 
     # Generic page by slug -- must come last
     path('<slug:slug>/', views.PageView.as_view(), name='page'),

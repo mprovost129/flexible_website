@@ -196,6 +196,12 @@ class Site(models.Model):
     newsletter_heading = models.CharField(max_length=100, blank=True, default='Subscribe to our newsletter')
     newsletter_blurb = models.CharField(max_length=300, blank=True, default="Monthly digest of what's new and exciting from us.")
 
+    # Stripe payment keys (entered by the site owner in the dashboard).
+    # The publishable key is public-safe; the secret key is sensitive and
+    # displayed masked after first save.
+    stripe_publishable_key = models.CharField(max_length=200, blank=True, default='')
+    stripe_secret_key      = models.CharField(max_length=200, blank=True, default='')
+
     # SaaS hook (unused in self-hosted): hostname this site answers to.
     # When multi-tenant is enabled, site_resolver matches request host to this.
     domain = models.CharField(max_length=255, blank=True, db_index=True)
@@ -230,6 +236,7 @@ class Page(models.Model):
         ('contact', 'Contact'),
         ('services', 'Services'),
         ('blog', 'Blog'),
+        ('ecommerce', 'Shop'),
     ]
 
     site = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='pages')
@@ -337,6 +344,8 @@ class Section(models.Model):
         ('contact_form', 'Contact Form'),
         ('video_embed', 'Video Embed'),
         ('pricing_table', 'Pricing Table'),
+        ('recent_posts',  'Recent Blog Posts'),
+        ('product_grid',  'Product Grid'),
     ]
     LAYOUT_CHOICES = [
         ('layout_1', 'Layout 1'),
@@ -424,6 +433,14 @@ class SectionItem(models.Model):
     icon = models.CharField(max_length=50, blank=True)
     link_url = models.CharField(max_length=500, blank=True)
     link_text = models.CharField(max_length=100, blank=True)
+    link_style = models.CharField(
+        max_length=80, blank=True, default='',
+        help_text='Bootstrap button class, e.g. btn-primary or btn-outline-secondary. Leave blank for default.',
+    )
+    link_config = models.JSONField(
+        default=dict, blank=True,
+        help_text='Button appearance options: size, shape, shadow, hover, width.',
+    )
 
     objects = SoftDeleteManager()
     all_objects = AllObjectsManager()
@@ -553,6 +570,106 @@ class FooterLink(models.Model):
                 return '/'
             return f'/{self.page.slug}/'
         return self.url or '#'
+
+
+class Product(models.Model):
+    site          = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='products')
+    name          = models.CharField(max_length=200)
+    slug          = models.SlugField(max_length=200, unique=True)
+    description   = models.TextField(blank=True)
+    price         = models.DecimalField(max_digits=10, decimal_places=2, help_text='Price in dollars (e.g. 9.99)')
+    stock         = models.PositiveIntegerField(null=True, blank=True, help_text='Leave blank for unlimited stock.')
+    featured_image = CloudinaryField('featured_image', blank=True, null=True)
+    is_active     = models.BooleanField(default=True, help_text='Visible and purchasable on the site.')
+    created_at    = models.DateTimeField(auto_now_add=True)
+    updated_at    = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def price_display(self):
+        return f'${self.price:.2f}'
+
+    @property
+    def price_cents(self):
+        return int(self.price * 100)
+
+    @property
+    def in_stock(self):
+        return self.stock is None or self.stock > 0
+
+
+class Order(models.Model):
+    STATUS_PENDING  = 'pending'
+    STATUS_PAID     = 'paid'
+    STATUS_FAILED   = 'failed'
+    STATUS_REFUNDED = 'refunded'
+    STATUS_CHOICES  = [
+        ('pending',  'Pending'),
+        ('paid',     'Paid'),
+        ('failed',   'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+
+    site               = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='orders')
+    stripe_session_id  = models.CharField(max_length=300, unique=True)
+    status             = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING, db_index=True)
+    customer_email     = models.EmailField(blank=True)
+    customer_name      = models.CharField(max_length=200, blank=True)
+    total_cents        = models.PositiveIntegerField(default=0)
+    line_items         = models.JSONField(default=list, help_text='Snapshot of purchased items.')
+    created_at         = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Order {self.pk} — {self.customer_email} ({self.status})'
+
+    @property
+    def total_display(self):
+        return f'${self.total_cents / 100:.2f}'
+
+
+class BlogPost(models.Model):
+    STATUS_DRAFT     = 'draft'
+    STATUS_PUBLISHED = 'published'
+    STATUS_CHOICES   = [('draft', 'Draft'), ('published', 'Published')]
+
+    site          = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='blog_posts')
+    author        = models.ForeignKey(
+        'users.User', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='blog_posts',
+    )
+    title         = models.CharField(max_length=200)
+    slug          = models.SlugField(max_length=200, unique=True)
+    excerpt       = models.TextField(blank=True, help_text='Short preview shown in the post list.')
+    body          = models.TextField(blank=True, help_text='Full post content (HTML allowed).')
+    featured_image = CloudinaryField('featured_image', blank=True, null=True)
+    status        = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True)
+    published_at  = models.DateTimeField(null=True, blank=True, db_index=True)
+    meta_title    = models.CharField(max_length=200, blank=True)
+    meta_description = models.TextField(blank=True)
+    created_at    = models.DateTimeField(auto_now_add=True)
+    updated_at    = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-published_at', '-created_at']
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def is_published(self):
+        return self.status == self.STATUS_PUBLISHED
+
+    @property
+    def url(self):
+        return f'/blog/{self.slug}/'
 
 
 class ContactSubmission(models.Model):

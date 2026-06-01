@@ -1,0 +1,108 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ title }} | Products | CBL{% endblock %}
+{% block heading %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex gap-3 align-items-start flex-wrap flex-lg-nowrap">
+
+    <div class="flex-grow-1" style="min-width:0">
+        <form method="post" enctype="multipart/form-data" id="product-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+            <div class="cbl-card p-3 mb-3">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors }}</div>{% endif %}
+                </div>
+                <div class="mb-0">
+                    <label class="form-label fw-semibold">{{ form.slug.label }}</label>
+                    {{ form.slug }}
+                    <div class="form-text">{{ form.slug.help_text }}</div>
+                    {% if form.slug.errors %}<div class="text-danger small mt-1">{{ form.slug.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="cbl-card p-3 mb-3">
+                <label class="form-label fw-semibold">{{ form.description.label }}</label>
+                {{ form.description }}
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="{{ back_url }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <div style="width:280px;flex-shrink:0">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="name" id="sb-name">
+            <input type="hidden" name="slug" id="sb-slug">
+            <input type="hidden" name="description" id="sb-description">
+
+            <div class="cbl-card p-3 mb-3">
+                <h3 class="h6 fw-bold mb-3">Pricing & Stock</h3>
+                <div class="mb-3">
+                    <label class="form-label">{{ form.price.label }}</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        {{ form.price }}
+                    </div>
+                    {% if form.price.errors %}<div class="text-danger small mt-1">{{ form.price.errors }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">{{ form.stock.label }}</label>
+                    {{ form.stock }}
+                    <div class="form-text">{{ form.stock.help_text }}</div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Save</button>
+            </div>
+
+            <div class="cbl-card p-3">
+                <h3 class="h6 fw-bold mb-3">Product Image</h3>
+                {% if product and product.featured_image %}
+                <img src="{{ product.featured_image.url }}" alt=""
+                     class="img-fluid rounded mb-2" style="max-height:140px;object-fit:cover;width:100%">
+                {% endif %}
+                {{ form.featured_image }}
+            </div>
+        </form>
+    </div>
+
+</div>
+<script>
+(function () {
+    function mirror(srcId, destId) {
+        var src = document.getElementById(srcId);
+        var dest = document.getElementById(destId);
+        if (!src || !dest) return;
+        dest.value = src.value;
+        src.addEventListener('input', function () { dest.value = src.value; });
+    }
+    mirror('id_name', 'sb-name');
+    mirror('id_slug', 'sb-slug');
+    mirror('id_description', 'sb-description');
+
+    var nameInput = document.getElementById('id_name');
+    var slugInput = document.getElementById('id_slug');
+    if (nameInput && slugInput) {
+        nameInput.addEventListener('input', function () {
+            if (slugInput.dataset.userEdited) return;
+            slugInput.value = nameInput.value.toLowerCase().trim()
+                .replace(/[^a-z0-9\s-]/g, '').replace(/[\s_]+/g, '-')
+                .replace(/-+/g, '-').replace(/^-|-$/g, '');
+            document.getElementById('sb-slug').value = slugInput.value;
+        });
+        slugInput.addEventListener('input', function () { slugInput.dataset.userEdited = '1'; });
+    }
+})();
+</script>
+{% endblock %}

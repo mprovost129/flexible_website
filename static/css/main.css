@@ -1524,3 +1524,74 @@ body:not(.edit-mode) .nav-drag-handle {
         display: none !important;
     }
 }
+
+/* ── Edit mode: page navigation select in staff toolbar ─────────────────── */
+#staff-page-nav {
+    background: rgba(255, 255, 255, .15);
+    border: 1px solid rgba(255, 255, 255, .3);
+    color: #fff;
+    border-radius: 6px;
+    font-size: .8rem;
+    padding: .2rem .5rem;
+    max-width: 160px;
+    cursor: pointer;
+    outline: none;
+}
+#staff-page-nav:focus {
+    border-color: rgba(255, 255, 255, .7);
+}
+#staff-page-nav option {
+    background: #212529;
+    color: #fff;
+}
+
+/* ── Edit mode: floating "Visit →" hint on intercepted links ─────────────── */
+#cbl-follow-hint {
+    position: fixed;
+    z-index: 10500;
+    display: none; /* shown via JS */
+    align-items: center;
+    gap: 3px;
+    padding: 3px 10px 3px 7px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, .82);
+    color: #fff !important;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none !important;
+    pointer-events: auto;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .28);
+    line-height: 1.4;
+    transition: background .1s ease;
+    cursor: pointer;
+}
+#cbl-follow-hint:hover {
+    background: rgba(0, 0, 0, .95);
+}
+
+/* ── Button hover effects ─────────────────────────────────────────────────── */
+.cbl-btn-hover-lift {
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+.cbl-btn-hover-lift:hover,
+.cbl-btn-hover-lift:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .18) !important;
+}
+
+.cbl-btn-hover-glow {
+    transition: box-shadow .18s ease;
+}
+.cbl-btn-hover-glow:hover,
+.cbl-btn-hover-glow:focus-visible {
+    box-shadow: 0 0 0 4px rgba(var(--bs-primary-rgb), .28) !important;
+}
+
+.cbl-btn-hover-pulse {
+    transition: transform .14s ease;
+}
+.cbl-btn-hover-pulse:hover,
+.cbl-btn-hover-pulse:focus-visible {
+    transform: scale(1.05);
+}

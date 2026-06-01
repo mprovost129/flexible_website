@@ -77,7 +77,15 @@ def _cloudinary_upload_or_error(file_obj, **kwargs):
 # ---------------------------------------------------------------------------
 
 SECTION_TEXT_FIELDS = {'heading', 'subheading'}
-ITEM_TEXT_FIELDS = {'title', 'text', 'icon', 'link_url', 'link_text'}
+ITEM_TEXT_FIELDS = {'title', 'text', 'icon', 'link_url', 'link_text', 'link_style'}
+
+VALID_LINK_STYLES = {
+    '', 'btn-primary', 'btn-secondary', 'btn-success', 'btn-danger',
+    'btn-warning', 'btn-info', 'btn-light', 'btn-dark', 'btn-link',
+    'btn-outline-primary', 'btn-outline-secondary', 'btn-outline-success',
+    'btn-outline-danger', 'btn-outline-warning', 'btn-outline-info',
+    'btn-outline-light', 'btn-outline-dark',
+}
 PAGE_TEXT_FIELDS = {'title', 'og_title', 'og_description'}
 RICH_TEXT_FIELDS = {'subheading', 'text'}
 
@@ -226,6 +234,9 @@ def edit_item_field(request, pk, field):
 
     item = get_object_or_404(SectionItem, pk=pk)
     value = request.POST.get('value', '').strip()
+
+    if field == 'link_style' and value not in VALID_LINK_STYLES:
+        return JsonResponse({'error': f'Invalid button style "{value}"'}, status=400)
     if field in RICH_TEXT_FIELDS:
         value = sanitize_rich_text(value)
     setattr(item, field, value)
@@ -273,9 +284,40 @@ def get_item_data(request, pk):
         'icon': item.icon,
         'link_url': item.link_url,
         'link_text': item.link_text,
+        'link_style': item.link_style,
+        'link_config': item.link_config if isinstance(item.link_config, dict) else {},
         'image_url': item.image.url if item.image else '',
         'section_id': item.section_id,
     })
+
+
+@require_POST
+def set_item_config(request, pk):
+    """Merge button appearance options into SectionItem.link_config."""
+    err = _staff_check(request)
+    if err:
+        return err
+    item = get_object_or_404(SectionItem, pk=pk)
+    VALID_SIZES   = {'', 'sm', 'md', 'lg'}
+    VALID_SHAPES  = {'', 'pill', 'square'}
+    VALID_SHADOWS = {'', 'sm', 'md', 'lg'}
+    VALID_HOVERS  = {'', 'lift', 'glow', 'pulse'}
+    updates = {}
+    if 'size'       in request.POST and request.POST['size']   in VALID_SIZES:
+        updates['size']       = request.POST['size']
+    if 'shape'      in request.POST and request.POST['shape']  in VALID_SHAPES:
+        updates['shape']      = request.POST['shape']
+    if 'shadow'     in request.POST and request.POST['shadow'] in VALID_SHADOWS:
+        updates['shadow']     = request.POST['shadow']
+    if 'hover'      in request.POST and request.POST['hover']  in VALID_HOVERS:
+        updates['hover']      = request.POST['hover']
+    if 'full_width' in request.POST:
+        updates['full_width'] = request.POST['full_width'] == '1'
+    cfg = dict(item.link_config) if isinstance(item.link_config, dict) else {}
+    cfg.update(updates)
+    item.link_config = cfg
+    item.save(update_fields=['link_config'])
+    return JsonResponse({'success': True, 'link_config': cfg})
 
 
 # ---------------------------------------------------------------------------
@@ -404,6 +446,8 @@ ADDABLE_SECTION_TYPES = [
     ('contact_form', 'Contact Form'),
     ('video_embed', 'Video Embed'),
     ('pricing_table', 'Pricing Table'),
+    ('recent_posts',  'Recent Blog Posts'),
+    ('product_grid',  'Product Grid'),
 ]
 
 # Sensible starter content per section type so a freshly added section isn't
@@ -478,6 +522,16 @@ SECTION_DEFAULTS = {
             {'title': 'Basic', 'text': '$9/mo', 'link_text': 'Choose', 'link_url': '#'},
             {'title': 'Pro', 'text': '$29/mo', 'link_text': 'Choose', 'link_url': '#'},
         ],
+    },
+    'recent_posts': {
+        'heading': 'From the Blog',
+        'config': {'post_count': 3},
+        'items': [],
+    },
+    'product_grid': {
+        'heading': 'Our Products',
+        'config': {'columns_desktop': 3},
+        'items': [],
     },
 }
 

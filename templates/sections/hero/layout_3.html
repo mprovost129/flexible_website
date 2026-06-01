@@ -75,17 +75,17 @@
                 {% endif %}
 
                 <!-- CTA buttons (first two items) -->
+                {% load core_extras %}
                 {% with items=section.items.all %}
                 {% if items %}
                 <div class="d-flex flex-wrap justify-content-center gap-3 mt-5">
-                    {% for item in items %}
-                        {% if forloop.counter <= 2 and item.link_text %}
-                            <a href="{{ item.link_url|default:'#' }}"
-                               class="btn btn-lg {% if forloop.first %}{{ section.config.cta_style|default:'btn-light' }}{% else %}{{ section.config.cta_style_2|default:'btn-outline-light' }}{% endif %}">
-                                {{ item.link_text }}
-                            </a>
-                        {% endif %}
-                    {% endfor %}
+                    {% for item in items %}{% if item.link_text %}
+                        <a href="{{ item.link_url|default:'#' }}"
+                           class="btn {{ item.link_config|btn_size }} {% if item.link_style %}{{ item.link_style }}{% elif forloop.first %}{{ section.config.cta_style|default:'btn-light' }}{% else %}{{ section.config.cta_style_2|default:'btn-outline-light' }}{% endif %} {{ item.link_config|btn_extra_classes }} edit-wrap"
+                           data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">
+                            {{ item.link_text }}
+                        </a>
+                    {% endif %}{% endfor %}
                 </div>
                 {% endif %}
                 {% endwith %}

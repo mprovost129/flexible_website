@@ -12,6 +12,91 @@ register = template.Library()
 
 
 @register.filter
+def btn_size(config):
+    """Return the Bootstrap size class for a button from its link_config dict.
+
+    Defaults to btn-lg when size is unset (preserves existing template behaviour).
+    Usage: {{ item.link_config|btn_size }}
+    """
+    if not isinstance(config, dict):
+        return 'btn-lg'
+    size = config.get('size', '')
+    if size == 'sm':
+        return 'btn-sm'
+    if size == 'md':
+        return ''
+    return 'btn-lg'
+
+
+@register.filter
+def btn_extra_classes(config):
+    """Return extra CSS classes for shape, shadow, hover, and width.
+
+    Usage: {{ item.link_config|btn_extra_classes }}
+    """
+    if not isinstance(config, dict):
+        return ''
+    parts = []
+    shape = config.get('shape', '')
+    if shape == 'pill':
+        parts.append('rounded-pill')
+    elif shape == 'square':
+        parts.append('rounded-0')
+    shadow = config.get('shadow', '')
+    if shadow == 'sm':
+        parts.append('shadow-sm')
+    elif shadow == 'md':
+        parts.append('shadow')
+    elif shadow == 'lg':
+        parts.append('shadow-lg')
+    hover = config.get('hover', '')
+    if hover == 'lift':
+        parts.append('cbl-btn-hover-lift')
+    elif hover == 'glow':
+        parts.append('cbl-btn-hover-glow')
+    elif hover == 'pulse':
+        parts.append('cbl-btn-hover-pulse')
+    if config.get('full_width'):
+        parts.append('w-100')
+    return ' '.join(parts)
+
+
+@register.simple_tag(takes_context=True)
+def get_products(context):
+    """Return all active products for the active site.
+
+    Usage: {% get_products as products %}
+    """
+    from ..models import Product
+    site = context.get('cms_site')
+    if not site:
+        return []
+    return list(Product.objects.filter(site=site, is_active=True).order_by('name'))
+
+
+@register.simple_tag(takes_context=True)
+def get_recent_posts(context, count=3):
+    """Return the N most recent published blog posts for the active site.
+
+    Usage in section templates:
+      {% load core_extras %}
+      {% get_recent_posts section.config.post_count|default:3 as posts %}
+    """
+    from ..models import BlogPost
+    site = context.get('cms_site')
+    if not site:
+        return []
+    try:
+        count = int(count)
+    except (TypeError, ValueError):
+        count = 3
+    return list(
+        BlogPost.objects.filter(site=site, status=BlogPost.STATUS_PUBLISHED)
+        .order_by('-published_at', '-created_at')[:count]
+    )
+
+
+@register.filter
 def video_embed_url(url):
     """Convert a YouTube or Vimeo watch URL to an embeddable iframe src.
 
