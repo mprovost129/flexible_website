@@ -115,7 +115,7 @@ def main():
         pg.wait_for_load_state("domcontentloaded")
         pg.evaluate(KILL_DEBUG)
         beat(2.5)
-        print("Logged in — blank site")
+        print("Logged in - blank site")
 
         # HERO SECTION
         add_section(pg, "Hero", 1)
@@ -234,7 +234,7 @@ def main():
                 print("On contact page")
                 break
             except Exception as e:
-                print(f"  contact nav attempt {attempt+1}: {type(e).__name__} — retrying in 3s")
+                print(f"  contact nav attempt {attempt+1}: {type(e).__name__} - retrying in 3s")
                 time.sleep(3)
 
         # PREVIEW

@@ -124,7 +124,7 @@
     input.setAttribute('aria-label', 'Rename');
 
     // Replace text content with the input. For anchors, keep child nodes that
-    // aren't text (e.g. <i> icons) — but most of our targets are text-only.
+    // aren't text (e.g. <i> icons) - but most of our targets are text-only.
     target.textContent = '';
     target.appendChild(input);
     // Click on the parent shouldn't navigate while renaming

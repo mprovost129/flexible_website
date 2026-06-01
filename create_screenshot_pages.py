@@ -19,7 +19,7 @@ PAGES = [
             {
                 'type': 'hero', 'layout': 'layout_2',
                 'heading': 'Launch Campaign Pages in Days, Not Weeks',
-                'subheading': 'Stop waiting on dev cycles. CBL gives your marketing team the tools to build, test, and ship high-converting campaign pages independently — no engineering bottlenecks, no compromises.',
+                'subheading': 'Stop waiting on dev cycles. CBL gives your marketing team the tools to build, test, and ship high-converting campaign pages independently - no engineering bottlenecks, no compromises.',
                 'items': [
                     {'link_text': 'Start Building Free', 'link_url': '/contact/'},
                     {'link_text': 'See How It Works', 'link_url': '/services/'},
@@ -34,7 +34,7 @@ PAGES = [
                     {'icon': 'lightning-charge', 'title': 'Drag-and-Drop Builder', 'text': 'Assemble pages from a library of pre-built, conversion-tested sections in minutes.'},
                     {'icon': 'arrow-repeat', 'title': 'Reusable Section Library', 'text': 'Save your best layouts and reuse them across every campaign. Consistency at scale.'},
                     {'icon': 'phone', 'title': 'Mobile-First by Default', 'text': 'Every page looks perfect on any device, right out of the box. No extra QA required.'},
-                    {'icon': 'bar-chart-line', 'title': 'Built-In Analytics Ready', 'text': 'Drop in your GA4 or pixel — your pages are clean, fast, and tracking-ready.'},
+                    {'icon': 'bar-chart-line', 'title': 'Built-In Analytics Ready', 'text': 'Drop in your GA4 or pixel - your pages are clean, fast, and tracking-ready.'},
                     {'icon': 'people', 'title': 'Team Collaboration', 'text': 'Multiple editors, real-time previews, and approval workflows that keep everyone aligned.'},
                     {'icon': 'shield-check', 'title': 'Brand Guardrails', 'text': 'Lock down fonts, colors, and logo usage so every page looks on-brand, every time.'},
                 ],
@@ -42,7 +42,7 @@ PAGES = [
             {
                 'type': 'text_block', 'layout': 'layout_2',
                 'heading': 'How It Works',
-                'subheading': 'Pick a campaign type, customize your sections, and hit publish. Your page is live in minutes — not a sprint cycle.\n\nCBL handles hosting, performance optimization, and mobile responsiveness automatically. Your team focuses on messaging and conversion. We handle the rest.\n\nWhen the campaign ends, archive the page in one click. Reuse its best sections next quarter.',
+                'subheading': 'Pick a campaign type, customize your sections, and hit publish. Your page is live in minutes - not a sprint cycle.\n\nCBL handles hosting, performance optimization, and mobile responsiveness automatically. Your team focuses on messaging and conversion. We handle the rest.\n\nWhen the campaign ends, archive the page in one click. Reuse its best sections next quarter.',
             },
             {
                 'type': 'testimonials', 'layout': 'layout_1',
@@ -73,7 +73,7 @@ PAGES = [
         'sections': [
             {
                 'type': 'hero', 'layout': 'layout_2',
-                'heading': 'Introducing Apex — The Smarter Project Dashboard',
+                'heading': 'Introducing Apex - The Smarter Project Dashboard',
                 'subheading': 'Real-time insights, team-wide visibility, and zero setup. Apex turns your scattered project data into a single source of truth.',
                 'items': [
                     {'link_text': 'Get Early Access', 'link_url': '/contact/'},
@@ -88,7 +88,7 @@ PAGES = [
                 'items': [
                     {'icon': 'speedometer2', 'title': 'Live Project Dashboards', 'text': 'See every project status, blocker, and milestone update the moment it happens.'},
                     {'icon': 'diagram-3', 'title': 'Cross-Team Visibility', 'text': 'Break down silos. Every stakeholder sees exactly what they need, nothing they do not.'},
-                    {'icon': 'bell', 'title': 'Smart Alerts', 'text': 'Get notified when things drift off track — before they become problems.'},
+                    {'icon': 'bell', 'title': 'Smart Alerts', 'text': 'Get notified when things drift off track - before they become problems.'},
                     {'icon': 'plug', 'title': 'One-Click Integrations', 'text': 'Connect Slack, Jira, Asana, and 40+ tools in minutes. No IT ticket required.'},
                     {'icon': 'graph-up-arrow', 'title': 'Progress Analytics', 'text': 'Spot bottlenecks, forecast completion dates, and report to leadership with confidence.'},
                     {'icon': 'lock', 'title': 'Enterprise-Grade Security', 'text': 'SOC 2 Type II compliant with SSO, audit logs, and role-based permissions.'},
@@ -106,7 +106,7 @@ PAGES = [
             },
             {
                 'type': 'cta_banner', 'layout': 'layout_1',
-                'heading': 'Be First in Line — Early Access Is Limited',
+                'heading': 'Be First in Line - Early Access Is Limited',
                 'subheading': 'Join the waitlist today and get three months free when we launch.',
                 'items': [
                     {'link_text': 'Request Early Access', 'link_url': '/contact/'},
@@ -137,13 +137,13 @@ PAGES = [
                     {'icon': 'map', 'title': 'The 5-Step Launch Framework', 'text': 'A repeatable process for going from campaign brief to live page in under 48 hours.'},
                     {'icon': 'scissors', 'title': 'How to Cut Approval Time in Half', 'text': 'Stakeholder alignment strategies that eliminate last-minute revision cycles.'},
                     {'icon': 'bar-chart', 'title': 'Which Metrics Actually Matter', 'text': 'Stop tracking vanity metrics. Learn the three numbers that predict campaign ROI.'},
-                    {'icon': 'collection', 'title': 'The Reusable Section System', 'text': 'How to build a section library your whole team can use — and reuse — forever.'},
+                    {'icon': 'collection', 'title': 'The Reusable Section System', 'text': 'How to build a section library your whole team can use - and reuse - forever.'},
                 ],
             },
             {
                 'type': 'text_block', 'layout': 'layout_2',
                 'heading': 'Meet Your Hosts',
-                'subheading': 'Dana Okafor — Head of Marketing at CBL with 12 years running campaigns for SaaS, e-commerce, and B2B brands.\n\nRyan Cho — Growth Lead at Apex, who took the company from 0 to 10,000 signups in 90 days using the frameworks covered in this webinar.\n\nBoth will be live to take your questions in the final 20 minutes.',
+                'subheading': 'Dana Okafor - Head of Marketing at CBL with 12 years running campaigns for SaaS, e-commerce, and B2B brands.\n\nRyan Cho - Growth Lead at Apex, who took the company from 0 to 10,000 signups in 90 days using the frameworks covered in this webinar.\n\nBoth will be live to take your questions in the final 20 minutes.',
             },
             {
                 'type': 'testimonials', 'layout': 'layout_1',
@@ -157,7 +157,7 @@ PAGES = [
             },
             {
                 'type': 'cta_banner', 'layout': 'layout_1',
-                'heading': 'Seats Are Limited — Register Now',
+                'heading': 'Seats Are Limited - Register Now',
                 'subheading': "Can't make it live? Register anyway and we will send you the full recording.",
                 'items': [
                     {'link_text': 'Reserve My Free Seat', 'link_url': '/contact/'},
@@ -173,7 +173,7 @@ PAGES = [
         'sections': [
             {
                 'type': 'hero', 'layout': 'layout_2',
-                'heading': 'Summer Campaign Hub — All Your Launches, One Place',
+                'heading': 'Summer Campaign Hub - All Your Launches, One Place',
                 'subheading': 'Plan, build, and track every summer promotion from a single dashboard. Coordinate your team, align your messaging, and hit every deadline.',
                 'items': [
                     {'link_text': 'Browse Active Campaigns', 'link_url': '/contact/'},

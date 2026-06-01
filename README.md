@@ -1,4 +1,4 @@
-# CBL — Create Build Launch
+# CBL - Create Build Launch
 
 CBL is a self-hosted Django website builder you can purchase once, customize, and publish wherever you want. It uses a dynamic dashboard, editable pages, reusable sections, configurable navigation, footer controls, themes, and inline media editing so buyers do not need to edit code for normal website changes.
 
@@ -25,7 +25,7 @@ Render hosts your site for free on a `.onrender.com` subdomain. Best if you want
 4. Render reads `render.yaml` and creates your web service plus database automatically
 5. When prompted, paste in your Cloudinary credentials (see [Cloudinary Setup](#cloudinary-setup) below)
 6. Wait 3-5 minutes for the first deploy to finish
-7. Visit `your-site.onrender.com` — you will land on a setup screen in your browser
+7. Visit `your-site.onrender.com` - you will land on a setup screen in your browser
 
 That setup screen creates your admin account, names your site, and lets you pick a starting point (blank or an industry pack). No shell commands, no `manage.py`. When you submit it, you are logged in and dropped straight onto your live site in edit mode. The setup screen disappears permanently once your admin account exists.
 

@@ -14,6 +14,7 @@ All endpoints are staff-only and return JSON (called from fetch()).
 """
 
 import re
+import os
 
 import cloudinary.uploader
 from django.http import JsonResponse
@@ -31,6 +32,31 @@ def _staff_check(request):
     if not request.user.is_staff:
         return JsonResponse({'error': 'Staff access required'}, status=403)
     return None
+
+
+def _cloudinary_env_ready():
+    """Return True only when all required Cloudinary credentials are present."""
+    return all([
+        os.environ.get('CLOUDINARY_CLOUD_NAME'),
+        os.environ.get('CLOUDINARY_API_KEY'),
+        os.environ.get('CLOUDINARY_API_SECRET'),
+    ])
+
+
+def _cloudinary_upload_or_error(file_obj, **kwargs):
+    """Upload and normalize known Cloudinary/network errors for JSON responses."""
+    if not _cloudinary_env_ready():
+        return None, 'Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.'
+    try:
+        return cloudinary.uploader.upload(file_obj, **kwargs), None
+    except PermissionError:
+        return None, 'Cloudinary upload failed due to a local network permission restriction. Check firewall/antivirus/proxy rules for outbound HTTPS.'
+    except OSError as e:
+        if getattr(e, 'errno', None) == 13:
+            return None, 'Cloudinary upload failed due to a local network permission restriction (errno 13). Check firewall/antivirus/proxy rules for outbound HTTPS.'
+        return None, f'Cloudinary upload failed: {e}'
+    except Exception as e:
+        return None, f'Cloudinary upload failed: {e}'
 
 
 def _next_nav_order(site):
@@ -731,12 +757,11 @@ def update_site_logo(request):
     file = request.FILES.get('image')
     if not file:
         return JsonResponse({'error': 'No image file received'}, status=400)
-    try:
-        result = cloudinary.uploader.upload(file, folder='logos')
-        public_id = result['public_id']
-        secure_url = result['secure_url']
-    except Exception as e:
-        return JsonResponse({'error': f'Cloudinary upload failed: {e}'}, status=500)
+    result, err_msg = _cloudinary_upload_or_error(file, folder='logos')
+    if err_msg:
+        return JsonResponse({'error': err_msg}, status=500)
+    public_id = result['public_id']
+    secure_url = result['secure_url']
     try:
         site.logo = public_id
         site.save(update_fields=['logo'])

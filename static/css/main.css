@@ -1,5 +1,5 @@
 /* =============================================================================
-   Bootstrap 5 Color Scheme — override these variables per project
+   Bootstrap 5 Color Scheme - override these variables per project
    ============================================================================= */
 
 :root {
@@ -283,7 +283,7 @@ nav {
 }
 
 /* =============================================================================
-   Messages — map Django message tags to Bootstrap alert colors
+   Messages - map Django message tags to Bootstrap alert colors
    ============================================================================= */
 
 .messages {

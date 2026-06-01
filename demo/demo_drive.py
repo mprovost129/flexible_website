@@ -221,10 +221,10 @@ def preflight(base):
         return False
 
     if 'id="email"' in html and 'id="password"' in html:
-        print("\n  Preflight OK — wizard is ready.\n")
+        print("\n  Preflight OK - wizard is ready.\n")
         return True
 
-    # Wizard wasn't there — figure out why and give a useful message.
+    # Wizard wasn't there - figure out why and give a useful message.
     if "accounts/login" in resp.url or "accounts/login" in html:
         locked_reason = "admin account already exists"
     else:
@@ -326,7 +326,7 @@ def run(cfg):
             d.type_into(page.locator(".sidebar-ext-url"), "/services/")
             d.click(page.locator(".sidebar-add-ext-link"))
             page.wait_for_load_state("domcontentloaded")
-        d.step("Name the link and set the URL — added instantly.", fill_and_add_link)
+        d.step("Name the link and set the URL - added instantly.", fill_and_add_link)
 
         # ------------------------------------------------------------------
         # 3. Rename the brand inline (best effort: brand controls appear on hover).

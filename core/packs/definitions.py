@@ -219,7 +219,7 @@ RESTAURANT_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Our Menu',
-                    'subheading': 'Something for everyone — hearty plates, lighter bites, and daily specials.',
+                    'subheading': 'Something for everyone - hearty plates, lighter bites, and daily specials.',
                 },
                 {
                     'type': 'feature_list',
@@ -245,7 +245,7 @@ RESTAURANT_PACK = {
                     'type': 'text_block',
                     'layout': 'layout_2',
                     'heading': 'Our Story',
-                    'subheading': 'We started as a small neighborhood cafe with a simple idea: serve honest food made with care.\n\nOver the years we have grown into a beloved local spot without ever losing what made us special — a warm welcome, a familiar face, and a meal worth coming back for.',
+                    'subheading': 'We started as a small neighborhood cafe with a simple idea: serve honest food made with care.\n\nOver the years we have grown into a beloved local spot without ever losing what made us special - a warm welcome, a familiar face, and a meal worth coming back for.',
                 },
                 {
                     'type': 'testimonials',
@@ -301,7 +301,7 @@ SALON_PACK = {
                     'type': 'hero',
                     'layout': 'layout_2',
                     'heading': 'Where Style Meets Relaxation',
-                    'subheading': 'Expert stylists, a calming atmosphere, and personalized service — all in one place.',
+                    'subheading': 'Expert stylists, a calming atmosphere, and personalized service - all in one place.',
                     'items': [
                         {'link_text': 'Book an Appointment', 'link_url': '/contact/'},
                         {'link_text': 'See Our Services', 'link_url': '/services/'},
@@ -339,7 +339,7 @@ SALON_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Our Services',
-                    'subheading': 'From everyday cuts to special-occasion styling — we do it all.',
+                    'subheading': 'From everyday cuts to special-occasion styling - we do it all.',
                 },
                 {
                     'type': 'feature_list',
@@ -676,7 +676,7 @@ REAL_ESTATE_PACK = {
                     'items': [
                         {'icon': 'geo-alt', 'title': 'Local Market Expert', 'text': 'Deep knowledge of neighborhoods, pricing trends, and off-market opportunities.'},
                         {'icon': 'graph-up', 'title': 'Proven Negotiator', 'text': 'Skilled at getting buyers the best price and maximizing sellers returns.'},
-                        {'icon': 'chat-dots', 'title': 'Always Responsive', 'text': 'You will always have a direct line to me — no assistants, no runaround.'},
+                        {'icon': 'chat-dots', 'title': 'Always Responsive', 'text': 'You will always have a direct line to me - no assistants, no runaround.'},
                     ],
                 },
                 {
@@ -700,7 +700,7 @@ REAL_ESTATE_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Featured Listings',
-                    'subheading': 'Homes currently on the market — each one hand-selected for quality and value.',
+                    'subheading': 'Homes currently on the market - each one hand-selected for quality and value.',
                 },
                 {
                     'type': 'image_grid',
@@ -803,7 +803,7 @@ FITNESS_PACK = {
                     'type': 'cta_banner',
                     'layout': 'layout_1',
                     'heading': 'Ready to Make a Change?',
-                    'subheading': 'Your first session is free. No commitment, no pressure — just come in and see what it feels like.',
+                    'subheading': 'Your first session is free. No commitment, no pressure - just come in and see what it feels like.',
                     'items': [
                         {'link_text': 'Claim Your Free Session', 'link_url': '/contact/'},
                     ],
@@ -820,7 +820,7 @@ FITNESS_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Training Programs',
-                    'subheading': 'Built for every fitness level — from first-timers to competitive athletes.',
+                    'subheading': 'Built for every fitness level - from first-timers to competitive athletes.',
                 },
                 {
                     'type': 'feature_list',
@@ -846,7 +846,7 @@ FITNESS_PACK = {
                     'type': 'text_block',
                     'layout': 'layout_2',
                     'heading': 'About Your Coach',
-                    'subheading': 'I became a personal trainer because fitness changed my life — and I want to share that with others.\n\nWith certifications in strength and conditioning, nutrition, and corrective exercise, I bring both the science and the motivation to every session. My philosophy is simple: build sustainable habits, celebrate every win, and never stop improving.',
+                    'subheading': 'I became a personal trainer because fitness changed my life - and I want to share that with others.\n\nWith certifications in strength and conditioning, nutrition, and corrective exercise, I bring both the science and the motivation to every session. My philosophy is simple: build sustainable habits, celebrate every win, and never stop improving.',
                 },
                 {
                     'type': 'testimonials',

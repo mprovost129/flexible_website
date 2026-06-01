@@ -1,4 +1,4 @@
-# CBL Demo — Screen Recording Guide
+# CBL Demo - Screen Recording Guide
 
 Two scripts live in this folder:
 
@@ -27,15 +27,15 @@ Only needed once. `playwright install chromium` downloads the browser that the s
 
 The script logs in, then builds a real site live in the browser:
 
-1. Login with a pre-created account — lands on a blank site in edit mode
-2. **Add Hero section** — heading and subheading typed in the sidebar
-3. **Add Feature List section** — "Why Clients Choose Us", set to 3 columns
-4. **Add Call to Action section** — heading and subheading
-5. **Rename the brand** — "Bright Studio" via the sidebar brand panel
-6. **Switch theme** — Ocean theme picked from the theme swatches
-7. **Create a Contact page** — via the sidebar page panel, contact form template
-8. **Navigate to Contact** — shows the live contact form
-9. **Exit edit mode** — preview of the finished public site
+1. Login with a pre-created account - lands on a blank site in edit mode
+2. **Add Hero section** - heading and subheading typed in the sidebar
+3. **Add Feature List section** - "Why Clients Choose Us", set to 3 columns
+4. **Add Call to Action section** - heading and subheading
+5. **Rename the brand** - "Bright Studio" via the sidebar brand panel
+6. **Switch theme** - Ocean theme picked from the theme swatches
+7. **Create a Contact page** - via the sidebar page panel, contact form template
+8. **Navigate to Contact** - shows the live contact form
+9. **Exit edit mode** - preview of the finished public site
 
 ### Steps
 
@@ -93,10 +93,10 @@ The server must be running on port 8001 before you start. If it's not, the scrip
 
 ## Tips for a clean recording
 
-- **Record Chrome only**, not your whole screen — keep the terminal out of frame.
+- **Record Chrome only**, not your whole screen - keep the terminal out of frame.
 - The script runs at a speed that looks natural on camera: fast enough to feel efficient, slow enough to follow.
 - If a step fails it is logged to the terminal and skipped; the recording keeps going.
-- For another take, just run `record.bat` again — no manual cleanup needed.
+- For another take, just run `record.bat` again - no manual cleanup needed.
 
 ---
 

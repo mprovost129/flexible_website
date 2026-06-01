@@ -13,6 +13,7 @@ convenience -- a non-staff user hitting these URLs gets a 403.
 
 import cloudinary.uploader
 import json
+import os
 from html.parser import HTMLParser
 
 from django.http import JsonResponse
@@ -35,6 +36,31 @@ def _staff_check(request):
     if not request.user.is_staff:
         return JsonResponse({'error': 'Staff access required'}, status=403)
     return None
+
+
+def _cloudinary_env_ready():
+    """Return True only when all required Cloudinary credentials are present."""
+    return all([
+        os.environ.get('CLOUDINARY_CLOUD_NAME'),
+        os.environ.get('CLOUDINARY_API_KEY'),
+        os.environ.get('CLOUDINARY_API_SECRET'),
+    ])
+
+
+def _cloudinary_upload_or_error(file_obj, **kwargs):
+    """Upload and normalize known Cloudinary/network errors for JSON responses."""
+    if not _cloudinary_env_ready():
+        return None, 'Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.'
+    try:
+        return cloudinary.uploader.upload(file_obj, **kwargs), None
+    except PermissionError:
+        return None, 'Cloudinary upload failed due to a local network permission restriction. Check firewall/antivirus/proxy rules for outbound HTTPS.'
+    except OSError as e:
+        if getattr(e, 'errno', None) == 13:
+            return None, 'Cloudinary upload failed due to a local network permission restriction (errno 13). Check firewall/antivirus/proxy rules for outbound HTTPS.'
+        return None, f'Cloudinary upload failed: {e}'
+    except Exception as e:
+        return None, f'Cloudinary upload failed: {e}'
 
 
 # ---------------------------------------------------------------------------
@@ -98,7 +124,7 @@ def sanitize_rich_text(value):
     if not value:
         return ''
     if '<' not in value:
-        return value  # plain text — no sanitization needed
+        return value  # plain text - no sanitization needed
     p = _RichTextSanitizer()
     p.feed(value)
     return p.result()
@@ -153,7 +179,9 @@ def edit_section_image(request, pk):
     if not file:
         return JsonResponse({'error': 'No image file provided'}, status=400)
 
-    result = cloudinary.uploader.upload(file)
+    result, err_msg = _cloudinary_upload_or_error(file)
+    if err_msg:
+        return JsonResponse({'error': err_msg}, status=500)
     # CloudinaryField stores the public_id string
     section.primary_image = result['public_id']
     section.save(update_fields=['primary_image'])
@@ -213,7 +241,9 @@ def edit_item_image(request, pk):
     if not file:
         return JsonResponse({'error': 'No image file provided'}, status=400)
 
-    result = cloudinary.uploader.upload(file)
+    result, err_msg = _cloudinary_upload_or_error(file)
+    if err_msg:
+        return JsonResponse({'error': err_msg}, status=500)
     item.image = result['public_id']
     item.save(update_fields=['image'])
 

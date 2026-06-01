@@ -302,12 +302,12 @@ Models (all soft-deletable, same managers as Section):
 
 ### One Navbar Engine (no per-variant templates)
 
-There is now a **single** universal navbar template: `templates/navbars/navbar_dynamic.html`. The five "navbar variants" the user sees in Site Settings (`nav_1`..`nav_5`) are presets that change settings — they no longer have their own template files. Everything that used to differ between variants (themes, sticky, shadow, link style, brand position, what's in the right zone) is driven by `Site` fields and `Site.navbar_config_merged`. The engine renders three desktop zones (left / center / right) plus a mobile menu.
+There is now a **single** universal navbar template: `templates/navbars/navbar_dynamic.html`. The five "navbar variants" the user sees in Site Settings (`nav_1`..`nav_5`) are presets that change settings - they no longer have their own template files. Everything that used to differ between variants (themes, sticky, shadow, link style, brand position, what's in the right zone) is driven by `Site` fields and `Site.navbar_config_merged`. The engine renders three desktop zones (left / center / right) plus a mobile menu.
 
 The engine uses two partials:
-- `templates/navbars/_brand.html` — the "brand" anchor (logo + site name). Renders nothing if both pieces are hidden or unavailable.
-- `templates/navbars/_navbar_slot.html` — per-zone renderer. Emits brand (if `site.brand_position == slot`), search bar (if `site.show_nav_search and site.nav_search_slot == slot`), nav links (filtered by `nav_slot` template filter), CTA button, and auth block (login/register/profile dropdown, in whichever slot `site.nav_auth_slot` names).
-- `templates/navbars/_nav_link.html` — one nav link (handles dropdown/button/plain branches). Emits `data-navlink-*` attributes that the editor JS reads.
+- `templates/navbars/_brand.html` - the "brand" anchor (logo + site name). Renders nothing if both pieces are hidden or unavailable.
+- `templates/navbars/_navbar_slot.html` - per-zone renderer. Emits brand (if `site.brand_position == slot`), search bar (if `site.show_nav_search and site.nav_search_slot == slot`), nav links (filtered by `nav_slot` template filter), CTA button, and auth block (login/register/profile dropdown, in whichever slot `site.nav_auth_slot` names).
+- `templates/navbars/_nav_link.html` - one nav link (handles dropdown/button/plain branches). Emits `data-navlink-*` attributes that the editor JS reads.
 
 Dropdown children inherit their parent's slot (their own `slot` value is ignored at render time).
 
@@ -316,19 +316,19 @@ Dropdown children inherit their parent's slot (their own `slot` value is ignored
 The whole goal of edit mode is **see-as-you-edit**: the page you see in edit mode is the same page visitors see, plus minimal floating affordances. There are NO modal dialogs, NO `prompt()`-based inputs, and NO separate edit screens for routine changes.
 
 **Add-item dropdown** (rendered in `base.html`, wired by `nav_edit.js` -> `wireHoverAddButtons`). One floating button cluster appears at the top-right of the navbar (and an equivalent at the footer) on hover:
-- Green "Add item ▾" — typed picker offering: Nav link, Nav button, Dropdown menu, Search bar, Login/Register block, CTA button. Each option creates a placeholder and the page reloads. The placeholder is auto-numbered if the chosen default label already exists in the same scope (parent), so clicking "Nav link" three times yields "New Link", "New Link 2", "New Link 3" — all distinct, all visible, all renamable.
-- Gear icon — links to the dashboard nav/footer settings page (`/cbl/navigation/` or `/cbl/footer/`). For complex changes (URL, OG image, etc.) that don't fit inline.
-- Eye icon — toggles `show_navbar` / `show_footer` so the user can hide the entire region.
-- Trash icon — clears all items (`/edit/navbar/clear/` or `/edit/footer/clear/`). Confirms before running.
+- Green "Add item ▾" - typed picker offering: Nav link, Nav button, Dropdown menu, Search bar, Login/Register block, CTA button. Each option creates a placeholder and the page reloads. The placeholder is auto-numbered if the chosen default label already exists in the same scope (parent), so clicking "Nav link" three times yields "New Link", "New Link 2", "New Link 3" - all distinct, all visible, all renamable.
+- Gear icon - links to the dashboard nav/footer settings page (`/cbl/navigation/` or `/cbl/footer/`). For complex changes (URL, OG image, etc.) that don't fit inline.
+- Eye icon - toggles `show_navbar` / `show_footer` so the user can hide the entire region.
+- Trash icon - clears all items (`/edit/navbar/clear/` or `/edit/footer/clear/`). Confirms before running.
 
 **Inline rename** (`startInlineRename` in nav_edit.js). Clicking the pencil on any nav link, dropdown child, footer link, brand text, or footer column heading replaces the label text in place with an `<input>` styled to match. Enter saves; Esc cancels; blur saves. Behind the scenes this POSTs to `/edit/.../update/` with `field=label` (or `heading` for footer columns).
 
-**Focus hint** (`setFocusHint` / `consumeFocusHint`). When the add-item flow creates a placeholder and reloads, it stashes `{kind, id}` in `sessionStorage` first. After the reload, `consumeFocusHint` finds that element and calls `startInlineRename` automatically — so adding an item drops the user straight into rename mode. No second click needed.
+**Focus hint** (`setFocusHint` / `consumeFocusHint`). When the add-item flow creates a placeholder and reloads, it stashes `{kind, id}` in `sessionStorage` first. After the reload, `consumeFocusHint` finds that element and calls `startInlineRename` automatically - so adding an item drops the user straight into rename mode. No second click needed.
 
 **Brand controls** (top-right floating buttons inside `.brand-editable`):
-- Pencil — inline rename of the site name
-- Arrows — cycle `brand_position` (left → center → right → left)
-- Eye/+ — toggle `show_brand_name`
+- Pencil - inline rename of the site name
+- Arrows - cycle `brand_position` (left → center → right → left)
+- Eye/+ - toggle `show_brand_name`
 
 **Page-status panel** (bottom-left floating card). Shows whether the current page is published / in navbar / in footer, with "Publish & add to navbar" headline shortcut plus granular publish/unpublish, add/remove navbar, add to footer.
 
@@ -337,23 +337,23 @@ The whole goal of edit mode is **see-as-you-edit**: the page you see in edit mod
 ### Endpoints (`core/nav_views.py`, all staff-only POST)
 
 Publish/link workflow:
-- `publish_page` / `unpublish_page` — toggle `is_enabled`
-- `add_page_to_navbar` — create a NavLink for a page
-- `publish_and_add_to_navbar` — the headline shortcut
-- `add_page_to_footer` — create a FooterLink (uses/creates first column)
-- `remove_page_from_navbar` — soft-delete the page's nav links
+- `publish_page` / `unpublish_page` - toggle `is_enabled`
+- `add_page_to_navbar` - create a NavLink for a page
+- `publish_and_add_to_navbar` - the headline shortcut
+- `add_page_to_footer` - create a FooterLink (uses/creates first column)
+- `remove_page_from_navbar` - soft-delete the page's nav links
 
 NavLink CRUD:
-- `add_nav_link` — creates a new link. Accepts `label`, `url`, `slot`, `is_button`, `parent_id`. **Auto-numbers the label** if it collides with an existing live link in the same `(site, parent)` scope (e.g. "New Link" → "New Link 2"). Always returns `created: True`. The previous "dedupe on identical label/url" behavior was REMOVED because it broke the placeholder-then-rename UX.
-- `update_nav_link(pk)` — field-by-field update (label, url, slot, is_button, open_new_tab, is_visible)
-- `delete_nav_link(pk)` / `undo_delete_nav_link(pk)` — soft delete / restore
-- `reorder_nav_links` — POST `order` (csv of ids) and optional `parent_id`
+- `add_nav_link` - creates a new link. Accepts `label`, `url`, `slot`, `is_button`, `parent_id`. **Auto-numbers the label** if it collides with an existing live link in the same `(site, parent)` scope (e.g. "New Link" → "New Link 2"). Always returns `created: True`. The previous "dedupe on identical label/url" behavior was REMOVED because it broke the placeholder-then-rename UX.
+- `update_nav_link(pk)` - field-by-field update (label, url, slot, is_button, open_new_tab, is_visible)
+- `delete_nav_link(pk)` / `undo_delete_nav_link(pk)` - soft delete / restore
+- `reorder_nav_links` - POST `order` (csv of ids) and optional `parent_id`
 
 FooterColumn / FooterLink CRUD: same shape (add/update/delete/undo).
 
 Site chrome:
-- `update_site_chrome` — generic single-field update for `show_navbar`, `show_footer`, `show_nav_search`, `nav_search_slot`, `nav_cta_label`, `nav_cta_url`, `nav_cta_slot`, `show_nav_login`, `show_nav_register`, `show_nav_profile`, `nav_auth_slot`
-- `update_site_brand` — `name`, `brand_position`, `show_brand_logo`, `show_brand_name`
+- `update_site_chrome` - generic single-field update for `show_navbar`, `show_footer`, `show_nav_search`, `nav_search_slot`, `nav_cta_label`, `nav_cta_url`, `nav_cta_slot`, `show_nav_login`, `show_nav_register`, `show_nav_profile`, `nav_auth_slot`
+- `update_site_brand` - `name`, `brand_position`, `show_brand_logo`, `show_brand_name`
 - `clear_navbar_links` / `clear_footer_content`
 
 ### Seeding
@@ -459,9 +459,9 @@ Beyond add/delete of sections and items, staff can change section settings and d
 **Delete page** button is injected into the floating `#edit-toolbar` (polls for it since inline_edit.js builds the toolbar on the same DOMContentLoaded). Double-confirms, POSTs to `/edit/page/{pk}/delete/`, redirects to `/`. The home page is never deletable (hidden client-side, refused server-side with 400).
 
 **Server endpoints** (all in edit_views.py, all `_staff_check`-gated):
-- `delete_page(pk)` — refuses home page
-- `set_section_layout(pk)` — validates against `AVAILABLE_LAYOUTS`
-- `set_section_config(pk)` — validates columns against `ALLOWED_COLUMN_COUNTS`, color against `_looks_like_color`; mutates JSONField by copy-mutate-reassign so Django detects the change
+- `delete_page(pk)` - refuses home page
+- `set_section_layout(pk)` - validates against `AVAILABLE_LAYOUTS`
+- `set_section_config(pk)` - validates columns against `ALLOWED_COLUMN_COUNTS`, color against `_looks_like_color`; mutates JSONField by copy-mutate-reassign so Django detects the change
 - `toggle_section_visibility(pk)`
 
 **The section wrapper in page.html exposes** `data-section-type`, `data-section-layout`, `data-section-columns`, `data-section-bg`, `data-section-visible`, and `data-page-slug` so the JS can pre-fill the gear panel and know whether the page is the home page.

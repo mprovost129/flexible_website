@@ -37,4 +37,4 @@ site.show_brand_name = True
 site.navbar_theme   = 'light'
 site.save()
 
-print('Database ready — Bright Studio / hello@brightstudio.com / Demo1234!')
+print('Database ready - Bright Studio / hello@brightstudio.com / Demo1234!')

@@ -1,4 +1,4 @@
-"""Demo settings — SQLite database, no external services required.
+"""Demo settings - SQLite database, no external services required.
 
 Use these to run the screen-recording demo on a fresh local machine:
 
@@ -13,7 +13,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
-# SQLite — no PostgreSQL needed for the demo.
+# SQLite - no PostgreSQL needed for the demo.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

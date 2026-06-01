@@ -263,7 +263,7 @@ class PageAdmin(admin.ModelAdmin):
             self.message_user(
                 request,
                 f'"{page.title}" was created from the {tpl["name"]} template. '
-                f'It is disabled — enable it when you are ready to publish.',
+                f'It is disabled - enable it when you are ready to publish.',
                 messages.SUCCESS,
             )
             return redirect('admin:core_page_change', page.pk)

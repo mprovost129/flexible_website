@@ -5,7 +5,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS'].split(',')
 
-# Whitenoise — insert after SecurityMiddleware
+# Whitenoise - insert after SecurityMiddleware
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 STORAGES = {

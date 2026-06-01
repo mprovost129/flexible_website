@@ -39,7 +39,7 @@
     { key: 'contact',   name: 'Contact Page',    icon: 'envelope-fill',        description: 'Working contact form with your details.' },
     { key: 'services',  name: 'Services Page',   icon: 'briefcase-fill',       description: 'What you offer, how it works, pricing.' },
     { key: 'portfolio', name: 'Portfolio',        icon: 'images',               description: 'Gallery of your work with CTA.' },
-    { key: 'blank',     name: 'Blank Page',       icon: 'file-earmark-plus',    description: 'Empty page — add exactly what you need.' },
+    { key: 'blank',     name: 'Blank Page',       icon: 'file-earmark-plus',    description: 'Empty page - add exactly what you need.' },
   ];
 
   function init() {
@@ -1374,7 +1374,7 @@
         })
           .then(function (r) {
             return r.json().catch(function () {
-              throw new Error('Server error (' + r.status + ') — check the Django terminal');
+              throw new Error('Server error (' + r.status + ') - check the Django terminal');
             });
           })
           .then(function (d) {
