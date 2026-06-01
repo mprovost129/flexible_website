@@ -83,6 +83,14 @@
         return;
       }
 
+      var iconEdit = event.target.closest('.cbl-icon-edit[data-item-id]');
+      if (iconEdit) {
+        event.preventDefault();
+        event.stopPropagation();
+        render({ kind: 'item', el: iconEdit, itemId: iconEdit.dataset.itemId });
+        return;
+      }
+
       var itemWrap = event.target.closest('.edit-wrap[data-edit-model="item"]');
       if (itemWrap) {
         event.preventDefault();
@@ -407,6 +415,10 @@
     var imageUrl     = sectionEl.dataset.sectionImageUrl     || '';
     var padTop       = sectionEl.dataset.sectionPaddingTop   || '';
     var padBot       = sectionEl.dataset.sectionPaddingBottom || '';
+    var padLeft      = sectionEl.dataset.sectionPaddingLeft  || '';
+    var padRight     = sectionEl.dataset.sectionPaddingRight || '';
+    var marTop       = sectionEl.dataset.sectionMarginTop    || '';
+    var marBot       = sectionEl.dataset.sectionMarginBottom || '';
     var borderStyle  = sectionEl.dataset.sectionBorderStyle  || 'none';
     var borderWidth  = sectionEl.dataset.sectionBorderWidth  || '1';
     var borderColor  = sectionEl.dataset.sectionBorderColor  || '';
@@ -475,12 +487,25 @@
           '<input type="radio" class="btn-check" name="item-style-' + escapeHtml(sectionId) + '" id="is-card-'      + escapeHtml(sectionId) + '" value="card"         autocomplete="off"' + (itemStyle === 'card'         ? ' checked' : '') + '><label class="btn btn-outline-secondary" for="is-card-'      + escapeHtml(sectionId) + '">Card</label>' +
           '<input type="radio" class="btn-check" name="item-style-' + escapeHtml(sectionId) + '" id="is-shadow-'    + escapeHtml(sectionId) + '" value="card-shadow"  autocomplete="off"' + (itemStyle === 'card-shadow'  ? ' checked' : '') + '><label class="btn btn-outline-secondary" for="is-shadow-'    + escapeHtml(sectionId) + '">Shadow</label>' +
         '</div>' +
-        '<label class="form-label small mb-1">Spacing</label>' +
-        '<div class="d-flex gap-2 align-items-center mb-2">' +
-          '<span class="small text-body-secondary" style="white-space:nowrap">Top (rem)</span>' +
+        '<label class="form-label small mb-1">Padding inside (rem)</label>' +
+        '<div class="d-flex gap-2 align-items-center mb-1">' +
+          '<span class="small text-body-secondary" style="white-space:nowrap">Top</span>' +
           '<input type="number" class="form-control form-control-sm sidebar-section-pad-top" min="0" max="30" step="0.5" value="' + escapeHtml(padTop) + '" placeholder="0">' +
-          '<span class="small text-body-secondary" style="white-space:nowrap">Bottom (rem)</span>' +
+          '<span class="small text-body-secondary" style="white-space:nowrap">Bottom</span>' +
           '<input type="number" class="form-control form-control-sm sidebar-section-pad-bot" min="0" max="30" step="0.5" value="' + escapeHtml(padBot) + '" placeholder="0">' +
+        '</div>' +
+        '<div class="d-flex gap-2 align-items-center mb-2">' +
+          '<span class="small text-body-secondary" style="white-space:nowrap">Left</span>' +
+          '<input type="number" class="form-control form-control-sm sidebar-section-pad-left" min="0" max="30" step="0.5" value="' + escapeHtml(padLeft) + '" placeholder="0">' +
+          '<span class="small text-body-secondary" style="white-space:nowrap">Right</span>' +
+          '<input type="number" class="form-control form-control-sm sidebar-section-pad-right" min="0" max="30" step="0.5" value="' + escapeHtml(padRight) + '" placeholder="0">' +
+        '</div>' +
+        '<label class="form-label small mb-1">Margin outside (rem)</label>' +
+        '<div class="d-flex gap-2 align-items-center mb-2">' +
+          '<span class="small text-body-secondary" style="white-space:nowrap">Top</span>' +
+          '<input type="number" class="form-control form-control-sm sidebar-section-mar-top" min="0" max="30" step="0.5" value="' + escapeHtml(marTop) + '" placeholder="0">' +
+          '<span class="small text-body-secondary" style="white-space:nowrap">Bottom</span>' +
+          '<input type="number" class="form-control form-control-sm sidebar-section-mar-bot" min="0" max="30" step="0.5" value="' + escapeHtml(marBot) + '" placeholder="0">' +
         '</div>' +
         '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-display">Save display</button>' +
       '</div>' +
@@ -505,6 +530,8 @@
     var button = li.dataset.navlinkButton === '1';
     var newTab = li.dataset.navlinkNewtab === '1';
     var visible = li.dataset.navlinkVisible !== '0';
+    var marL = li.dataset.navlinkMarginLeft || '0';
+    var marR = li.dataset.navlinkMarginRight || '0';
 
     return sectionShell(child ? 'Dropdown Item' : 'Nav Item',
       '<div class="edit-sidebar-section">' +
@@ -526,6 +553,11 @@
           '<div class="form-check mb-2">' +
             '<input class="form-check-input sidebar-nav-button" type="checkbox" id="snb-' + escapeHtml(id) + '"' + (button ? ' checked' : '') + '>' +
             '<label class="form-check-label small" for="snb-' + escapeHtml(id) + '">Render as button</label>' +
+          '</div>' +
+          '<label class="form-label small mb-1">Item spacing (px)</label>' +
+          '<div class="d-flex gap-2 mb-2">' +
+            '<input type="number" class="form-control form-control-sm sidebar-nav-margin-left" min="0" max="200" value="' + escapeHtml(marL) + '" placeholder="Left">' +
+            '<input type="number" class="form-control form-control-sm sidebar-nav-margin-right" min="0" max="200" value="' + escapeHtml(marR) + '" placeholder="Right">' +
           '</div>'
         : '') +
         '<button type="button" class="btn btn-sm btn-primary w-100 sidebar-save-nav">Save</button>' +
@@ -1141,6 +1173,10 @@
         var bg      = body.querySelector('.sidebar-section-bg');
         var padTop  = body.querySelector('.sidebar-section-pad-top');
         var padBot  = body.querySelector('.sidebar-section-pad-bot');
+        var padLeft = body.querySelector('.sidebar-section-pad-left');
+        var padRight= body.querySelector('.sidebar-section-pad-right');
+        var marTop  = body.querySelector('.sidebar-section-mar-top');
+        var marBot  = body.querySelector('.sidebar-section-mar-bot');
         var bStyle  = body.querySelector('.sidebar-section-border-style');
         var bWidth  = body.querySelector('.sidebar-section-border-width');
         var bColor  = body.querySelector('.sidebar-section-border-color');
@@ -1152,6 +1188,10 @@
         if (bg)      configPayload.background_color = bg.value;
         if (padTop)  configPayload.padding_top       = padTop.value;
         if (padBot)  configPayload.padding_bottom    = padBot.value;
+        if (padLeft) configPayload.padding_left      = padLeft.value;
+        if (padRight)configPayload.padding_right     = padRight.value;
+        if (marTop)  configPayload.margin_top        = marTop.value;
+        if (marBot)  configPayload.margin_bottom     = marBot.value;
         if (bStyle)  configPayload.border_style      = bStyle.value;
         if (bWidth)  configPayload.border_width      = bWidth.value;
         if (bColor)  configPayload.border_color      = bColor.value;
@@ -1297,6 +1337,18 @@
           if (visible) {
             req = req.then(function () {
               return postJson('/edit/nav-link/' + id + '/update/', { field: 'is_visible', value: visible.checked ? '1' : '0' });
+            });
+          }
+          var marLeft  = body.querySelector('.sidebar-nav-margin-left');
+          var marRight = body.querySelector('.sidebar-nav-margin-right');
+          if (marLeft) {
+            req = req.then(function () {
+              return postJson('/edit/nav-link/' + id + '/update/', { field: 'margin_left', value: marLeft.value || '0' });
+            });
+          }
+          if (marRight) {
+            req = req.then(function () {
+              return postJson('/edit/nav-link/' + id + '/update/', { field: 'margin_right', value: marRight.value || '0' });
             });
           }
         }
@@ -1947,6 +1999,87 @@
     container.querySelectorAll('.cbl-color-field').forEach(wireColorField);
   }
 
+  // Curated common Bootstrap icons offered in the picker. Power users can still
+  // type any valid bootstrap-icons name into the field.
+  var ICON_CHOICES = [
+    'star-fill', 'heart-fill', 'lightning-charge-fill', 'shield-check-fill',
+    'check-circle-fill', 'trophy-fill', 'gem', 'rocket-takeoff-fill',
+    'gear-fill', 'people-fill', 'person-fill', 'chat-dots-fill',
+    'envelope-fill', 'telephone-fill', 'geo-alt-fill', 'clock-fill',
+    'calendar-check-fill', 'cart-fill', 'bag-fill', 'credit-card-fill',
+    'graph-up-arrow', 'bar-chart-fill', 'lightbulb-fill', 'award-fill',
+    'hand-thumbs-up-fill', 'brush-fill', 'tools', 'truck', 'box-seam-fill',
+    'globe', 'wifi', 'lock-fill', 'search', 'bell-fill', 'camera-fill',
+    'image-fill', 'play-circle-fill', 'book-fill', 'mortarboard-fill',
+    'briefcase-fill', 'building', 'house-fill', 'cup-hot-fill', 'scissors',
+    'palette-fill', 'magic', 'stars', 'fire', 'droplet-fill', 'tree-fill',
+    'sun-fill', 'moon-fill', 'gift-fill', 'emoji-smile-fill', 'patch-check-fill',
+  ];
+
+  function renderIconPicker(currentIcon) {
+    currentIcon = currentIcon || '';
+    var preview = currentIcon
+      ? '<i class="bi bi-' + escapeHtml(currentIcon) + '"></i>'
+      : '<span class="text-body-secondary" style="font-size:.7rem">None</span>';
+    var grid = ICON_CHOICES.map(function (name) {
+      var active = name === currentIcon ? ' cbl-icon-choice-active' : '';
+      return '<button type="button" class="cbl-icon-choice' + active + '" data-icon="' + name + '" title="' + name + '">' +
+        '<i class="bi bi-' + name + '"></i></button>';
+    }).join('');
+    return '<label class="form-label small mb-1">Icon</label>' +
+      '<div class="cbl-icon-picker mb-2">' +
+        '<div class="d-flex align-items-center gap-2 mb-1">' +
+          '<span class="cbl-icon-preview">' + preview + '</span>' +
+          '<input type="text" class="form-control form-control-sm sidebar-item-icon" placeholder="icon name" value="' + escapeHtml(currentIcon) + '">' +
+          '<button type="button" class="btn btn-sm btn-outline-secondary cbl-icon-clear" title="Remove icon">&times;</button>' +
+        '</div>' +
+        '<input type="text" class="form-control form-control-sm mb-1 cbl-icon-search" placeholder="Search icons…">' +
+        '<div class="cbl-icon-grid">' + grid + '</div>' +
+        '<div class="form-text">Browse <a href="https://icons.getbootstrap.com/" target="_blank" rel="noopener">all icons</a> and type any name.</div>' +
+      '</div>';
+  }
+
+  function wireIconPicker(shell) {
+    var input   = shell.querySelector('.sidebar-item-icon');
+    var preview = shell.querySelector('.cbl-icon-preview');
+    var search  = shell.querySelector('.cbl-icon-search');
+    var clear   = shell.querySelector('.cbl-icon-clear');
+    var grid    = shell.querySelector('.cbl-icon-grid');
+    if (!input || !grid) return;
+
+    function refreshPreview() {
+      var v = input.value.trim();
+      preview.innerHTML = v
+        ? '<i class="bi bi-' + escapeHtml(v) + '"></i>'
+        : '<span class="text-body-secondary" style="font-size:.7rem">None</span>';
+      grid.querySelectorAll('.cbl-icon-choice').forEach(function (b) {
+        b.classList.toggle('cbl-icon-choice-active', b.dataset.icon === v);
+      });
+    }
+
+    grid.querySelectorAll('.cbl-icon-choice').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        input.value = btn.dataset.icon;
+        refreshPreview();
+      });
+    });
+
+    input.addEventListener('input', refreshPreview);
+
+    if (clear) {
+      clear.addEventListener('click', function () { input.value = ''; refreshPreview(); });
+    }
+
+    if (search) {
+      search.addEventListener('input', function () {
+        var q = search.value.trim().toLowerCase();
+        grid.querySelectorAll('.cbl-icon-choice').forEach(function (b) {
+          b.style.display = (!q || b.dataset.icon.indexOf(q) !== -1) ? '' : 'none';
+        });
+      });
+    }
+  }
+
   function renderRichTextEditor(cls, value) {
     return '<div class="cbl-rich-editor mb-2">' +
         '<div class="cbl-rich-toolbar btn-group btn-group-sm mb-1">' +
@@ -2008,8 +2141,7 @@
           '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-title" value="' + escapeHtml(d.title || '') + '">' +
           '<label class="form-label small mb-1">Text</label>' +
           renderRichTextEditor('sidebar-item-text', d.text || '') +
-          '<label class="form-label small mb-1">Icon <span class="text-body-secondary">(Bootstrap icon name)</span></label>' +
-          '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-icon" placeholder="star-fill" value="' + escapeHtml(d.icon || '') + '">' +
+          renderIconPicker(d.icon || '') +
 
           '<hr class="my-2">' +
           '<div class="small fw-semibold mb-2 text-body-secondary text-uppercase" style="letter-spacing:.05em;font-size:.7rem">Button</div>' +
@@ -2076,15 +2208,18 @@
             '</div>' +
           '</div>' +
 
-          '<div class="form-check mb-3">' +
+          '<div class="form-check mb-2">' +
             '<input type="checkbox" class="form-check-input sidebar-item-cfg-fullwidth" id="sifw-' + escapeHtml(String(itemId)) + '"' + (cfg.full_width ? ' checked' : '') + '>' +
             '<label class="form-check-label small" for="sifw-' + escapeHtml(String(itemId)) + '">Full width</label>' +
           '</div>' +
+          '<label class="form-label small mb-1">Margin around button (px)</label>' +
+          '<input type="number" class="form-control form-control-sm mb-3 sidebar-item-cfg-margin" min="0" max="100" value="' + escapeHtml(String(cfg.margin || '')) + '" placeholder="0">' +
 
           '<button type="button" class="btn btn-sm btn-primary w-100 mb-2 sidebar-save-item">Save</button>' +
           '<button type="button" class="btn btn-sm btn-outline-danger w-100 sidebar-delete-item">Delete item</button>';
 
         wireRichToolbar(shell);
+        wireIconPicker(shell);
 
         var save = shell.querySelector('.sidebar-save-item');
         if (save) {
@@ -2100,6 +2235,7 @@
             var cfgShadow = shell.querySelector('.sidebar-item-cfg-shadow');
             var cfgHover  = shell.querySelector('.sidebar-item-cfg-hover');
             var cfgFull   = shell.querySelector('.sidebar-item-cfg-fullwidth');
+            var cfgMargin = shell.querySelector('.sidebar-item-cfg-margin');
             postJson('/edit/item/' + itemId + '/field/title/',      { value: title     ? title.value     : '' })
               .then(function () { return postJson('/edit/item/' + itemId + '/field/text/',       { value: text }); })
               .then(function () { return postJson('/edit/item/' + itemId + '/field/icon/',       { value: icon      ? icon.value      : '' }); })
@@ -2112,6 +2248,7 @@
                 shadow:     cfgShadow ? cfgShadow.value : '',
                 hover:      cfgHover  ? cfgHover.value  : '',
                 full_width: cfgFull && cfgFull.checked ? '1' : '0',
+                margin:     cfgMargin ? cfgMargin.value : '',
               }); })
               .then(function () { window.location.reload(); })
               .catch(alertError);

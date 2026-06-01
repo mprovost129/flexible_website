@@ -44,7 +44,9 @@
                                  class="img-fluid rounded shadow-sm">
                         </div>
                     {% elif item.icon %}
-                        <i class="bi bi-{{ item.icon }} display-{{ section.config.icon_size|default:'1' }} text-primary"></i>
+                        <span class="cbl-icon-edit d-inline-block" data-item-id="{{ item.id }}" title="Click to change icon">
+                            <i class="bi bi-{{ item.icon }} display-{{ section.config.icon_size|default:'1' }} text-primary"></i>
+                        </span>
                     {% else %}
                         <!-- Step number circle as fallback visual -->
                         <div class="mx-auto d-flex align-items-center justify-content-center bg-primary text-white rounded-circle fw-bold"

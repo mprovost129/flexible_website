@@ -227,7 +227,7 @@ from django.utils import timezone
 
 
 # Fields a user may edit on a nav link / footer link from the live UI.
-NAVLINK_FIELDS = {'label', 'url', 'is_button', 'open_new_tab', 'is_visible', 'slot', 'page_id'}
+NAVLINK_FIELDS = {'label', 'url', 'is_button', 'open_new_tab', 'is_visible', 'slot', 'page_id', 'margin_left', 'margin_right'}
 FOOTERLINK_FIELDS = {'label', 'url', 'open_new_tab', 'is_visible', 'page_id'}
 FOOTERCOLUMN_FIELDS = {'heading', 'is_visible'}
 BRAND_FIELDS = {'name', 'brand_position', 'show_brand_name', 'show_brand_logo', 'brand_logo_height'}
@@ -377,6 +377,12 @@ def update_nav_link(request, pk):
         value = (value or '').strip().lower()
         if value not in {'left', 'center', 'right'}:
             return JsonResponse({'error': 'Invalid slot'}, status=400)
+    if field in ('margin_left', 'margin_right'):
+        raw = (request.POST.get('value') or '').strip()
+        try:
+            value = max(0, min(200, int(raw))) if raw else 0
+        except (ValueError, TypeError):
+            return JsonResponse({'error': f'{field} must be a number 0–200'}, status=400)
     if field == 'page_id':
         raw_id = (request.POST.get('value') or '').strip()
         if raw_id:

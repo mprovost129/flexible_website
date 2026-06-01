@@ -16,7 +16,13 @@
             {% for item in section.items.all %}
                 <div class="{{ section.bootstrap_col_class }} text-center">
                     {% if item.icon %}
-                        <i class="bi bi-{{ item.icon }} display-4 text-primary mb-3 d-block"></i>
+                        <span class="cbl-icon-edit d-inline-block mb-3" data-item-id="{{ item.id }}" title="Click to change icon">
+                            <i class="bi bi-{{ item.icon }} display-4 text-primary d-block"></i>
+                        </span>
+                    {% elif edit_mode_active %}
+                        <span class="cbl-icon-edit d-inline-block mb-3" data-item-id="{{ item.id }}" title="Click to add an icon">
+                            <i class="bi bi-plus-square-dashed display-4 text-body-secondary d-block" style="opacity:.4"></i>
+                        </span>
                     {% endif %}
                     {% if item.title %}
                         <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">

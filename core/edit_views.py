@@ -313,6 +313,17 @@ def set_item_config(request, pk):
         updates['hover']      = request.POST['hover']
     if 'full_width' in request.POST:
         updates['full_width'] = request.POST['full_width'] == '1'
+    if 'margin' in request.POST:
+        raw = request.POST['margin'].strip()
+        if raw in ('', '0'):
+            updates['margin'] = 0
+        else:
+            try:
+                m = int(raw)
+                if 0 <= m <= 100:
+                    updates['margin'] = m
+            except ValueError:
+                pass
     cfg = dict(item.link_config) if isinstance(item.link_config, dict) else {}
     cfg.update(updates)
     item.link_config = cfg
@@ -837,8 +848,9 @@ def set_section_config(request, pk):
         section.config = config
         update_fields.append('config')
 
-    # Padding (top / bottom in rem, stored in config JSON)
-    for pad_key in ('padding_top', 'padding_bottom'):
+    # Padding + margin (all sides, in rem, stored in config JSON)
+    for pad_key in ('padding_top', 'padding_bottom', 'padding_left', 'padding_right',
+                    'margin_top', 'margin_bottom'):
         raw = request.POST.get(pad_key)
         if raw is not None:
             raw = raw.strip()

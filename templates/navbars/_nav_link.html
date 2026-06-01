@@ -13,6 +13,7 @@ branches are unchanged for the public.
 {% with href=link.href %}
 {% if link.is_dropdown %}
     <li class="nav-item dropdown nav-editable"
+        style="{% if link.margin_left %}margin-left:{{ link.margin_left }}px;{% endif %}{% if link.margin_right %}margin-right:{{ link.margin_right }}px;{% endif %}"
         data-navlink-id="{{ link.id }}"
         data-navlink-label="{{ link.label }}"
         data-navlink-href="{{ href }}"
@@ -20,7 +21,9 @@ branches are unchanged for the public.
         data-navlink-slot="{{ link.slot }}"
         data-navlink-newtab="{{ link.open_new_tab|yesno:'1,0' }}"
         data-navlink-visible="{{ link.is_visible|yesno:'1,0' }}"
-        data-navlink-page-id="{{ link.page_id|default:'' }}">
+        data-navlink-page-id="{{ link.page_id|default:'' }}"
+        data-navlink-margin-left="{{ link.margin_left|default:'0' }}"
+        data-navlink-margin-right="{{ link.margin_right|default:'0' }}">
         <a class="nav-link dropdown-toggle {{ link_class }}" href="#" role="button"
            data-bs-toggle="dropdown" aria-expanded="false">
             {{ link.label }}
@@ -45,6 +48,7 @@ branches are unchanged for the public.
     </li>
 {% elif link.is_button %}
     <li class="nav-item nav-editable"
+        style="{% if link.margin_left %}margin-left:{{ link.margin_left }}px;{% endif %}{% if link.margin_right %}margin-right:{{ link.margin_right }}px;{% endif %}"
         data-navlink-id="{{ link.id }}"
         data-navlink-label="{{ link.label }}"
         data-navlink-href="{{ href }}"
@@ -52,7 +56,9 @@ branches are unchanged for the public.
         data-navlink-slot="{{ link.slot }}"
         data-navlink-newtab="{{ link.open_new_tab|yesno:'1,0' }}"
         data-navlink-visible="{{ link.is_visible|yesno:'1,0' }}"
-        data-navlink-page-id="{{ link.page_id|default:'' }}">
+        data-navlink-page-id="{{ link.page_id|default:'' }}"
+        data-navlink-margin-left="{{ link.margin_left|default:'0' }}"
+        data-navlink-margin-right="{{ link.margin_right|default:'0' }}">
         <a href="{{ href }}"
            class="btn cbl-navbar-cta cbl-navbar-cta--{{ site.navbar_config_merged.cta_style|default:'accent' }} ms-lg-2 {{ link_class }}"
            {% if link.open_new_tab %}target="_blank" rel="noopener"{% endif %}>
@@ -61,6 +67,7 @@ branches are unchanged for the public.
     </li>
 {% else %}
     <li class="nav-item nav-editable"
+        style="{% if link.margin_left %}margin-left:{{ link.margin_left }}px;{% endif %}{% if link.margin_right %}margin-right:{{ link.margin_right }}px;{% endif %}"
         data-navlink-id="{{ link.id }}"
         data-navlink-label="{{ link.label }}"
         data-navlink-href="{{ href }}"
@@ -68,7 +75,9 @@ branches are unchanged for the public.
         data-navlink-slot="{{ link.slot }}"
         data-navlink-newtab="{{ link.open_new_tab|yesno:'1,0' }}"
         data-navlink-visible="{{ link.is_visible|yesno:'1,0' }}"
-        data-navlink-page-id="{{ link.page_id|default:'' }}">
+        data-navlink-page-id="{{ link.page_id|default:'' }}"
+        data-navlink-margin-left="{{ link.margin_left|default:'0' }}"
+        data-navlink-margin-right="{{ link.margin_right|default:'0' }}">
         <a href="{{ href }}"
            class="nav-link {{ link_class }} {% if request.path == href %}active{% endif %}"
            {% if request.path == href %}aria-current="page"{% endif %}

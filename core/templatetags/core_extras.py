@@ -61,6 +61,22 @@ def btn_extra_classes(config):
     return ' '.join(parts)
 
 
+@register.filter
+def btn_margin_style(config):
+    """Return an inline margin style for a button from its link_config dict.
+
+    Usage: <a ... style="{{ item.link_config|btn_margin_style }}">
+    """
+    if not isinstance(config, dict):
+        return ''
+    m = config.get('margin')
+    try:
+        m = int(m)
+    except (TypeError, ValueError):
+        return ''
+    return f'margin:{m}px;' if m > 0 else ''
+
+
 @register.simple_tag(takes_context=True)
 def get_products(context):
     """Return all active products for the active site.

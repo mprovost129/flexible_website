@@ -134,6 +134,7 @@ def _clone_site_for_sandbox(source):
             label=link.label, page_id=link.page_id, url=link.url,
             is_button=link.is_button, open_new_tab=link.open_new_tab,
             slot=link.slot, order=link.order, is_visible=link.is_visible,
+            margin_left=link.margin_left, margin_right=link.margin_right,
         )
         new_link.save()
         id_map[link.pk] = new_link
@@ -352,7 +353,7 @@ def api_sandbox_set_theme(request):
 # Nav link API — operates on the session site's cloned NavLinks
 # ─────────────────────────────────────────────────────────────────────────────
 
-NAVLINK_FIELDS = {'label', 'url', 'is_button', 'open_new_tab', 'is_visible', 'slot', 'page_id'}
+NAVLINK_FIELDS = {'label', 'url', 'is_button', 'open_new_tab', 'is_visible', 'slot', 'page_id', 'margin_left', 'margin_right'}
 
 
 def _coerce(value):
@@ -380,6 +381,12 @@ def api_nav_update(request, pk):
         value = (value or '').strip().lower()
         if value not in {'left', 'center', 'right'}:
             return JsonResponse({'error': 'Invalid slot'}, status=400)
+    if field in ('margin_left', 'margin_right'):
+        raw = (request.POST.get('value') or '').strip()
+        try:
+            value = max(0, min(200, int(raw))) if raw else 0
+        except (ValueError, TypeError):
+            return JsonResponse({'error': f'{field} must be a number 0–200'}, status=400)
     if field == 'page_id':
         raw_id = (request.POST.get('value') or '').strip()
         if raw_id:
@@ -570,6 +577,7 @@ def api_set_section_config(request, pk):
         return JsonResponse({'error': 'Section not found'}, status=404)
     cfg = dict(section.config) if isinstance(section.config, dict) else {}
     ALLOWED = {'columns_desktop', 'background_color', 'padding_top', 'padding_bottom',
+               'padding_left', 'padding_right', 'margin_top', 'margin_bottom',
                'border_style', 'border_width', 'border_color', 'border_radius', 'item_style'}
     for key in ALLOWED:
         if key in request.POST:
@@ -764,6 +772,17 @@ def api_set_item_config(request, pk):
             cfg[key] = request.POST[key]
     if 'full_width' in request.POST:
         cfg['full_width'] = request.POST['full_width'] == '1'
+    if 'margin' in request.POST:
+        raw = request.POST['margin'].strip()
+        if raw in ('', '0'):
+            cfg['margin'] = 0
+        else:
+            try:
+                m = int(raw)
+                if 0 <= m <= 100:
+                    cfg['margin'] = m
+            except ValueError:
+                pass
     item.link_config = cfg
     item.save(update_fields=['link_config'])
     return JsonResponse({'success': True, 'link_config': cfg})

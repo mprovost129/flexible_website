@@ -477,6 +477,10 @@ class NavLink(models.Model):
     )
     open_new_tab = models.BooleanField(default=False)
 
+    # Optional horizontal spacing (px) around this item in the navbar.
+    margin_left  = models.PositiveSmallIntegerField(default=0)
+    margin_right = models.PositiveSmallIntegerField(default=0)
+
     # Which side of the navbar this link sits in. Sub-items (children of a
     # dropdown) ignore this and inherit from their parent.
     SLOT_CHOICES = [

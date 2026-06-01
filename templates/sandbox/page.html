@@ -96,9 +96,9 @@
 
     {% for section in sections %}
     {% with cfg=section.config %}
-    {% with pt=cfg.padding_top pb=cfg.padding_bottom bw=cfg.border_width bc=cfg.border_color bs=cfg.border_style br=cfg.border_radius %}
+    {% with pt=cfg.padding_top pb=cfg.padding_bottom pl=cfg.padding_left pr=cfg.padding_right mt=cfg.margin_top mb=cfg.margin_bottom bw=cfg.border_width bc=cfg.border_color bs=cfg.border_style br=cfg.border_radius %}
     <div class="section-wrap{% if not section.is_visible %} section-hidden{% endif %}{% if cfg.item_style and cfg.item_style != 'none' %} cbl-items-{{ cfg.item_style }}{% endif %}"
-         {% if pt or pb or bw or br %}style="{% if pt %}padding-top:{{ pt }}rem;{% endif %}{% if pb %}padding-bottom:{{ pb }}rem;{% endif %}{% if bw and bs and bs != 'none' %}border:{{ bw }}px {{ bs }} {{ bc|default:'#dee2e6' }};{% endif %}{% if br %}border-radius:{{ br }}px;{% endif %}"{% endif %}
+         {% if pt or pb or pl or pr or mt or mb or bw or br %}style="{% if pt %}padding-top:{{ pt }}rem;{% endif %}{% if pb %}padding-bottom:{{ pb }}rem;{% endif %}{% if pl %}padding-left:{{ pl }}rem;{% endif %}{% if pr %}padding-right:{{ pr }}rem;{% endif %}{% if mt %}margin-top:{{ mt }}rem;{% endif %}{% if mb %}margin-bottom:{{ mb }}rem;{% endif %}{% if bw and bs and bs != 'none' %}border:{{ bw }}px {{ bs }} {{ bc|default:'#dee2e6' }};{% endif %}{% if br %}border-radius:{{ br }}px;{% endif %}"{% endif %}
          data-section-id="{{ section.id }}"
          data-section-type="{{ section.section_type }}"
          data-section-layout="{{ section.layout }}"
@@ -106,6 +106,10 @@
          data-section-columns="{{ cfg.columns_desktop|default:'' }}"
          data-section-padding-top="{{ cfg.padding_top|default:'' }}"
          data-section-padding-bottom="{{ cfg.padding_bottom|default:'' }}"
+         data-section-padding-left="{{ cfg.padding_left|default:'' }}"
+         data-section-padding-right="{{ cfg.padding_right|default:'' }}"
+         data-section-margin-top="{{ cfg.margin_top|default:'' }}"
+         data-section-margin-bottom="{{ cfg.margin_bottom|default:'' }}"
          data-section-border-style="{{ cfg.border_style|default:'' }}"
          data-section-border-width="{{ cfg.border_width|default:'' }}"
          data-section-border-color="{{ cfg.border_color|default:'' }}"
