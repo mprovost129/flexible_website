@@ -83,6 +83,24 @@ def setup_wizard(request):
         site.onboarding_complete = True
         site.save()
 
+        # Add the sandbox "Try Demo" nav link when the sandbox app is installed.
+        # This block is a no-op in production deploys that don't have the sandbox.
+        try:
+            import sandbox as _sb  # noqa: F401 — just checking it exists
+            from .models import NavLink
+            NavLink.objects.get_or_create(
+                site=site,
+                url='/sandbox/',
+                defaults={
+                    'label': 'Try Demo',
+                    'slot': 'right',
+                    'order': NavLink.objects.filter(site=site).count(),
+                    'is_visible': True,
+                },
+            )
+        except ImportError:
+            pass
+
         # Log the new admin in and send them straight to edit mode.
         # Specify the backend explicitly because axes adds a second backend
         # and Django requires disambiguation when multiple are configured.

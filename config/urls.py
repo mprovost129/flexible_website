@@ -1,3 +1,5 @@
+import contextlib
+
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
@@ -7,16 +9,14 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('users.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('', include('sandbox.urls')),  # must precede core so sandbox/ isn't swallowed by <slug:slug>
     path('', include('core.urls')),
-    path('', include('sandbox.urls')),
 ]
 
 if settings.DEBUG:
-    try:
+    with contextlib.suppress(ImportError):
         import debug_toolbar
         urlpatterns = [path('__debug__/', include(debug_toolbar.urls))] + urlpatterns
-    except Exception:
-        pass
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if getattr(settings, 'CBL_DEMO_DIAGNOSTICS', False):
