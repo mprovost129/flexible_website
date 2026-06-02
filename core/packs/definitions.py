@@ -1116,6 +1116,201 @@ ECOMMERCE_PACK = {
 }
 
 
+ARCHITECTURE_PACK = {
+    'key': 'architecture',
+    'name': 'Architect / Home Designer',
+    'description': 'For architects, home/house-plan designers, and drafting services — portfolio, services, process, and an inquiry form.',
+    'theme_key': 'slate',          # clean, professional, trustworthy
+    'navbar': 'centered',
+    'footer': 'footer_4',
+    'brand_position': 'center',
+    'show_brand_logo': True,
+    'show_brand_name': True,
+    'tagline': 'Thoughtful home design, built to code.',
+    'pages': [
+        {
+            'page_type': 'home',
+            'slug': 'home',
+            'title': 'Home',
+            'order': 0,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Thoughtful Home Design, Built to Code',
+                    'subheading': 'Stock and custom house plans designed with form, function, and style in mind — permit-ready and made for the way you live.',
+                    'items': [
+                        {'item_type': 'button', 'link_text': 'View Our Work', 'link_url': '#work'},
+                        {'item_type': 'button', 'link_text': 'Start a Project', 'link_url': '/contact/', 'link_style': 'btn-outline-secondary'},
+                    ],
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'What We Do',
+                    'subheading': 'From first sketch to permit-ready drawings.',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'icon': 'house-door-fill',   'title': 'Custom Home Plans',   'text': 'Fully custom designs tailored to your lot, budget, and lifestyle.'},
+                        {'icon': 'pencil-square',     'title': 'Plan Modifications',  'text': 'Already have a plan? We adapt stock or existing drawings to fit your needs.'},
+                        {'icon': 'file-earmark-text', 'title': 'Permit & Framing',    'text': 'Code-compliant construction documents, framing plans, and permit packages.'},
+                    ],
+                },
+                {
+                    'type': 'image_grid',
+                    'layout': 'layout_1',
+                    'heading': 'Featured Plans & Projects',
+                    'subheading': 'A selection of recent designs.',
+                    'config': {'columns_desktop': 3},
+                    'items': [
+                        {'title': 'Modern Farmhouse',  'text': '3 bed · 2.5 bath · 2,400 sq ft'},
+                        {'title': 'Coastal Cottage',   'text': '2 bed · 2 bath · 1,650 sq ft'},
+                        {'title': 'Craftsman Two-Story', 'text': '4 bed · 3 bath · 2,950 sq ft'},
+                    ],
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_2',
+                    'heading': 'How It Works',
+                    'subheading': 'A clear path from idea to build.',
+                    'config': {'show_step_number': 'true'},
+                    'items': [
+                        {'icon': 'chat-dots-fill',    'title': 'Consultation',         'text': 'We talk through your goals, site, budget, and must-haves.'},
+                        {'icon': 'pencil-fill',       'title': 'Design & Revisions',   'text': 'You review concepts and we refine until the plan feels right.'},
+                        {'icon': 'check-circle-fill', 'title': 'Permit-Ready Plans',   'text': 'You receive complete, code-compliant drawings ready to build.'},
+                    ],
+                },
+                {
+                    'type': 'testimonials',
+                    'layout': 'layout_1',
+                    'heading': 'What Clients Say',
+                    'items': [
+                        {'title': 'Sarah & Tom',  'link_text': 'New Build, Maine',     'text': 'Mike turned our rough ideas into a plan our builder loved. Fast, thorough, and a pleasure to work with.', 'icon': 'star-fill'},
+                        {'title': 'David R.',     'link_text': 'Renovation',           'text': 'He modified an existing plan on a short turnaround and saved our timeline. Highly recommended.', 'icon': 'star-fill'},
+                        {'title': 'The Bennetts', 'link_text': 'Custom Home',          'text': 'Beautiful, functional design that fit our budget. The permit set was flawless.', 'icon': 'star-fill'},
+                    ],
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Ready to design your dream home?',
+                    'subheading': 'Tell us about your project and we will get back to you within one business day.',
+                    'items': [
+                        {'item_type': 'button', 'link_text': 'Get Started', 'link_url': '/contact/'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'services',
+            'slug': 'services',
+            'title': 'Services',
+            'order': 1,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Design Services',
+                    'subheading': 'Everything you need to go from concept to construction.',
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_1',
+                    'heading': 'What I Offer',
+                    'config': {'columns_desktop': 2},
+                    'items': [
+                        {'icon': 'house-door-fill',   'title': 'Custom House Plans',  'text': 'One-of-a-kind designs drawn around your site and lifestyle.'},
+                        {'icon': 'grid-3x3-gap-fill', 'title': 'Stock Plan Library',  'text': 'Proven, ready-to-purchase plans you can build as-is or modify.'},
+                        {'icon': 'pencil-square',     'title': 'Modifications',       'text': 'Adjust an existing or stock plan — layouts, footprints, elevations.'},
+                        {'icon': 'file-earmark-text', 'title': 'Permit & Framing',    'text': 'Complete construction documents and framing plans for permitting.'},
+                    ],
+                },
+                {
+                    'type': 'pricing_table',
+                    'layout': 'layout_1',
+                    'heading': 'Simple, Transparent Pricing',
+                    'subheading': 'Every project is unique — these are typical starting points.',
+                    'config': {'highlighted_plan': 2},
+                    'items': [
+                        {'title': 'Stock Plan',    'link_text': 'from $1,200', 'link_url': '/contact/', 'text': 'one-time\nReady-to-build plan set\nPDF + CAD files\nEmail support'},
+                        {'title': 'Custom Design', 'link_text': 'from $4,500', 'link_url': '/contact/', 'icon': 'star-fill', 'text': 'per project\nFully custom plans\nMultiple revisions\nPermit-ready set\nFraming plan included'},
+                        {'title': 'Modification',  'link_text': 'from $600',   'link_url': '/contact/', 'text': 'per plan\nEdit an existing plan\nLayout & elevation changes\nUpdated drawings'},
+                    ],
+                },
+                {
+                    'type': 'cta_banner',
+                    'layout': 'layout_1',
+                    'heading': 'Not sure which fits? Let’s talk.',
+                    'items': [
+                        {'item_type': 'button', 'link_text': 'Request a Quote', 'link_url': '/contact/'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'about',
+            'slug': 'about',
+            'title': 'About',
+            'order': 2,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_2',
+                    'heading': 'About the Designer',
+                    'subheading': 'Decades of experience turning ideas into homes people love to live in.',
+                },
+                {
+                    'type': 'text_block',
+                    'layout': 'layout_1',
+                    'heading': 'Our Approach',
+                    'subheading': (
+                        'Tell your story here — how you got started, what kinds of homes you love to design, '
+                        'and what clients can expect when they work with you.\n\n'
+                        'A second paragraph is a good place to talk about your design philosophy and the '
+                        'regions or code jurisdictions you serve.'
+                    ),
+                },
+                {
+                    'type': 'feature_list',
+                    'layout': 'layout_2',
+                    'heading': 'Why Work With Me',
+                    'items': [
+                        {'icon': 'patch-check-fill', 'title': 'Code-Compliant',      'text': 'Drawings built to pass review and keep your project on schedule.'},
+                        {'icon': 'geo-alt-fill',     'title': 'Local Expertise',     'text': 'Familiar with regional building codes, climate, and permitting.'},
+                        {'icon': 'person-hearts',    'title': 'Personal Service',    'text': 'You work directly with the designer from first call to final plan.'},
+                    ],
+                },
+            ],
+        },
+        {
+            'page_type': 'contact',
+            'slug': 'contact',
+            'title': 'Contact',
+            'order': 3,
+            'sections': [
+                {
+                    'type': 'hero',
+                    'layout': 'layout_1',
+                    'heading': 'Get in Touch',
+                    'subheading': 'Tell me about your project and I will follow up within one business day.',
+                },
+                {
+                    'type': 'contact_form',
+                    'layout': 'layout_2',
+                    'heading': 'Request a Consultation',
+                    'subheading': 'Share a few details about your lot, timeline, and what you have in mind.',
+                    'items': [
+                        {'icon': 'telephone-fill', 'title': 'Phone',   'text': '+1 (555) 000-0000',   'link_url': 'tel:+15550000000'},
+                        {'icon': 'envelope-fill',  'title': 'Email',   'text': 'hello@example.com',    'link_url': 'mailto:hello@example.com'},
+                        {'icon': 'geo-alt-fill',   'title': 'Service Area', 'text': 'New England & remote'},
+                    ],
+                },
+            ],
+        },
+    ],
+}
+
+
 # Registry of all available packs, keyed by their `key`.
 PACKS = {
     CONTRACTOR_PACK['key']: CONTRACTOR_PACK,
@@ -1127,6 +1322,7 @@ PACKS = {
     FITNESS_PACK['key']:    FITNESS_PACK,
     BLOG_PACK['key']:       BLOG_PACK,
     ECOMMERCE_PACK['key']:  ECOMMERCE_PACK,
+    ARCHITECTURE_PACK['key']: ARCHITECTURE_PACK,
 }
 
 

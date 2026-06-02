@@ -168,5 +168,7 @@ def _create_section(page, section_def, order):
             icon=item_def.get('icon', ''),
             link_url=item_def.get('link_url', ''),
             link_text=item_def.get('link_text', ''),
+            link_style=item_def.get('link_style', ''),
+            item_type=item_def.get('item_type', ''),
         )
     return section
