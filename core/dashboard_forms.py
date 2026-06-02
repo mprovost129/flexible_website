@@ -60,11 +60,12 @@ class SiteSettingsForm(BootstrapModelForm):
     nav_mobile_menu_style = forms.ChoiceField(choices=MOBILE_MENU_STYLE_CHOICES, required=False, label='Mobile menu style')
     nav_cta_style = forms.ChoiceField(choices=CTA_STYLE_CHOICES, required=False, label='CTA button style')
 
-    nav_bg_color = forms.CharField(required=False, label='Navbar background color')
-    nav_text_color = forms.CharField(required=False, label='Navbar text color')
-    nav_link_color = forms.CharField(required=False, label='Nav link color')
-    nav_link_hover_bg = forms.CharField(required=False, label='Nav link hover background')
-    nav_link_hover_color = forms.CharField(required=False, label='Nav link hover text color')
+    _color_widget = lambda: forms.TextInput(attrs={'class': 'form-control cbl-color-input'})
+    nav_bg_color = forms.CharField(required=False, label='Navbar background color', widget=_color_widget())
+    nav_text_color = forms.CharField(required=False, label='Navbar text color', widget=_color_widget())
+    nav_link_color = forms.CharField(required=False, label='Nav link color', widget=_color_widget())
+    nav_link_hover_bg = forms.CharField(required=False, label='Nav link hover background', widget=_color_widget())
+    nav_link_hover_color = forms.CharField(required=False, label='Nav link hover text color', widget=_color_widget())
 
     class Meta:
         model = Site
@@ -249,6 +250,8 @@ class BannerForm(BootstrapModelForm):
         ]
         widgets = {
             'pages': forms.CheckboxSelectMultiple,
+            'bg_color': forms.TextInput(attrs={'class': 'form-control cbl-color-input'}),
+            'text_color': forms.TextInput(attrs={'class': 'form-control cbl-color-input'}),
         }
         labels = {
             'is_enabled': 'Enabled (visible on the site)',
