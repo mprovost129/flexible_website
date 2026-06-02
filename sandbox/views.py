@@ -11,6 +11,7 @@ so the existing sidebar and structural_edit JS work without modification.
 """
 
 import json
+import uuid
 
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -253,7 +254,7 @@ def sandbox_enter(request):
         site=site,
         page_type='about',    # any valid type; identified by SandboxSession
         variant='page_1',
-        slug=f'sandbox-{key[:12]}',
+        slug=f'sandbox-{uuid.uuid4().hex[:12]}',
         title='Sandbox',
         is_enabled=False,     # not publicly accessible via the normal page router
         order=9999,
@@ -294,13 +295,10 @@ def sandbox_exit(request):
     if key:
         session = SandboxSession.objects.filter(session_key=key).first()
         if session:
-            try:
-                if session.site_id:
-                    Site.objects.filter(pk=session.site_id).delete()
-                else:
-                    Page.objects.filter(pk=session.page_id).delete()
-            except Exception:
-                pass
+            if session.site_id:
+                SandboxSession.purge_site(session.site_id)
+            else:
+                SandboxSession.purge_page(session.page_id)
             session.delete()
     return redirect('sandbox:home')
 
