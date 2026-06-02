@@ -10,7 +10,7 @@ A self-hosted Django website builder. Build professional websites with a visual 
 2. [Before you start — accounts to create](#before-you-start)
 3. [Quick start with Docker](#quick-start-with-docker) ← **recommended for testing**
 4. [Manual setup (without Docker)](#manual-setup)
-5. [Deploying to Render (free hosting)](#deploying-to-render)
+5. [Deploying to Render (free hosting)](#deploying-to-render-free-hosting)
 6. [First-time site setup](#first-time-site-setup)
 7. [Using the site](#using-the-site)
 8. [Environment variables reference](#environment-variables-reference)
@@ -43,14 +43,23 @@ You will need to create accounts with two services before everything works. Both
 
 ### 1. Cloudinary — image uploads (free)
 
-All uploaded images (logos, section photos, blog thumbnails, product photos) are stored on Cloudinary.
+All uploaded images (logos, section photos, blog thumbnails, product photos) are stored on Cloudinary, which serves them fast from a global CDN. The free tier (25 GB storage + 25 GB/month bandwidth) is plenty for most sites.
 
-1. Go to **[cloudinary.com](https://cloudinary.com)** and click **Sign up for free**
-2. After signing in, go to your dashboard
-3. Copy three values: **Cloud Name**, **API Key**, and **API Secret**
-4. Paste them into your `.env` file (or the Render dashboard if deploying there)
+**Step by step:**
 
-> **Without Cloudinary:** The site still runs — you just cannot upload images. You can add Cloudinary keys at any time and nothing breaks.
+1. Go to **[cloudinary.com](https://cloudinary.com)** and click **Sign up for free** (no credit card required). You can sign up with Google/GitHub or an email.
+2. After verifying your email you land on the **Dashboard** (Home). Near the top you'll see a **"Product Environment Credentials"** box (sometimes under **Settings → API Keys**).
+3. Copy these **three** values:
+   - **Cloud name** — a short word/slug (e.g. `dxample123`)
+   - **API Key** — a long number
+   - **API Secret** — click the eye/reveal icon to show it, then copy
+4. Put them where your install reads config:
+   - **Local / Docker:** in your `.env` file as `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+   - **Render:** in the service's **Environment** tab (see the [Render section](#deploying-to-render-free-hosting) below)
+
+> **You can skip this at first.** Without Cloudinary the site runs fine — you just can't upload images (logos/photos). Add the keys any time and uploads start working immediately; nothing else breaks.
+
+> **Tip:** The API Secret is sensitive — treat it like a password. Never commit it to a public repo (your `.env` is already git-ignored).
 
 ---
 
@@ -159,20 +168,61 @@ Visit [http://localhost:8000/setup/](http://localhost:8000/setup/) on first run.
 
 ## Deploying to Render (free hosting)
 
-Render hosts your site on a free `.onrender.com` subdomain with a managed PostgreSQL database.
+Render hosts your site for free on a `your-name.onrender.com` subdomain with a managed PostgreSQL database. The included `render.yaml` sets almost everything up automatically — you only have to paste in your Cloudinary keys.
 
-1. Push this code to a **GitHub** or **GitLab** repository (private is fine)
-2. Create a free account at **[render.com](https://render.com)**
-3. In Render: **New → Blueprint** → connect your repository
-4. Render reads `render.yaml` and creates the web service and database automatically
-5. In the Render dashboard, add these environment variables manually:
+### Step 1 — Put the code in a Git repository
+
+Render deploys from a Git repo, so the unzipped folder needs to live on **GitHub** (free; a private repo is fine).
+
+**Easiest (no command line) — GitHub Desktop:**
+1. Install **[GitHub Desktop](https://desktop.github.com/)** and sign in (create a free GitHub account if needed).
+2. **File → Add Local Repository →** choose the unzipped `flexible_website` folder → click **create a repository** when prompted → **Create Repository**.
+3. Click **Publish repository** (keep "Keep this code private" checked) → done.
+
+**Or with the command line:**
+```bash
+cd flexible_website
+git init && git add . && git commit -m "Initial commit"
+# create an empty repo at github.com/new, then:
+git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPO.git
+git branch -M main
+git push -u origin main
+```
+
+### Step 2 — Create the Render services from the blueprint
+
+1. Create a free account at **[render.com](https://render.com)** and connect your GitHub.
+2. In Render click **New → Blueprint**.
+3. Select the repository you just pushed. Render detects **`render.yaml`** and shows the resources it will create: a **web service** (`cbl`) and a **free PostgreSQL database** (`cbl-db`).
+4. Click **Apply**. Render auto-generates the secret key, wires up the database, and sets `DEBUG`, `ALLOWED_HOSTS`, `DJANGO_SETTINGS_MODULE`, and `CSRF_TRUSTED_ORIGINS` for you — no manual entry needed for those.
+
+### Step 3 — Add your Cloudinary keys
+
+The blueprint intentionally leaves the three Cloudinary values blank for you to fill in (they're your private keys):
+
+1. In Render, open your **`cbl`** web service → **Environment** (left sidebar).
+2. Set values for these three keys (from [Cloudinary](#1-cloudinary--image-uploads-free) above):
    - `CLOUDINARY_CLOUD_NAME`
    - `CLOUDINARY_API_KEY`
    - `CLOUDINARY_API_SECRET`
-6. Wait 3–5 minutes for the first deploy
-7. Visit `your-site.onrender.com/setup/` to finish setup
+3. Click **Save Changes** — Render redeploys automatically.
 
-> **Free tier note:** Render's free web service spins down after 15 minutes of inactivity. The first request after spin-down takes ~30 seconds. Upgrade to a paid plan ($7/month) to keep it always-on.
+> You can deploy without these to see the site first; just add them before you upload any images.
+
+### Step 4 — Finish setup
+
+1. Wait ~3–5 minutes for the first build (watch the **Logs** tab; it runs install → collectstatic → migrate).
+2. When it's **Live**, open **`https://your-name.onrender.com/setup/`** and complete the [first-time setup](#first-time-site-setup).
+
+### Updating your live site
+
+Push changes to your GitHub repo's `main` branch (GitHub Desktop: **Commit** then **Push origin**). Render redeploys automatically on every push.
+
+### Notes
+
+- **Free tier sleeps:** the free web service spins down after ~15 min of inactivity, so the first visit after idle takes ~30 seconds to wake. Upgrade to the **Starter plan ($7/mo)** to keep it always-on.
+- **Free database expires:** Render's free PostgreSQL is removed after 90 days. For a real launch, upgrade the database to a paid plan so your content persists.
+- **Custom domain:** in the web service → **Settings → Custom Domains**, add your domain and follow the DNS instructions. Then add it to `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` in the **Environment** tab (e.g. `ALLOWED_HOSTS=.onrender.com,mysite.com`).
 
 ---
 
