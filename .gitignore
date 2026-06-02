@@ -65,6 +65,16 @@ secrets.json
 *.zip
 *.tar.gz
 *.tar.bz2
-*.tar.xz*.tmp.*
+*.tar.xz
 demo.sqlite3
 *.tmp.*
+
+# Design sources & dev captures — kept locally, never shipped in the package.
+# Logo working files (web-ready brand_logo.png stays tracked).
+static/cad/
+static/pdf/
+static/images/*.EMF
+static/images/brand_logo.jpg
+static/images/Screenshot*.png
+static/images/launch_campaign.png
+static/images/signup_funnels.png

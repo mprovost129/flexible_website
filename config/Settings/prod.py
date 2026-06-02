@@ -14,9 +14,10 @@ STORAGES = {
     'default': {
         'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
     },
-    # Static files are served by WhiteNoise with compression + fingerprinting.
+    # Static files are minified, then served by WhiteNoise with compression +
+    # fingerprinting. (Dev keeps the original readable files.)
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        'BACKEND': 'core.storage.MinifyingManifestStaticFilesStorage',
     },
 }
 

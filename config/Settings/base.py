@@ -27,8 +27,14 @@ INSTALLED_APPS = [
     # Local
     'users',
     'core',
-    'sandbox',   # Interactive demo (excluded from git archive via .gitattributes)
 ]
+
+# The interactive sandbox demo is excluded from the distributed package
+# (.gitattributes export-ignore). Enable it only when its code is present, so a
+# shipped copy without the sandbox folder still boots cleanly.
+import importlib.util as _importlib_util
+if _importlib_util.find_spec('sandbox') is not None:
+    INSTALLED_APPS.append('sandbox')
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',

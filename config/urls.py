@@ -9,9 +9,16 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('users.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('', include('sandbox.urls')),  # must precede core so sandbox/ isn't swallowed by <slug:slug>
-    path('', include('core.urls')),
 ]
+
+# The sandbox demo is optional and excluded from the distributed package.
+# Include its routes only when present, and before core so /sandbox/ isn't
+# swallowed by core's generic <slug:slug> page route.
+with contextlib.suppress(ImportError):
+    import sandbox.urls  # noqa: F401  -- presence check
+    urlpatterns += [path('', include('sandbox.urls'))]
+
+urlpatterns += [path('', include('core.urls'))]
 
 if settings.DEBUG:
     with contextlib.suppress(ImportError):
