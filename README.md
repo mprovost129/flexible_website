@@ -333,8 +333,28 @@ All variables go in your `.env` file (local) or your hosting provider's environm
 | `DEFAULT_FROM_EMAIL` | No | From address for outgoing email |
 | `REDIS_URL` | No | Redis connection string for production caching |
 | `DJANGO_LOG_LEVEL` | No | Default `INFO` |
+| `LICENSE_KEY` | Yes† | Your purchase license key (from your receipt). See License below. |
+| `LICENSE_CHECK_URL` | — | Seller-set license server. Blank = license check disabled. |
+| `LICENSE_PING_ENABLED` | No | `True`/`False`. Default `True`. |
 
 \* Required for image uploads. Everything else still works without these.
+† Required by the license terms; the software runs without it but doing so is a license breach.
+
+---
+
+## License
+
+This software is sold under a **single-site license** — one purchase covers one
+live production website. See **[LICENSE.md](LICENSE.md)** for the full terms,
+including agency / multi-site options.
+
+**License validation (disclosure):** to enforce the one-site limit, the software
+performs a daily, **report-only** license check. At most once per day it sends
+your license key, the site's domain, a random install ID, the site name, and the
+software version to the license server. **It never sends your visitors' data,
+your customers' information, or any of your content**, and it never disables or
+slows your site. You can read exactly what is sent in [`core/licensing.py`](core/licensing.py).
+Set `LICENSE_KEY` to the key from your receipt.
 
 ---
 

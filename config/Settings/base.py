@@ -48,10 +48,21 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'core.middleware.FirstRunSetupMiddleware',
+    'core.middleware.LicensePingMiddleware',
     'axes.middleware.AxesMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# ---------------------------------------------------------------------------
+# License validation (telemetry) — see core/licensing.py and LICENSE.md.
+# Report-only, throttled to once/day, sends minimal data (no PII/content).
+# Inactive until LICENSE_CHECK_URL is set. Buyers set LICENSE_KEY to their
+# purchased key; the seller sets LICENSE_CHECK_URL to their license server.
+# ---------------------------------------------------------------------------
+LICENSE_KEY = os.environ.get('LICENSE_KEY', '')
+LICENSE_CHECK_URL = os.environ.get('LICENSE_CHECK_URL', '')
+LICENSE_PING_ENABLED = os.environ.get('LICENSE_PING_ENABLED', 'True') == 'True'
 
 # Axes - brute-force login protection
 AXES_FAILURE_LIMIT = 5

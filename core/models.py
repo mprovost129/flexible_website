@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from cloudinary.models import CloudinaryField
 
@@ -169,6 +171,9 @@ class Site(models.Model):
     theme = models.ForeignKey(Theme, on_delete=models.SET_NULL, null=True, blank=True, related_name='sites')
     onboarding_complete = models.BooleanField(default=False)
     active_pack_key = models.CharField(max_length=50, blank=True, default='')
+    # Anonymous, randomly-generated identifier for this install. Used only by
+    # the license validation check (see core/licensing.py); contains no PII.
+    install_id = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -28,3 +28,22 @@ class FirstRunSetupMiddleware:
                 if not path.startswith(allowed_prefixes):
                     return redirect(reverse('core:setup_wizard'))
         return self.get_response(request)
+
+
+class LicensePingMiddleware:
+    """Fires the (disclosed, throttled, report-only) license check.
+
+    See core/licensing.py for exactly what is sent. No-op unless
+    LICENSE_CHECK_URL is configured. Never blocks the response.
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        try:
+            from .licensing import maybe_ping
+            maybe_ping(request)
+        except Exception:
+            pass
+        return response
