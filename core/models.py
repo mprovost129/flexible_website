@@ -482,6 +482,9 @@ class SectionItem(models.Model):
     icon = models.CharField(max_length=50, blank=True)
     link_url = models.CharField(max_length=500, blank=True)
     link_text = models.CharField(max_length=100, blank=True)
+    # Optional render kind for sections that mix item types (hero / CTA):
+    # '' (auto/legacy), 'button', 'text', or 'heading'.
+    item_type = models.CharField(max_length=20, blank=True, default='')
     link_style = models.CharField(
         max_length=80, blank=True, default='',
         help_text='Bootstrap button class, e.g. btn-primary or btn-outline-secondary. Leave blank for default.',

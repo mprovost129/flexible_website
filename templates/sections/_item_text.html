@@ -1,0 +1,4 @@
+{% comment %}A text-kind item (used in hero / CTA sections). Expects `item`.{% endcomment %}
+<div class="w-100 edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+    <p class="mb-0 edit-content" data-edit-value="{{ item.text }}">{{ item.text|safe }}</p>
+</div>

@@ -20,6 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from core.edit_views import (
     ADDABLE_SECTION_TYPES,
+    ITEM_KIND_DEFAULTS,
     ITEM_TEXT_FIELDS,
     RICH_TEXT_FIELDS,
     SECTION_DEFAULTS,
@@ -796,8 +797,11 @@ def api_add_item(request, section_pk):
         return JsonResponse({'error': 'Section not found'}, status=404)
     last = section.items.order_by('-order').first()
     order = (last.order + 1) if last else 0
-    if section.section_type in ('hero', 'cta_banner'):
-        SectionItem.objects.create(section=section, order=order, link_text='New Button', link_url='#')
+    kind = (request.POST.get('item_type') or '').strip()
+    if kind in ITEM_KIND_DEFAULTS:
+        SectionItem.objects.create(section=section, order=order, item_type=kind, **ITEM_KIND_DEFAULTS[kind])
+    elif section.section_type in ('hero', 'cta_banner'):
+        SectionItem.objects.create(section=section, order=order, item_type='button', link_text='New Button', link_url='#')
     else:
         SectionItem.objects.create(section=section, order=order, title='New item', text='Describe this item.')
     section.available_layouts = get_available_layouts(section.section_type)

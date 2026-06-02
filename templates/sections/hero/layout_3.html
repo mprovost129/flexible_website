@@ -79,7 +79,10 @@
                 {% with items=section.items.all %}
                 {% if items %}
                 <div class="d-flex flex-wrap justify-content-center gap-3 mt-5">
-                    {% for item in items %}{% if item.link_text %}
+                    {% for item in items %}
+                        {% if item.item_type == 'heading' %}{% include "sections/_item_heading.html" %}
+                        {% elif item.item_type == 'text' %}{% include "sections/_item_text.html" %}
+                        {% elif item.link_text %}
                         <a href="{{ item.link_url|default:'#' }}"
                            class="btn {{ item.link_config|btn_size }} {% if item.link_style %}{{ item.link_style }}{% elif forloop.first %}{{ section.config.cta_style|default:'btn-light' }}{% else %}{{ section.config.cta_style_2|default:'btn-outline-light' }}{% endif %} {{ item.link_config|btn_extra_classes }} edit-wrap"
                            data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text"

@@ -194,17 +194,22 @@
     var toolbar = document.createElement('div');
     toolbar.className = 'section-toolbar';
 
-    // Add item (only meaningful for item-based sections; harmless otherwise)
-    var addBtn = document.createElement('button');
-    addBtn.type = 'button';
-    addBtn.className = 'btn btn-sm btn-success section-add-item-btn';
-    addBtn.innerHTML = '<i class="bi bi-plus-lg"></i> Add item';
-    addBtn.title = 'Add an item to this section';
-    addBtn.addEventListener('click', function () {
-      postJson('/edit/section/' + sectionId + '/item/add/')
-        .then(function (data) { swapSectionHtml(wrap, sectionId, data.html); })
-        .catch(function (err) { alert('Could not add item: ' + err.message); });
-    });
+    // Add item. Hero/CTA sections can hold different element kinds, so they get
+    // a button per kind; other item sections get a single "Add item".
+    var sType = wrap.dataset.sectionType;
+    function makeAddBtn(label, kind) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn btn-sm btn-success section-add-item-btn';
+      b.innerHTML = '<i class="bi bi-plus-lg"></i> ' + label;
+      b.title = 'Add ' + label.toLowerCase();
+      b.addEventListener('click', function () {
+        postJson('/edit/section/' + sectionId + '/item/add/', kind ? { item_type: kind } : null)
+          .then(function (data) { swapSectionHtml(wrap, sectionId, data.html); })
+          .catch(function (err) { alert('Could not add item: ' + err.message); });
+      });
+      return b;
+    }
 
     // Settings (gear): opens the config popover
     var gearBtn = document.createElement('button');
@@ -276,8 +281,12 @@
     });
 
     // "Add item" only applies to sections that render items.
-    if (['text_block', 'video_embed'].indexOf(wrap.dataset.sectionType) === -1) {
-      toolbar.appendChild(addBtn);
+    if (sType === 'hero' || sType === 'cta_banner') {
+      toolbar.appendChild(makeAddBtn('Button', 'button'));
+      toolbar.appendChild(makeAddBtn('Text', 'text'));
+      toolbar.appendChild(makeAddBtn('Heading', 'heading'));
+    } else if (['text_block', 'video_embed'].indexOf(sType) === -1) {
+      toolbar.appendChild(makeAddBtn('Add item', ''));
     }
     toolbar.appendChild(gearBtn);
     toolbar.appendChild(visBtn);

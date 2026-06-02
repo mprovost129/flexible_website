@@ -79,6 +79,14 @@ def _cloudinary_upload_or_error(file_obj, **kwargs):
 SECTION_TEXT_FIELDS = {'heading', 'subheading'}
 ITEM_TEXT_FIELDS = {'title', 'text', 'icon', 'link_url', 'link_text', 'link_style'}
 
+# Item kinds offered by the "Add item" picker on hero / CTA sections. Each maps
+# to the field defaults that make the new item render right away.
+ITEM_KIND_DEFAULTS = {
+    'button':  {'link_text': 'New Button', 'link_url': '#'},
+    'text':    {'text': 'New text — click to edit.'},
+    'heading': {'title': 'New heading'},
+}
+
 VALID_LINK_STYLES = {
     '', 'btn-primary', 'btn-secondary', 'btn-success', 'btn-danger',
     'btn-warning', 'btn-info', 'btn-light', 'btn-dark', 'btn-link',
@@ -656,12 +664,17 @@ def add_item(request, section_pk):
     last = section.items.order_by('-order').first()
     next_order = (last.order + 1) if last else 0
 
-    # New items must render immediately, so seed visible defaults per type:
-    # hero/CTA sections render items as buttons (need link_text), everything
-    # else renders a title.
-    if section.section_type in ('hero', 'cta_banner'):
+    # Optional explicit item kind (hero/CTA "Add item" picker). Each kind seeds
+    # the fields it renders from so the new item is visible immediately.
+    kind = (request.POST.get('item_type') or '').strip()
+    if kind in ITEM_KIND_DEFAULTS:
         item = SectionItem.objects.create(
-            section=section, order=next_order, link_text='New Button', link_url='#',
+            section=section, order=next_order, item_type=kind, **ITEM_KIND_DEFAULTS[kind],
+        )
+    elif section.section_type in ('hero', 'cta_banner'):
+        item = SectionItem.objects.create(
+            section=section, order=next_order, item_type='button',
+            link_text='New Button', link_url='#',
         )
     else:
         item = SectionItem.objects.create(
