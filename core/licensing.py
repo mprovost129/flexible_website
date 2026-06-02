@@ -19,6 +19,8 @@ Buyers can read this file to see exactly what leaves their server.
 
 import json
 import threading
+import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
 
@@ -28,6 +30,57 @@ from django.core.cache import cache
 _THROTTLE_KEY = 'cbl_license_ping'
 _THROTTLE_SECONDS = 24 * 60 * 60  # once per day
 _TIMEOUT_SECONDS = 5
+
+_GUMROAD_VERIFY_URL = 'https://api.gumroad.com/v2/licenses/verify'
+
+
+def verify_license_key(key, increment=False):
+    """Verify a license key against Gumroad's public license API.
+
+    Returns one of:
+      ('valid',   message)  -- real, active purchase
+      ('invalid', message)  -- key not found / refunded / disputed
+      ('error',   message)  -- couldn't verify (not configured, or network/Gumroad
+                               unreachable). Callers should FAIL OPEN on 'error' so
+                               a Gumroad outage never blocks a legitimate buyer.
+
+    `increment=False` checks without bumping Gumroad's per-key uses counter
+    (so retried setups don't inflate it).
+    """
+    from django.conf import settings
+
+    product_id = (getattr(settings, 'GUMROAD_PRODUCT_ID', '') or '').strip()
+    key = (key or '').strip()
+    if not product_id or not key:
+        return ('error', 'verification not configured')
+
+    data = urllib.parse.urlencode({
+        'product_id': product_id,
+        'license_key': key,
+        'increment_uses_count': 'true' if increment else 'false',
+    }).encode('utf-8')
+    req = urllib.request.Request(
+        _GUMROAD_VERIFY_URL, data=data, method='POST',
+        headers={'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'CBL-License/1'},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            payload = json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        # Gumroad returns 404 + {"success": false, ...} for an unknown key.
+        try:
+            payload = json.loads(e.read().decode('utf-8'))
+        except Exception:
+            return ('error', f'Gumroad returned HTTP {e.code}')
+    except Exception:
+        return ('error', 'could not reach Gumroad')
+
+    if not payload.get('success'):
+        return ('invalid', payload.get('message') or 'license key not found')
+    purchase = payload.get('purchase') or {}
+    if purchase.get('refunded') or purchase.get('chargebacked') or purchase.get('disputed'):
+        return ('invalid', 'this purchase was refunded or disputed')
+    return ('valid', 'verified')
 
 
 def maybe_ping(request):

@@ -336,6 +336,7 @@ All variables go in your `.env` file (local) or your hosting provider's environm
 | `LICENSE_KEY` | Yes† | Your purchase license key (from your receipt). See License below. |
 | `LICENSE_CHECK_URL` | — | Seller-set license server. Blank = license check disabled. |
 | `LICENSE_PING_ENABLED` | No | `True`/`False`. Default `True`. |
+| `GUMROAD_PRODUCT_ID` | — | Seller-set. Used to verify license keys at setup; ships with a default. |
 
 \* Required for image uploads. Everything else still works without these.
 † Required by the license terms; the software runs without it but doing so is a license breach.

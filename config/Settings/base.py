@@ -65,6 +65,9 @@ LICENSE_KEY = os.environ.get('LICENSE_KEY', '')
 # host (Render, Docker, VPS). Overridable via env.
 LICENSE_CHECK_URL = os.environ.get('LICENSE_CHECK_URL', 'https://cbl-license-server.onrender.com/api/ping')
 LICENSE_PING_ENABLED = os.environ.get('LICENSE_PING_ENABLED', 'True') == 'True'
+# Gumroad product ID — used to verify a buyer's license key at setup against
+# Gumroad's public license API. Not secret. Overridable via env.
+GUMROAD_PRODUCT_ID = os.environ.get('GUMROAD_PRODUCT_ID', 'AkNPnlSFh9DrPJcmNtWWIA==')
 
 # Axes - brute-force login protection
 AXES_FAILURE_LIMIT = 5

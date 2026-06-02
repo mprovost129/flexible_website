@@ -54,6 +54,14 @@ def setup_wizard(request):
             errors.append('The two passwords do not match.')
         if not license_key:
             errors.append('A license key is required. You can find it in your purchase receipt.')
+        else:
+            from .licensing import verify_license_key
+            verdict, msg = verify_license_key(license_key)
+            # Block only a definitive 'invalid'. On 'error' (Gumroad unreachable
+            # or not configured) we fail open so an outage never blocks a buyer.
+            if verdict == 'invalid':
+                errors.append(f'That license key could not be verified ({msg}). '
+                              'Check the key from your purchase receipt and try again.')
 
         if errors:
             for e in errors:
