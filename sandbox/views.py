@@ -795,11 +795,11 @@ def api_add_item(request, section_pk):
     if not section:
         return JsonResponse({'error': 'Section not found'}, status=404)
     last = section.items.order_by('-order').first()
-    SectionItem.objects.create(
-        section=section,
-        order=(last.order + 1) if last else 0,
-        title='New item', text='',
-    )
+    order = (last.order + 1) if last else 0
+    if section.section_type in ('hero', 'cta_banner'):
+        SectionItem.objects.create(section=section, order=order, link_text='New Button', link_url='#')
+    else:
+        SectionItem.objects.create(section=section, order=order, title='New item', text='Describe this item.')
     section.available_layouts = get_available_layouts(section.section_type)
     html = _render_section_html(section, request)
     return JsonResponse({'success': True, 'html': html})

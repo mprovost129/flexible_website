@@ -656,12 +656,17 @@ def add_item(request, section_pk):
     last = section.items.order_by('-order').first()
     next_order = (last.order + 1) if last else 0
 
-    item = SectionItem.objects.create(
-        section=section,
-        order=next_order,
-        title='New item',
-        text='',
-    )
+    # New items must render immediately, so seed visible defaults per type:
+    # hero/CTA sections render items as buttons (need link_text), everything
+    # else renders a title.
+    if section.section_type in ('hero', 'cta_banner'):
+        item = SectionItem.objects.create(
+            section=section, order=next_order, link_text='New Button', link_url='#',
+        )
+    else:
+        item = SectionItem.objects.create(
+            section=section, order=next_order, title='New item', text='Describe this item.',
+        )
 
     # Return the freshly rendered section so the new item appears in-place.
     html = _render_section_html(section, request)

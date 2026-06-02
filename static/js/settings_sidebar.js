@@ -517,7 +517,9 @@
       '</div>' +
       '<div class="edit-sidebar-section">' +
         '<h3>Structure</h3>' +
-        '<button type="button" class="btn btn-sm btn-outline-success w-100 mb-2 sidebar-add-item">Add item</button>' +
+        (['text_block', 'video_embed'].indexOf(sectionType) === -1
+          ? '<button type="button" class="btn btn-sm btn-outline-success w-100 mb-2 sidebar-add-item">Add item</button>'
+          : '') +
         '<button type="button" class="btn btn-sm btn-outline-danger w-100 sidebar-delete-section">Delete section</button>' +
       '</div>';
   }

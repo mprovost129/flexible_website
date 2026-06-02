@@ -275,7 +275,10 @@
         .catch(function (err) { alert('Could not delete section: ' + err.message); });
     });
 
-    toolbar.appendChild(addBtn);
+    // "Add item" only applies to sections that render items.
+    if (['text_block', 'video_embed'].indexOf(wrap.dataset.sectionType) === -1) {
+      toolbar.appendChild(addBtn);
+    }
     toolbar.appendChild(gearBtn);
     toolbar.appendChild(visBtn);
     toolbar.appendChild(delBtn);
