@@ -86,5 +86,5 @@ must stop using and delete all copies of the Software.
 
 ---
 
-© <YEAR> <YOUR NAME / COMPANY>. All rights reserved.
-Questions about licensing (including agency / multi-site licenses): <YOUR EMAIL>.
+© <2026> <CBL>. All rights reserved.
+Questions about licensing (including agency / multi-site licenses): <codewithmichael26@gmail.com>.
