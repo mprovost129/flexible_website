@@ -52,6 +52,8 @@ def setup_wizard(request):
             errors.append('Password must be at least 8 characters.')
         if password != password2:
             errors.append('The two passwords do not match.')
+        if not license_key:
+            errors.append('A license key is required. You can find it in your purchase receipt.')
 
         if errors:
             for e in errors:
