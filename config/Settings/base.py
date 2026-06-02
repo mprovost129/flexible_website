@@ -61,7 +61,9 @@ MIDDLEWARE = [
 # purchased key; the seller sets LICENSE_CHECK_URL to their license server.
 # ---------------------------------------------------------------------------
 LICENSE_KEY = os.environ.get('LICENSE_KEY', '')
-LICENSE_CHECK_URL = os.environ.get('LICENSE_CHECK_URL', '')
+# Default points at our license server so every install reports in regardless of
+# host (Render, Docker, VPS). Overridable via env.
+LICENSE_CHECK_URL = os.environ.get('LICENSE_CHECK_URL', 'https://cbl-license-server.onrender.com/api/ping')
 LICENSE_PING_ENABLED = os.environ.get('LICENSE_PING_ENABLED', 'True') == 'True'
 
 # Axes - brute-force login protection
