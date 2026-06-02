@@ -140,6 +140,19 @@ class SiteSettingsForm(BootstrapModelForm):
             cleaned[name] = val
         return cleaned
 
+    def clean_license_key(self):
+        key = (self.cleaned_data.get('license_key') or '').strip()
+        # Verify only when changed to a new, non-empty value (don't re-verify an
+        # unchanged key or block clearing it). Block only a definitive 'invalid';
+        # fail open on network/Gumroad errors.
+        current = (getattr(self.instance, 'license_key', '') or '')
+        if key and key != current:
+            from .licensing import verify_license_key
+            verdict, msg = verify_license_key(key)
+            if verdict == 'invalid':
+                raise forms.ValidationError(f'That license key could not be verified ({msg}).')
+        return key
+
     def save(self, commit=True):
         site = super().save(commit=False)
         cfg = dict(site.navbar_config_merged if hasattr(site, 'navbar_config_merged') else {})
