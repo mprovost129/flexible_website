@@ -6,5 +6,6 @@ sandbox/                    export-ignore
 templates/sandbox/          export-ignore
 static/sandbox/             export-ignore
 
-# Seller-only docs — never ship to buyers
+# Seller-only — never ship to buyers
 SELLER_NOTES.md             export-ignore
+license_server/             export-ignore
