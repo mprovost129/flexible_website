@@ -276,11 +276,12 @@ main {
     border-color: color-mix(in srgb, var(--cbl-chrome-text, #fff) 22%, transparent) !important;
 }
 
-nav {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
+/* NOTE: A bare `nav { display:flex }` rule used to live here. It leaked onto
+   every <nav> on the site (public navbar, dashboard sidebar, blog pagination)
+   and forced the dashboard sidebar links into a horizontal row. It was removed
+   because the real navs supply their own layout: the public navbar via
+   Bootstrap's .navbar, and blog pagination via .d-flex. Style specific navs by
+   class, never the bare element. */
 
 /* =============================================================================
    Messages - map Django message tags to Bootstrap alert colors
