@@ -78,7 +78,7 @@ class SiteSettingsForm(BootstrapModelForm):
             'show_nav_profile', 'nav_auth_slot', 'nav_cta_label', 'nav_cta_url', 'nav_cta_slot',
             'footer_variant', 'theme', 'copyright_text', 'facebook_url', 'instagram_url', 'twitter_url',
             'linkedin_url', 'newsletter_enabled', 'newsletter_heading', 'newsletter_blurb',
-            'domain', 'robots_txt', 'og_image',
+            'domain', 'robots_txt', 'og_image', 'license_key',
         ]
         widgets = {
             'robots_txt': forms.Textarea(attrs={'rows': 8}),
@@ -103,6 +103,7 @@ class SiteSettingsForm(BootstrapModelForm):
             'nav_cta_label': 'CTA button label',
             'nav_cta_url': 'CTA button URL',
             'nav_cta_slot': 'CTA button position',
+            'license_key': 'License key',
         }
 
     COLOR_RE = re.compile(r'^\s*(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgba?\([^)]+\)|hsla?\([^)]+\))\s*$')

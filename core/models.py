@@ -174,6 +174,12 @@ class Site(models.Model):
     # Anonymous, randomly-generated identifier for this install. Used only by
     # the license validation check (see core/licensing.py); contains no PII.
     install_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    # The buyer's purchased license key (from their receipt). Sent with the
+    # license check so the seller can validate it. See core/licensing.py.
+    license_key = models.CharField(
+        max_length=200, blank=True, default='',
+        help_text='Your purchase license key (from your receipt).',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

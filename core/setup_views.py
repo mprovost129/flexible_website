@@ -43,6 +43,7 @@ def setup_wizard(request):
         password2 = request.POST.get('password2') or ''
         site_name = (request.POST.get('site_name') or '').strip() or 'My Site'
         pack_key = (request.POST.get('pack') or '').strip()
+        license_key = (request.POST.get('license_key') or '').strip()
 
         errors = []
         if not email or '@' not in email:
@@ -60,6 +61,7 @@ def setup_wizard(request):
                 'email': email,
                 'site_name': site_name,
                 'selected_pack': pack_key,
+                'license_key': license_key,
             })
 
         # Create the admin account.
@@ -80,6 +82,7 @@ def setup_wizard(request):
             site.refresh_from_db()
             site.name = site_name
 
+        site.license_key = license_key
         site.onboarding_complete = True
         site.save()
 
@@ -113,6 +116,7 @@ def setup_wizard(request):
         'email': '',
         'site_name': 'My Site',
         'selected_pack': '',
+        'license_key': '',
     })
 
 

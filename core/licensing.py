@@ -57,18 +57,22 @@ def _payload(host):
     from .context_processors import RELEASE
     import django
 
-    install_id, site_name = '', ''
+    install_id, site_name, license_key = '', '', ''
     try:
         from .models import Site
-        site = Site.objects.only('install_id', 'name').first()
+        site = Site.objects.only('install_id', 'name', 'license_key').first()
         if site:
             install_id = str(site.install_id)
             site_name = site.name
+            license_key = (site.license_key or '').strip()
     except Exception:
         pass
 
+    # Prefer the key the buyer entered (DB); fall back to an env-provided one.
+    license_key = license_key or (getattr(settings, 'LICENSE_KEY', '') or '').strip()
+
     return {
-        'license_key':    (getattr(settings, 'LICENSE_KEY', '') or '').strip(),
+        'license_key':    license_key,
         'domain':         host,
         'install_id':     install_id,
         'site_name':      site_name,
