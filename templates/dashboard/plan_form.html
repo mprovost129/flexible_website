@@ -1,0 +1,137 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}{{ title }} | Plans | CBL{% endblock %}
+{% block heading %}{{ title }}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+    <div class="d-flex gap-3 align-items-start flex-wrap flex-lg-nowrap">
+
+        <div class="flex-grow-1" style="min-width:0">
+            {# Title / slug / description #}
+            <div class="cbl-card p-3 mb-3">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ form.title.label }}</label>
+                    {{ form.title }}
+                    <div class="form-text">{{ form.title.help_text }}</div>
+                    {% if form.title.errors %}<div class="text-danger small">{{ form.title.errors }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">{{ form.slug.label }}</label>
+                    {{ form.slug }}
+                    <div class="form-text">{{ form.slug.help_text }}</div>
+                    {% if form.slug.errors %}<div class="text-danger small">{{ form.slug.errors }}</div>{% endif %}
+                </div>
+                <div class="mb-0">
+                    <label class="form-label fw-semibold">Description</label>
+                    {{ form.description }}
+                </div>
+            </div>
+
+            {# Specs: owner-defined key/value rows #}
+            <div class="cbl-card p-3 mb-3">
+                <h3 class="h6 fw-bold mb-1">Specs</h3>
+                <p class="text-muted small mb-2">Add any detail as a label + value — e.g. <em>Sq Ft → 2,400</em>, <em>Beds → 3</em>, <em>Job # → J-1042</em>.</p>
+                <div id="spec-rows">
+                    {% for row in plan.spec_rows %}
+                    <div class="d-flex gap-2 mb-2 spec-row">
+                        <input type="text" name="spec_key" value="{{ row.key }}" class="form-control" placeholder="Label (e.g. Sq Ft)" style="max-width:40%">
+                        <input type="text" name="spec_value" value="{{ row.value }}" class="form-control" placeholder="Value (e.g. 2,400)">
+                        <button type="button" class="btn btn-outline-danger spec-remove" title="Remove">&times;</button>
+                    </div>
+                    {% endfor %}
+                    {# one empty starter row #}
+                    <div class="d-flex gap-2 mb-2 spec-row">
+                        <input type="text" name="spec_key" class="form-control" placeholder="Label (e.g. Sq Ft)" style="max-width:40%">
+                        <input type="text" name="spec_value" class="form-control" placeholder="Value (e.g. 2,400)">
+                        <button type="button" class="btn btn-outline-danger spec-remove" title="Remove">&times;</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="add-spec-row"><i class="bi bi-plus-lg"></i> Add row</button>
+            </div>
+
+            {# Images #}
+            <div class="cbl-card p-3 mb-3">
+                <h3 class="h6 fw-bold mb-2">Images</h3>
+                {% if plan and plan.images.all %}
+                <div class="row g-2 mb-3">
+                    {% for img in plan.images.all %}
+                    <div class="col-6 col-md-3">
+                        <div class="border rounded p-1 h-100">
+                            <img src="{{ img.image.url }}" alt="" class="img-fluid rounded mb-1" style="height:90px;object-fit:cover;width:100%">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remove_image" value="{{ img.pk }}" id="rm{{ img.pk }}">
+                                <label class="form-check-label small text-danger" for="rm{{ img.pk }}">Remove</label>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <label class="form-label small mb-1">Add images</label>
+                <input type="file" name="new_images" class="form-control" accept="image/*" multiple>
+                <div class="form-text">You can select multiple images at once.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save plan</button>
+                <a href="{{ back_url }}" class="btn btn-outline-secondary">Cancel</a>
+                {% if plan %}
+                <a href="{{ plan.url }}" class="btn btn-outline-secondary ms-auto" target="_blank">View <i class="bi bi-box-arrow-up-right"></i></a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="width:260px;flex-shrink:0">
+            <div class="cbl-card p-3">
+                <h3 class="h6 fw-bold mb-3">Status</h3>
+                <div class="form-check mb-3">{{ form.is_published }}<label class="form-check-label" for="{{ form.is_published.id_for_label }}">{{ form.is_published.label }}</label></div>
+                <label class="form-label small mb-1">Order</label>
+                {{ form.order }}
+                <div class="form-text">Lower numbers show first.</div>
+            </div>
+            {% if plan %}
+            <form method="post" action="{% url 'core:dashboard_plan_duplicate' plan.pk %}" class="mt-3">{% csrf_token %}
+                <button class="btn btn-outline-success w-100"><i class="bi bi-files"></i> Duplicate this plan</button>
+                <div class="form-text">Copies the title, specs, and images into a new draft you can tweak.</div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<script>
+(function () {
+    // Auto-fill slug from title (until the user edits slug)
+    var title = document.getElementById('id_title');
+    var slug = document.getElementById('id_slug');
+    if (title && slug) {
+        title.addEventListener('input', function () {
+            if (slug.dataset.userEdited) return;
+            slug.value = title.value.toLowerCase().trim()
+                .replace(/[^a-z0-9\s-]/g, '').replace(/[\s_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        });
+        slug.addEventListener('input', function () { slug.dataset.userEdited = '1'; });
+    }
+    // Dynamic spec rows
+    var rows = document.getElementById('spec-rows');
+    var addBtn = document.getElementById('add-spec-row');
+    function wireRemove(btn) {
+        btn.addEventListener('click', function () {
+            var all = rows.querySelectorAll('.spec-row');
+            if (all.length > 1) btn.closest('.spec-row').remove();
+            else { btn.closest('.spec-row').querySelectorAll('input').forEach(function (i) { i.value = ''; }); }
+        });
+    }
+    rows.querySelectorAll('.spec-remove').forEach(wireRemove);
+    addBtn.addEventListener('click', function () {
+        var tpl = rows.querySelector('.spec-row');
+        var clone = tpl.cloneNode(true);
+        clone.querySelectorAll('input').forEach(function (i) { i.value = ''; delete i.dataset.userEdited; });
+        rows.appendChild(clone);
+        wireRemove(clone.querySelector('.spec-remove'));
+    });
+})();
+</script>
+{% endblock %}

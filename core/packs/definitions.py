@@ -1157,16 +1157,11 @@ ARCHITECTURE_PACK = {
                     ],
                 },
                 {
-                    'type': 'image_grid',
+                    'type': 'plan_grid',
                     'layout': 'layout_1',
                     'heading': 'Featured Plans & Projects',
                     'subheading': 'A selection of recent designs.',
-                    'config': {'columns_desktop': 3},
-                    'items': [
-                        {'title': 'Modern Farmhouse',  'text': '3 bed · 2.5 bath · 2,400 sq ft'},
-                        {'title': 'Coastal Cottage',   'text': '2 bed · 2 bath · 1,650 sq ft'},
-                        {'title': 'Craftsman Two-Story', 'text': '4 bed · 3 bath · 2,950 sq ft'},
-                    ],
+                    'config': {'columns_desktop': 3, 'plan_count': 6},
                 },
                 {
                     'type': 'feature_list',

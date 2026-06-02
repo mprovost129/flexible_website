@@ -1,0 +1,46 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Plans | CBL{% endblock %}
+{% block heading %}Plans{% endblock %}
+{% block content %}
+<div class="cbl-card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-0">Plans &amp; Projects</h2>
+            <div class="text-muted small">Each plan has a title (use it for a job number or project name), your own spec rows, and images. Duplicate one to start the next.</div>
+        </div>
+        <a href="{% url 'core:dashboard_plan_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Plan</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table cbl-table mb-0">
+            <thead><tr><th>Plan</th><th>Specs</th><th>Images</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            {% for plan in plans %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        {% with img=plan.images.first %}{% if img %}
+                        <img src="{{ img.image.url }}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0">
+                        {% endif %}{% endwith %}
+                        <div><strong>{{ plan.title }}</strong><br><span class="text-muted small">/plans/{{ plan.slug }}/</span></div>
+                    </div>
+                </td>
+                <td class="small text-muted">{{ plan.spec_rows|length }} row{{ plan.spec_rows|length|pluralize }}</td>
+                <td class="small text-muted">{{ plan.images.count }}</td>
+                <td>{% if plan.is_published %}<span class="badge text-bg-success">Published</span>{% else %}<span class="badge text-bg-secondary">Draft</span>{% endif %}</td>
+                <td>
+                    <div class="cbl-actions">
+                        {% if plan.is_published %}<a href="{{ plan.url }}" class="btn btn-sm btn-outline-secondary" target="_blank">View</a>{% endif %}
+                        <a href="{% url 'core:dashboard_plan_edit' plan.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <form method="post" action="{% url 'core:dashboard_plan_duplicate' plan.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-success" title="Make a copy to edit">Duplicate</button></form>
+                        <form method="post" action="{% url 'core:dashboard_plan_delete' plan.pk %}" onsubmit="return confirm('Delete this plan?');" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete</button></form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-muted py-4 text-center">No plans yet. <a href="{% url 'core:dashboard_plan_create' %}">Add your first plan →</a></td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

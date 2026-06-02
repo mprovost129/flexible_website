@@ -467,6 +467,7 @@ ADDABLE_SECTION_TYPES = [
     ('pricing_table', 'Pricing Table'),
     ('recent_posts',  'Recent Blog Posts'),
     ('product_grid',  'Product Grid'),
+    ('plan_grid',     'Plans / Projects Grid'),
 ]
 
 # Sensible starter content per section type so a freshly added section isn't
@@ -549,6 +550,11 @@ SECTION_DEFAULTS = {
     },
     'product_grid': {
         'heading': 'Our Products',
+        'config': {'columns_desktop': 3},
+        'items': [],
+    },
+    'plan_grid': {
+        'heading': 'Plans & Projects',
         'config': {'columns_desktop': 3},
         'items': [],
     },

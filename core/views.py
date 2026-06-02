@@ -12,7 +12,7 @@ from django.views.generic import TemplateView
 import stripe as stripe_lib
 
 from .cart import Cart
-from .models import BlogPost, ContactSubmission, Order, Page, Product, Section, Site
+from .models import BlogPost, ContactSubmission, Order, Page, Plan, Product, Section, Site
 from .site_resolver import get_active_site
 
 
@@ -349,6 +349,31 @@ def checkout_success(request):
 
 def checkout_cancel(request):
     return _shop_render(request, 'shop/checkout_cancel.html', {})
+
+
+# ---------------------------------------------------------------------------
+# Plans catalog (public)
+# ---------------------------------------------------------------------------
+
+def plans_list(request):
+    """Public catalog of published plans."""
+    site = get_active_site(request)
+    is_staff = request.user.is_authenticated and request.user.is_staff
+    qs = Plan.objects.filter(site=site).prefetch_related('images')
+    if not is_staff:
+        qs = qs.filter(is_published=True)
+    return render(request, 'plans/list.html', {'plans': qs})
+
+
+def plan_detail(request, slug):
+    """A single plan's detail page (images + owner-defined specs)."""
+    site = get_active_site(request)
+    is_staff = request.user.is_authenticated and request.user.is_staff
+    qs = Plan.objects.filter(site=site, slug=slug).prefetch_related('images')
+    if not is_staff:
+        qs = qs.filter(is_published=True)
+    plan = get_object_or_404(qs)
+    return render(request, 'plans/detail.html', {'plan': plan})
 
 
 def healthz(request):

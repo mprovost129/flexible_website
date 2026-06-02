@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title_fallback %}Plans | {% if cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-5 fw-bold mb-2">Plans &amp; Projects</h1>
+        </div>
+    </div>
+
+    {% if plans %}
+    <div class="row g-4">
+        {% for plan in plans %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <a href="{{ plan.url }}" class="text-decoration-none text-body d-block h-100">
+                <div class="card h-100 border-0 shadow-sm">
+                    {% with img=plan.images.first %}
+                    {% if img %}
+                    <img src="{{ img.image.url }}" alt="{{ plan.title }}" class="card-img-top" style="height:220px;object-fit:cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:220px">
+                        <i class="bi bi-rulers text-secondary" style="font-size:2.5rem"></i>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    <div class="card-body">
+                        <h2 class="h5 card-title mb-2">{{ plan.title }}</h2>
+                        {% if plan.spec_rows %}
+                        <ul class="list-unstyled small text-body-secondary mb-0">
+                            {% for row in plan.spec_rows|slice:":4" %}
+                            <li><span class="fw-semibold">{{ row.key }}:</span> {{ row.value }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i class="bi bi-rulers text-secondary" style="font-size:3rem"></i>
+        <h2 class="h4 mt-3 mb-2">No plans yet</h2>
+        <p class="text-muted">Check back soon.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

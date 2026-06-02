@@ -1,0 +1,60 @@
+{% load core_extras %}
+{% get_plans section.config.plan_count|default:6 as plans %}
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+
+        {% if section.heading %}
+        <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+            <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+        </div>
+        {% endif %}
+        {% if section.subheading %}
+        <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+            <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|safe }}</p>
+        </div>
+        {% endif %}
+
+        {% if plans %}
+        <div class="row g-4">
+            {% for plan in plans %}
+            <div class="{{ section.bootstrap_col_class }}">
+                <a href="{{ plan.url }}" class="text-decoration-none text-body d-block h-100">
+                    <div class="card h-100 border-0 shadow-sm">
+                        {% with img=plan.images.first %}
+                        {% if img %}
+                        <img src="{{ img.image.url }}" alt="{{ plan.title }}" class="card-img-top" style="height:200px;object-fit:cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:200px">
+                            <i class="bi bi-rulers text-secondary" style="font-size:2.5rem"></i>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        <div class="card-body">
+                            <h3 class="h5 card-title mb-2">{{ plan.title }}</h3>
+                            {% if plan.spec_rows %}
+                            <ul class="list-unstyled small text-body-secondary mb-0">
+                                {% for row in plan.spec_rows|slice:":3" %}
+                                <li><span class="fw-semibold">{{ row.key }}:</span> {{ row.value }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="/plans/" class="btn btn-outline-primary">View all plans</a>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-rulers d-block mb-2" style="font-size:2.5rem"></i>
+            <p class="mb-1 fw-semibold">No plans yet.</p>
+            <p class="small"><a href="/cbl/plans/add/">Add your first plan</a> in the dashboard.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</section>

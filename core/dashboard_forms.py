@@ -1,7 +1,7 @@
 from django import forms
 import re
 
-from .models import Banner, BlogPost, FooterColumn, FooterLink, NavLink, Page, Product, Section, Site
+from .models import Banner, BlogPost, FooterColumn, FooterLink, NavLink, Page, Plan, Product, Section, Site
 
 
 class BootstrapModelForm(forms.ModelForm):
@@ -252,6 +252,22 @@ class FooterColumnForm(BootstrapModelForm):
     class Meta:
         model = FooterColumn
         fields = ['heading', 'order', 'is_visible']
+
+
+class PlanForm(BootstrapModelForm):
+    class Meta:
+        model = Plan
+        fields = ['title', 'slug', 'description', 'is_published', 'order']
+        widgets = {'description': forms.Textarea(attrs={'rows': 4})}
+        labels = {
+            'title': 'Plan title / header',
+            'is_published': 'Published (visible on the site)',
+        }
+        help_texts = {
+            'title': 'Used as the header — e.g. a job number or project name.',
+            'slug': 'URL-safe identifier — auto-filled from the title.',
+            'description': 'Optional longer description shown on the plan detail page.',
+        }
 
 
 class BannerForm(BootstrapModelForm):

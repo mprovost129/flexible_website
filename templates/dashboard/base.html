@@ -44,6 +44,7 @@
             <a href="{% url 'core:dashboard_home' %}" class="{% if request.resolver_match.url_name == 'dashboard_home' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
             <a href="{% url 'core:dashboard_pages' %}" class="{% if 'dashboard_page' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-file-earmark-text"></i> Pages</a>
             <a href="{% url 'core:dashboard_blog' %}" class="{% if 'dashboard_blog' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-newspaper"></i> Blog</a>
+            <a href="{% url 'core:dashboard_plans' %}" class="{% if 'dashboard_plan' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-rulers"></i> Plans</a>
             <a href="{% url 'core:dashboard_nav' %}" class="{% if 'dashboard_nav' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-menu-button-wide"></i> Navigation</a>
             <a href="{% url 'core:dashboard_banners' %}" class="{% if 'dashboard_banner' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-megaphone"></i> Banners</a>
             <a href="{% url 'core:dashboard_footer' %}" class="{% if 'dashboard_footer' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-layout-three-columns"></i> Footer</a>

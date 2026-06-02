@@ -395,6 +395,7 @@ class Section(models.Model):
         ('pricing_table', 'Pricing Table'),
         ('recent_posts',  'Recent Blog Posts'),
         ('product_grid',  'Product Grid'),
+        ('plan_grid',     'Plans / Projects Grid'),
     ]
     LAYOUT_CHOICES = [
         ('layout_1', 'Layout 1'),
@@ -689,6 +690,59 @@ class Order(models.Model):
     @property
     def total_display(self):
         return f'${self.total_cents / 100:.2f}'
+
+
+class Plan(models.Model):
+    """A catalog entry (house plan / project).
+
+    Deliberately schema-light: the only fixed text is the title (the owner uses
+    it as a job number or project name). Everything else — sq ft, beds, baths,
+    job #, etc. — is owner-defined key/value pairs in `specs`, so the catalog
+    fits any project type without code changes.
+    """
+    site         = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='plans')
+    title        = models.CharField(max_length=200, help_text='Plan header — e.g. a job number or project name.')
+    slug         = models.SlugField(max_length=200, unique=True)
+    description  = models.TextField(blank=True, help_text='Optional longer description shown on the detail page.')
+    # Owner-defined spec rows: [{"key": "Sq Ft", "value": "2,400"}, ...]
+    specs        = models.JSONField(default=list, blank=True)
+    is_published = models.BooleanField(default=True)
+    order        = models.IntegerField(default=0)
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def url(self):
+        return f'/plans/{self.slug}/'
+
+    @property
+    def spec_rows(self):
+        """Return clean [{key, value}] rows (ignores blanks)."""
+        out = []
+        if isinstance(self.specs, list):
+            for row in self.specs:
+                if isinstance(row, dict) and (row.get('key') or row.get('value')):
+                    out.append({'key': row.get('key', ''), 'value': row.get('value', '')})
+        return out
+
+
+class PlanImage(models.Model):
+    plan       = models.ForeignKey(Plan, on_delete=models.CASCADE, related_name='images')
+    image      = CloudinaryField('image')
+    order      = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return f'Image for {self.plan_id}'
 
 
 class BlogPost(models.Model):

@@ -38,6 +38,7 @@
     ['pricing_table', 'Pricing Table'],
     ['recent_posts', 'Recent Blog Posts'],
     ['product_grid', 'Product Grid'],
+    ['plan_grid', 'Plans / Projects Grid'],
   ];
 
   function getCsrf() {

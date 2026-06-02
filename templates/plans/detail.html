@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}{{ plan.title }} | {% if cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            {% if not plan.is_published %}
+            <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+                <i class="bi bi-eye-slash-fill"></i><span>This plan is a <strong>draft</strong> — only staff can see it.</span>
+            </div>
+            {% endif %}
+
+            <a href="/plans/" class="text-muted small text-decoration-none d-inline-flex align-items-center gap-1 mb-4">
+                <i class="bi bi-arrow-left"></i> All plans
+            </a>
+
+            <div class="row g-4">
+                {# Images #}
+                <div class="col-lg-7">
+                    {% with imgs=plan.images.all %}
+                    {% if imgs %}
+                        {% for img in imgs %}
+                        <img src="{{ img.image.url }}" alt="{{ plan.title }}"
+                             class="img-fluid rounded-3 shadow-sm mb-3 w-100" style="object-fit:cover;">
+                        {% endfor %}
+                    {% else %}
+                        <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="height:340px">
+                            <i class="bi bi-rulers text-secondary" style="font-size:3rem"></i>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+
+                {# Title + specs + description #}
+                <div class="col-lg-5">
+                    <h1 class="h2 fw-bold mb-3">{{ plan.title }}</h1>
+
+                    {% if plan.spec_rows %}
+                    <table class="table table-sm mb-4">
+                        <tbody>
+                            {% for row in plan.spec_rows %}
+                            <tr>
+                                <th class="text-body-secondary fw-semibold" style="width:45%">{{ row.key }}</th>
+                                <td>{{ row.value }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% endif %}
+
+                    {% if plan.description %}
+                    <div class="lh-lg">{{ plan.description|linebreaks }}</div>
+                    {% endif %}
+
+                    <a href="/contact/" class="btn btn-primary mt-3">Inquire about this plan</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

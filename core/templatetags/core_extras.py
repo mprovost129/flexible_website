@@ -78,6 +78,26 @@ def btn_margin_style(config):
 
 
 @register.simple_tag(takes_context=True)
+def get_plans(context, count=6):
+    """Return published plans for the active site (most recent first).
+
+    Usage: {% get_plans 6 as plans %}
+    """
+    from ..models import Plan
+    site = context.get('cms_site')
+    if not site:
+        return []
+    try:
+        count = int(count)
+    except (TypeError, ValueError):
+        count = 6
+    return list(
+        Plan.objects.filter(site=site, is_published=True)
+        .prefetch_related('images')[:count]
+    )
+
+
+@register.simple_tag(takes_context=True)
 def get_products(context):
     """Return all active products for the active site.
 

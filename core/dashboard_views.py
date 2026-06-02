@@ -15,11 +15,15 @@ from .dashboard_forms import (
     FooterLinkForm,
     NavLinkForm,
     PageForm,
+    PlanForm,
     ProductForm,
     SectionForm,
     SiteSettingsForm,
 )
-from .models import Banner, BlogPost, FooterColumn, FooterLink, NavLink, Order, Page, Product, Section, Site
+from .models import (
+    Banner, BlogPost, FooterColumn, FooterLink, NavLink, Order, Page, Plan, PlanImage,
+    Product, Section, Site,
+)
 from .site_resolver import get_active_site
 
 
@@ -598,6 +602,118 @@ def order_list(request):
     site = get_active_site(request)
     orders = Order.objects.filter(site=site).order_by('-created_at')
     return render(request, 'dashboard/order_list.html', _dashboard_context(request, orders=orders))
+
+
+# ---------------------------------------------------------------------------
+# Plans catalog
+# ---------------------------------------------------------------------------
+
+def _save_plan_specs(request, plan):
+    """Assemble owner-defined key/value spec rows from parallel POST arrays."""
+    keys = request.POST.getlist('spec_key')
+    vals = request.POST.getlist('spec_value')
+    specs = []
+    for k, v in zip(keys, vals):
+        k, v = k.strip(), v.strip()
+        if k or v:
+            specs.append({'key': k, 'value': v})
+    plan.specs = specs
+    plan.save(update_fields=['specs'])
+
+
+def _save_plan_images(request, plan):
+    """Remove checked images, then append any newly uploaded ones."""
+    remove_ids = request.POST.getlist('remove_image')
+    if remove_ids:
+        PlanImage.objects.filter(plan=plan, pk__in=remove_ids).delete()
+    files = request.FILES.getlist('new_images')
+    last = plan.images.order_by('-order').first()
+    start = (last.order + 1) if last else 0
+    for i, f in enumerate(files):
+        PlanImage.objects.create(plan=plan, image=f, order=start + i)
+
+
+@staff_required
+def plan_list(request):
+    site = get_active_site(request)
+    plans = Plan.objects.filter(site=site).prefetch_related('images')
+    return render(request, 'dashboard/plan_list.html', _dashboard_context(request, plans=plans))
+
+
+@staff_required
+def plan_create(request):
+    site = get_active_site(request)
+    if request.method == 'POST':
+        form = PlanForm(request.POST)
+        if form.is_valid():
+            plan = form.save(commit=False)
+            plan.site = site
+            plan.save()
+            _save_plan_specs(request, plan)
+            _save_plan_images(request, plan)
+            messages.success(request, f'Plan “{plan.title}” created.')
+            return redirect('core:dashboard_plan_edit', pk=plan.pk)
+    else:
+        form = PlanForm()
+    return render(request, 'dashboard/plan_form.html', _dashboard_context(
+        request, form=form, plan=None, title='New Plan', back_url=reverse('core:dashboard_plans'),
+    ))
+
+
+@staff_required
+def plan_edit(request, pk):
+    site = get_active_site(request)
+    plan = get_object_or_404(Plan, pk=pk, site=site)
+    if request.method == 'POST':
+        form = PlanForm(request.POST, instance=plan)
+        if form.is_valid():
+            form.save()
+            _save_plan_specs(request, plan)
+            _save_plan_images(request, plan)
+            messages.success(request, 'Plan saved.')
+            return redirect('core:dashboard_plan_edit', pk=plan.pk)
+    else:
+        form = PlanForm(instance=plan)
+    return render(request, 'dashboard/plan_form.html', _dashboard_context(
+        request, form=form, plan=plan, title=plan.title, back_url=reverse('core:dashboard_plans'),
+    ))
+
+
+@staff_required
+@require_POST
+def plan_delete(request, pk):
+    site = get_active_site(request)
+    plan = get_object_or_404(Plan, pk=pk, site=site)
+    title = plan.title
+    plan.delete()
+    messages.success(request, f'Plan “{title}” deleted.')
+    return redirect('core:dashboard_plans')
+
+
+@staff_required
+@require_POST
+def plan_duplicate(request, pk):
+    """Clone a plan (title, specs, and image references) so the owner can make
+    the next one by just changing values/images."""
+    site = get_active_site(request)
+    src = get_object_or_404(Plan, pk=pk, site=site)
+    base = f'{src.slug}-copy'
+    slug, i = base, 2
+    while Plan.objects.filter(slug=slug).exists():
+        slug, i = f'{base}-{i}', i + 1
+    clone = Plan.objects.create(
+        site=site,
+        title=f'Copy of {src.title}',
+        slug=slug,
+        description=src.description,
+        specs=list(src.specs or []),
+        is_published=False,
+        order=src.order,
+    )
+    for img in src.images.all():
+        PlanImage.objects.create(plan=clone, image=img.image, order=img.order)
+    messages.success(request, 'Plan duplicated — edit the copy below, then change its images and values.')
+    return redirect('core:dashboard_plan_edit', pk=clone.pk)
 
 
 # ---------------------------------------------------------------------------

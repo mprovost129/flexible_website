@@ -42,6 +42,11 @@ urlpatterns = [
     path('cbl/products/<int:pk>/edit/',               dashboard_views.product_edit,                name='dashboard_product_edit'),
     path('cbl/products/<int:pk>/delete/',             dashboard_views.product_delete,              name='dashboard_product_delete'),
     path('cbl/orders/',                               dashboard_views.order_list,                  name='dashboard_orders'),
+    path('cbl/plans/',                                dashboard_views.plan_list,                   name='dashboard_plans'),
+    path('cbl/plans/add/',                            dashboard_views.plan_create,                 name='dashboard_plan_create'),
+    path('cbl/plans/<int:pk>/edit/',                  dashboard_views.plan_edit,                   name='dashboard_plan_edit'),
+    path('cbl/plans/<int:pk>/delete/',                dashboard_views.plan_delete,                 name='dashboard_plan_delete'),
+    path('cbl/plans/<int:pk>/duplicate/',             dashboard_views.plan_duplicate,              name='dashboard_plan_duplicate'),
     path('cbl/banners/',                              dashboard_views.banner_list,                 name='dashboard_banners'),
     path('cbl/banners/add/',                          dashboard_views.banner_create,               name='dashboard_banner_create'),
     path('cbl/banners/<int:pk>/edit/',                dashboard_views.banner_edit,                 name='dashboard_banner_edit'),
@@ -141,6 +146,10 @@ urlpatterns = [
     path('shop/checkout/',           views.checkout,          name='checkout'),
     path('shop/checkout/success/',   views.checkout_success,  name='checkout_success'),
     path('shop/checkout/cancel/',    views.checkout_cancel,   name='checkout_cancel'),
+
+    # Plans catalog public routes -- must precede the generic <slug:slug> route
+    path('plans/',                   views.plans_list,   name='plans_list'),
+    path('plans/<slug:slug>/',       views.plan_detail,  name='plan_detail'),
 
     # Blog public routes -- must come before the generic <slug:slug> catch-all
     path('blog/', views.blog_list_public, name='blog_list'),
