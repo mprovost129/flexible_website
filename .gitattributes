@@ -9,3 +9,4 @@ static/sandbox/             export-ignore
 # Seller-only — never ship to buyers
 SELLER_NOTES.md             export-ignore
 license_server/             export-ignore
+core/packs/cbl_marketing.py export-ignore

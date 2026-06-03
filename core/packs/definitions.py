@@ -1321,6 +1321,17 @@ PACKS = {
 }
 
 
+# Seller-only: the CBL product's own marketing site, built with CBL. This module
+# is marked `export-ignore` in .gitattributes, so it is absent from the buyer
+# package — in which case the import simply no-ops and the pack does not appear
+# in the setup dropdown. See core/packs/cbl_marketing.py.
+try:
+    from .cbl_marketing import CBL_MARKETING_PACK
+    PACKS[CBL_MARKETING_PACK['key']] = CBL_MARKETING_PACK
+except ImportError:
+    pass
+
+
 def get_pack(key):
     """Return a pack dict by key, or None if not found."""
     return PACKS.get(key)
