@@ -418,8 +418,8 @@
 
     rows.push('<div class="edit-sidebar-section">' +
       '<h3>Switch template</h3>' +
-      '<p class="small text-body-secondary mb-2">Choose an industry starter to rebuild your site with fresh pages and content.</p>' +
-      '<div class="sidebar-packs-list mb-2"><span class="small text-body-secondary">Loading…</span></div>' +
+      '<p class="small text-body-secondary mb-2">Starting templates live in the dashboard. Applying one rebuilds your whole site, so it is kept out of quick edits.</p>' +
+      '<a href="/cbl/templates/" class="btn btn-sm btn-outline-secondary w-100">Open Templates in dashboard</a>' +
       '</div>');
 
     return rows.join('');
@@ -1107,38 +1107,8 @@
       });
     }
 
-    var packsList = body.querySelector('.sidebar-packs-list');
-    if (packsList) {
-      fetchPacks(function (data) {
-        if (!data || !data.packs || !data.packs.length) {
-          packsList.innerHTML = '<span class="small text-body-secondary">No templates available.</span>';
-          return;
-        }
-        packsList.innerHTML = '';
-        data.packs.forEach(function (pack) {
-          var isCurrent = pack.is_current;
-          var card = document.createElement('div');
-          card.className = 'border rounded p-2 mb-2' + (isCurrent ? ' border-primary bg-primary-subtle' : '');
-          card.innerHTML =
-            '<div class="d-flex justify-content-between align-items-start gap-2">' +
-              '<div>' +
-                '<div class="small fw-semibold">' + escapeHtml(pack.name) + (isCurrent ? ' <span class="badge text-bg-primary ms-1">Active</span>' : '') + '</div>' +
-                '<div class="small text-body-secondary">' + escapeHtml(pack.description) + '</div>' +
-              '</div>' +
-              (!isCurrent ? '<button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0 sidebar-apply-pack" data-pack-key="' + escapeHtml(pack.key) + '">Apply</button>' : '') +
-            '</div>';
-          if (!isCurrent) {
-            card.querySelector('.sidebar-apply-pack').addEventListener('click', function () {
-              if (!confirm('Apply the "' + pack.name + '" template?\n\nThis will replace all your pages and content with the template starter. Your site name and theme will also be updated.\n\nThis cannot be undone.')) return;
-              postJson('/edit/site/pack/apply/', { pack_key: pack.key })
-                .then(function () { window.location.reload(); })
-                .catch(alertError);
-            });
-          }
-          packsList.appendChild(card);
-        });
-      });
-    }
+    // Template picker now lives in the dashboard (/cbl/templates/) because
+    // applying one rebuilds the entire site — too destructive for quick edits.
   }
 
   function wireSection(body, sectionEl) {
@@ -1288,16 +1258,6 @@
       .then(function (r) { return r.json(); })
       .then(function (d) { _themesCache = d.themes || []; cb(_themesCache); })
       .catch(function () { cb([]); });
-  }
-
-  var _packsCache = null;
-
-  function fetchPacks(cb) {
-    if (_packsCache) { cb(_packsCache); return; }
-    fetch('/edit/site/packs/', { credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
-      .then(function (d) { _packsCache = d; cb(_packsCache); })
-      .catch(function () { cb(null); });
   }
 
   function wireNavLink(body, li, child) {
@@ -2165,93 +2125,130 @@
         function cfgSel(key, val) { return cfg[key] === val ? ' selected' : ''; }
         function cfgIs(key, val)  { return cfg[key] === val; }
 
-        shell.innerHTML =
-          '<h3>Item</h3>' +
-          '<div class="mb-2">' + imgHtml +
-            '<input type="file" class="sidebar-item-img-file" accept="image/*" style="display:none">' +
-            '<button type="button" class="btn btn-sm btn-outline-primary w-100 mb-1 sidebar-upload-item-img">Upload image</button>' +
-            '<div class="small text-danger sidebar-item-img-status"></div>' +
-          '</div>' +
-          '<label class="form-label small mb-1">Title</label>' +
-          '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-title" value="' + escapeHtml(d.title || '') + '">' +
-          '<label class="form-label small mb-1">Text</label>' +
-          renderRichTextEditor('sidebar-item-text', d.text || '') +
-          renderIconPicker(d.icon || '') +
+        // Render only the fields that make sense for this item's type.
+        // item_type: 'button' | 'text' | 'heading' | '' (generic content card).
+        var itemType  = d.item_type || '';
+        var isButton  = itemType === 'button';
+        var isText    = itemType === 'text';
+        var isHeading = itemType === 'heading';
+        var isGeneric = !isButton && !isText && !isHeading;
+        var typeLabel = isButton ? 'Button' : isText ? 'Text' : isHeading ? 'Heading' : 'Item';
 
-          '<hr class="my-2">' +
-          '<div class="small fw-semibold mb-2 text-body-secondary text-uppercase" style="letter-spacing:.05em;font-size:.7rem">Button</div>' +
+        var html = '<h3>' + typeLabel + '</h3>';
 
-          '<label class="form-label small mb-1">Link URL</label>' +
-          '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-link-url" value="' + escapeHtml(d.link_url || '') + '">' +
-          '<label class="form-label small mb-1">Button text</label>' +
-          '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-link-text" value="' + escapeHtml(d.link_text || '') + '">' +
+        // Image — generic content cards only (feature/testimonial/etc.)
+        if (isGeneric) {
+          html +=
+            '<div class="mb-2">' + imgHtml +
+              '<input type="file" class="sidebar-item-img-file" accept="image/*" style="display:none">' +
+              '<button type="button" class="btn btn-sm btn-outline-primary w-100 mb-1 sidebar-upload-item-img">Upload image</button>' +
+              '<div class="small text-danger sidebar-item-img-status"></div>' +
+            '</div>';
+        }
 
-          '<label class="form-label small mb-1">Color</label>' +
-          '<select class="form-select form-select-sm mb-2 sidebar-item-link-style">' +
-            '<option value=""'                      + (!d.link_style                          ? ' selected' : '') + '>Default (auto)</option>' +
-            '<option value="btn-primary"'           + (d.link_style === 'btn-primary'           ? ' selected' : '') + '>Primary</option>' +
-            '<option value="btn-secondary"'         + (d.link_style === 'btn-secondary'         ? ' selected' : '') + '>Secondary</option>' +
-            '<option value="btn-outline-primary"'   + (d.link_style === 'btn-outline-primary'   ? ' selected' : '') + '>Outline — Primary</option>' +
-            '<option value="btn-outline-secondary"' + (d.link_style === 'btn-outline-secondary' ? ' selected' : '') + '>Outline — Secondary</option>' +
-            '<option value="btn-light"'             + (d.link_style === 'btn-light'             ? ' selected' : '') + '>Light</option>' +
-            '<option value="btn-outline-light"'     + (d.link_style === 'btn-outline-light'     ? ' selected' : '') + '>Outline — Light</option>' +
-            '<option value="btn-dark"'              + (d.link_style === 'btn-dark'              ? ' selected' : '') + '>Dark</option>' +
-            '<option value="btn-outline-dark"'      + (d.link_style === 'btn-outline-dark'      ? ' selected' : '') + '>Outline — Dark</option>' +
-            '<option value="btn-success"'           + (d.link_style === 'btn-success'           ? ' selected' : '') + '>Green</option>' +
-            '<option value="btn-danger"'            + (d.link_style === 'btn-danger'            ? ' selected' : '') + '>Red</option>' +
-            '<option value="btn-warning"'           + (d.link_style === 'btn-warning'           ? ' selected' : '') + '>Yellow</option>' +
-            '<option value="btn-link"'              + (d.link_style === 'btn-link'              ? ' selected' : '') + '>Plain link</option>' +
-          '</select>' +
+        // Title — generic cards, or the heading text for a heading item
+        if (isGeneric || isHeading) {
+          html +=
+            '<label class="form-label small mb-1">' + (isHeading ? 'Heading text' : 'Title') + '</label>' +
+            '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-title" value="' + escapeHtml(d.title || '') + '">';
+        }
 
-          '<div class="d-flex gap-2 mb-2">' +
-            '<div class="flex-fill">' +
-              '<label class="form-label small mb-1">Size</label>' +
-              '<select class="form-select form-select-sm sidebar-item-cfg-size">' +
-                '<option value=""'  + cfgSel('size', '')   + '>Large</option>' +
-                '<option value="md"'+ cfgSel('size', 'md') + '>Regular</option>' +
-                '<option value="sm"'+ cfgSel('size', 'sm') + '>Small</option>' +
-              '</select>' +
+        // Text — generic cards, or the body of a text item
+        if (isGeneric || isText) {
+          html +=
+            '<label class="form-label small mb-1">Text</label>' +
+            renderRichTextEditor('sidebar-item-text', d.text || '');
+        }
+
+        // Icon — generic cards only
+        if (isGeneric) {
+          html += renderIconPicker(d.icon || '');
+        }
+
+        // Button settings — button items, and generic cards (whose link doubles
+        // as a CTA / role label / price depending on the section).
+        if (isButton || isGeneric) {
+          if (isGeneric) {
+            html +=
+              '<hr class="my-2">' +
+              '<div class="small fw-semibold mb-2 text-body-secondary text-uppercase" style="letter-spacing:.05em;font-size:.7rem">Button</div>';
+          }
+          html +=
+            '<label class="form-label small mb-1">Link URL</label>' +
+            '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-link-url" value="' + escapeHtml(d.link_url || '') + '">' +
+            '<label class="form-label small mb-1">Button text</label>' +
+            '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-link-text" value="' + escapeHtml(d.link_text || '') + '">' +
+
+            '<label class="form-label small mb-1">Color</label>' +
+            '<select class="form-select form-select-sm mb-2 sidebar-item-link-style">' +
+              '<option value=""'                      + (!d.link_style                          ? ' selected' : '') + '>Default (auto)</option>' +
+              '<option value="btn-primary"'           + (d.link_style === 'btn-primary'           ? ' selected' : '') + '>Primary</option>' +
+              '<option value="btn-secondary"'         + (d.link_style === 'btn-secondary'         ? ' selected' : '') + '>Secondary</option>' +
+              '<option value="btn-outline-primary"'   + (d.link_style === 'btn-outline-primary'   ? ' selected' : '') + '>Outline — Primary</option>' +
+              '<option value="btn-outline-secondary"' + (d.link_style === 'btn-outline-secondary' ? ' selected' : '') + '>Outline — Secondary</option>' +
+              '<option value="btn-light"'             + (d.link_style === 'btn-light'             ? ' selected' : '') + '>Light</option>' +
+              '<option value="btn-outline-light"'     + (d.link_style === 'btn-outline-light'     ? ' selected' : '') + '>Outline — Light</option>' +
+              '<option value="btn-dark"'              + (d.link_style === 'btn-dark'              ? ' selected' : '') + '>Dark</option>' +
+              '<option value="btn-outline-dark"'      + (d.link_style === 'btn-outline-dark'      ? ' selected' : '') + '>Outline — Dark</option>' +
+              '<option value="btn-success"'           + (d.link_style === 'btn-success'           ? ' selected' : '') + '>Green</option>' +
+              '<option value="btn-danger"'            + (d.link_style === 'btn-danger'            ? ' selected' : '') + '>Red</option>' +
+              '<option value="btn-warning"'           + (d.link_style === 'btn-warning'           ? ' selected' : '') + '>Yellow</option>' +
+              '<option value="btn-link"'              + (d.link_style === 'btn-link'              ? ' selected' : '') + '>Plain link</option>' +
+            '</select>' +
+
+            '<div class="d-flex gap-2 mb-2">' +
+              '<div class="flex-fill">' +
+                '<label class="form-label small mb-1">Size</label>' +
+                '<select class="form-select form-select-sm sidebar-item-cfg-size">' +
+                  '<option value=""'  + cfgSel('size', '')   + '>Large</option>' +
+                  '<option value="md"'+ cfgSel('size', 'md') + '>Regular</option>' +
+                  '<option value="sm"'+ cfgSel('size', 'sm') + '>Small</option>' +
+                '</select>' +
+              '</div>' +
+              '<div class="flex-fill">' +
+                '<label class="form-label small mb-1">Shape</label>' +
+                '<select class="form-select form-select-sm sidebar-item-cfg-shape">' +
+                  '<option value=""'      + cfgSel('shape', '')       + '>Default</option>' +
+                  '<option value="pill"'  + cfgSel('shape', 'pill')   + '>Pill</option>' +
+                  '<option value="square"'+ cfgSel('shape', 'square') + '>Square</option>' +
+                '</select>' +
+              '</div>' +
             '</div>' +
-            '<div class="flex-fill">' +
-              '<label class="form-label small mb-1">Shape</label>' +
-              '<select class="form-select form-select-sm sidebar-item-cfg-shape">' +
-                '<option value=""'      + cfgSel('shape', '')       + '>Default</option>' +
-                '<option value="pill"'  + cfgSel('shape', 'pill')   + '>Pill</option>' +
-                '<option value="square"'+ cfgSel('shape', 'square') + '>Square</option>' +
-              '</select>' +
-            '</div>' +
-          '</div>' +
 
-          '<div class="d-flex gap-2 mb-2">' +
-            '<div class="flex-fill">' +
-              '<label class="form-label small mb-1">Shadow</label>' +
-              '<select class="form-select form-select-sm sidebar-item-cfg-shadow">' +
-                '<option value=""'  + cfgSel('shadow', '')   + '>None</option>' +
-                '<option value="sm"'+ cfgSel('shadow', 'sm') + '>Small</option>' +
-                '<option value="md"'+ cfgSel('shadow', 'md') + '>Medium</option>' +
-                '<option value="lg"'+ cfgSel('shadow', 'lg') + '>Large</option>' +
-              '</select>' +
+            '<div class="d-flex gap-2 mb-2">' +
+              '<div class="flex-fill">' +
+                '<label class="form-label small mb-1">Shadow</label>' +
+                '<select class="form-select form-select-sm sidebar-item-cfg-shadow">' +
+                  '<option value=""'  + cfgSel('shadow', '')   + '>None</option>' +
+                  '<option value="sm"'+ cfgSel('shadow', 'sm') + '>Small</option>' +
+                  '<option value="md"'+ cfgSel('shadow', 'md') + '>Medium</option>' +
+                  '<option value="lg"'+ cfgSel('shadow', 'lg') + '>Large</option>' +
+                '</select>' +
+              '</div>' +
+              '<div class="flex-fill">' +
+                '<label class="form-label small mb-1">Hover effect</label>' +
+                '<select class="form-select form-select-sm sidebar-item-cfg-hover">' +
+                  '<option value=""'       + cfgSel('hover', '')       + '>None</option>' +
+                  '<option value="lift"'   + cfgSel('hover', 'lift')   + '>Lift</option>' +
+                  '<option value="glow"'   + cfgSel('hover', 'glow')   + '>Glow</option>' +
+                  '<option value="pulse"'  + cfgSel('hover', 'pulse')  + '>Pulse</option>' +
+                '</select>' +
+              '</div>' +
             '</div>' +
-            '<div class="flex-fill">' +
-              '<label class="form-label small mb-1">Hover effect</label>' +
-              '<select class="form-select form-select-sm sidebar-item-cfg-hover">' +
-                '<option value=""'       + cfgSel('hover', '')       + '>None</option>' +
-                '<option value="lift"'   + cfgSel('hover', 'lift')   + '>Lift</option>' +
-                '<option value="glow"'   + cfgSel('hover', 'glow')   + '>Glow</option>' +
-                '<option value="pulse"'  + cfgSel('hover', 'pulse')  + '>Pulse</option>' +
-              '</select>' +
+
+            '<div class="form-check mb-2">' +
+              '<input type="checkbox" class="form-check-input sidebar-item-cfg-fullwidth" id="sifw-' + escapeHtml(String(itemId)) + '"' + (cfg.full_width ? ' checked' : '') + '>' +
+              '<label class="form-check-label small" for="sifw-' + escapeHtml(String(itemId)) + '">Full width</label>' +
             '</div>' +
-          '</div>' +
+            '<label class="form-label small mb-1">Margin around button (px)</label>' +
+            '<input type="number" class="form-control form-control-sm mb-3 sidebar-item-cfg-margin" min="0" max="100" value="' + escapeHtml(String(cfg.margin || '')) + '" placeholder="0">';
+        }
 
-          '<div class="form-check mb-2">' +
-            '<input type="checkbox" class="form-check-input sidebar-item-cfg-fullwidth" id="sifw-' + escapeHtml(String(itemId)) + '"' + (cfg.full_width ? ' checked' : '') + '>' +
-            '<label class="form-check-label small" for="sifw-' + escapeHtml(String(itemId)) + '">Full width</label>' +
-          '</div>' +
-          '<label class="form-label small mb-1">Margin around button (px)</label>' +
-          '<input type="number" class="form-control form-control-sm mb-3 sidebar-item-cfg-margin" min="0" max="100" value="' + escapeHtml(String(cfg.margin || '')) + '" placeholder="0">' +
-
+        html +=
           '<button type="button" class="btn btn-sm btn-primary w-100 mb-2 sidebar-save-item">Save</button>' +
           '<button type="button" class="btn btn-sm btn-outline-danger w-100 sidebar-delete-item">Delete item</button>';
+
+        shell.innerHTML = html;
 
         wireRichToolbar(shell);
         wireIconPicker(shell);
@@ -2259,8 +2256,10 @@
         var save = shell.querySelector('.sidebar-save-item');
         if (save) {
           save.addEventListener('click', function () {
+            // Only post the fields that are actually shown for this item type,
+            // so editing (e.g.) a button never blanks out its hidden title/text.
             var title     = shell.querySelector('.sidebar-item-title');
-            var text      = getEditorContent(shell, '.sidebar-item-text');
+            var textEl    = shell.querySelector('.sidebar-item-text');
             var icon      = shell.querySelector('.sidebar-item-icon');
             var linkUrl   = shell.querySelector('.sidebar-item-link-url');
             var linkTxt   = shell.querySelector('.sidebar-item-link-text');
@@ -2271,22 +2270,30 @@
             var cfgHover  = shell.querySelector('.sidebar-item-cfg-hover');
             var cfgFull   = shell.querySelector('.sidebar-item-cfg-fullwidth');
             var cfgMargin = shell.querySelector('.sidebar-item-cfg-margin');
-            postJson('/edit/item/' + itemId + '/field/title/',      { value: title     ? title.value     : '' })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/text/',       { value: text }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/icon/',       { value: icon      ? icon.value      : '' }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_url/',   { value: linkUrl   ? linkUrl.value   : '' }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_text/',  { value: linkTxt   ? linkTxt.value   : '' }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/field/link_style/', { value: linkStyle ? linkStyle.value : '' }); })
-              .then(function () { return postJson('/edit/item/' + itemId + '/config/', {
+
+            function field(name, value) {
+              return function () { return postJson('/edit/item/' + itemId + '/field/' + name + '/', { value: value }); };
+            }
+
+            var chain = Promise.resolve();
+            if (title)     chain = chain.then(field('title', title.value));
+            if (textEl)    chain = chain.then(field('text', getEditorContent(shell, '.sidebar-item-text')));
+            if (icon)      chain = chain.then(field('icon', icon.value));
+            if (linkUrl)   chain = chain.then(field('link_url', linkUrl.value));
+            if (linkTxt)   chain = chain.then(field('link_text', linkTxt.value));
+            if (linkStyle) chain = chain.then(field('link_style', linkStyle.value));
+            // The button-config block is all-or-nothing (rendered together).
+            if (cfgSize || cfgShape || cfgShadow || cfgHover || cfgFull || cfgMargin) {
+              chain = chain.then(function () { return postJson('/edit/item/' + itemId + '/config/', {
                 size:       cfgSize   ? cfgSize.value   : '',
                 shape:      cfgShape  ? cfgShape.value  : '',
                 shadow:     cfgShadow ? cfgShadow.value : '',
                 hover:      cfgHover  ? cfgHover.value  : '',
                 full_width: cfgFull && cfgFull.checked ? '1' : '0',
                 margin:     cfgMargin ? cfgMargin.value : '',
-              }); })
-              .then(function () { window.location.reload(); })
-              .catch(alertError);
+              }); });
+            }
+            chain.then(function () { window.location.reload(); }).catch(alertError);
           });
         }
 

@@ -18,18 +18,26 @@ from .definitions import get_pack
 
 
 @transaction.atomic
-def apply_pack(pack_key, site_name=None, replace=False):
+def apply_pack(pack_key, site_name=None, replace=False, wipe=False):
     """Build out a site from a pack. Returns the Site instance.
 
     pack_key   -- key into PACKS (e.g. 'contractor')
     site_name  -- overrides the site name; pack tagline/theme still applied
     replace    -- if True, rebuild sections on pages that already exist
+    wipe       -- if True, delete ALL existing pages, sections, and navigation
+                  for the site first, so the pack rebuilds from a clean slate
+                  (implies replace=True). Use for an intentional "start over
+                  with this template" action.
     """
     pack = get_pack(pack_key)
     if pack is None:
         raise ValueError(f'Unknown pack "{pack_key}"')
 
     site = Site.get_current()
+
+    if wipe:
+        _wipe_site_content(site)
+        replace = True
 
     # Site-level identity
     if site_name:
@@ -74,6 +82,21 @@ def apply_pack(pack_key, site_name=None, replace=False):
     return site
 
 
+def _wipe_site_content(site):
+    """Hard-delete all pages, sections, items, and navigation for a site.
+
+    Uses all_objects on the soft-deleted models so nothing is left behind to
+    collide with the rebuild (e.g. a soft-deleted page keeping a unique slug).
+    """
+    from core.models import Page, Section, SectionItem, NavLink, FooterColumn
+
+    SectionItem.all_objects.filter(section__page__site=site).delete()
+    Section.all_objects.filter(page__site=site).delete()
+    Page.objects.filter(site=site).delete()
+    NavLink.all_objects.filter(site=site).delete()
+    FooterColumn.all_objects.filter(site=site).delete()
+
+
 def _apply_navigation(site, pack, replace=False):
     """Create navbar links and a footer column from the pack's published pages.
 
@@ -115,20 +138,32 @@ def _apply_navigation(site, pack, replace=False):
 
 
 def _apply_page(site, page_def, replace=False):
-    page, created = Page.objects.get_or_create(
-        site=site,
-        page_type=page_def['page_type'],
-        defaults={
-            'slug': page_def.get('slug', page_def['page_type']),
-            'title': page_def.get('title', page_def['page_type'].title()),
-            'order': page_def.get('order', 0),
-            'variant': page_def.get('variant', 'page_1'),
-            'is_enabled': True,
-        },
-    )
+    slug = page_def.get('slug', page_def['page_type'])
 
-    # Keep title/order/slug in sync even if the page already existed
-    if not created:
+    # Match an existing page by slug first (slug is unique per the schema), then
+    # fall back to the first page of this type. We use .filter(...).first()
+    # rather than get_or_create because the schema allows more than one page of
+    # the same page_type on a site — get_or_create raises MultipleObjectsReturned
+    # in that case and crashes the whole apply.
+    page = (
+        Page.objects.filter(site=site, slug=slug).first()
+        or Page.objects.filter(site=site, page_type=page_def['page_type']).first()
+    )
+    created = page is None
+
+    if created:
+        page = Page.objects.create(
+            site=site,
+            page_type=page_def['page_type'],
+            slug=slug,
+            title=page_def.get('title', page_def['page_type'].title()),
+            order=page_def.get('order', 0),
+            variant=page_def.get('variant', 'page_1'),
+            is_enabled=True,
+        )
+    else:
+        # Keep title/order in sync even if the page already existed (leave slug
+        # alone so we never collide with another page's unique slug).
         page.title = page_def.get('title', page.title)
         page.order = page_def.get('order', page.order)
         page.save(update_fields=['title', 'order'])

@@ -1,0 +1,86 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Templates | CBL{% endblock %}
+{% block heading %}Templates{% endblock %}
+{% block content %}
+
+<div class="alert alert-warning d-flex gap-2 align-items-start" role="alert">
+    <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+    <div>
+        <strong>Applying a template starts your site over.</strong>
+        It permanently deletes <em>all</em> of your current pages, sections, and navigation,
+        then rebuilds the site from the template you pick. This cannot be undone.
+    </div>
+</div>
+
+<div class="cbl-card p-3">
+    <div class="mb-3">
+        <h2 class="h5 mb-0">Starting templates</h2>
+        <div class="text-muted small">Each template is a ready-made site for a type of business. Pick one to rebuild your site from scratch.</div>
+    </div>
+
+    <div class="row g-3">
+        {% for pack in packs %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="border rounded h-100 p-3 d-flex flex-column {% if pack.is_current %}border-primary bg-primary-subtle{% endif %}">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                    <h3 class="h6 fw-bold mb-0">{{ pack.name }}</h3>
+                    {% if pack.is_current %}<span class="badge text-bg-primary flex-shrink-0">Active</span>{% endif %}
+                </div>
+                <p class="text-muted small flex-grow-1">{{ pack.description }}</p>
+                <button type="button"
+                        class="btn btn-sm {% if pack.is_current %}btn-outline-secondary{% else %}btn-outline-primary{% endif %} w-100 js-apply-template"
+                        data-pack-key="{{ pack.key }}"
+                        data-pack-name="{{ pack.name }}">
+                    {% if pack.is_current %}Reapply (reset to this){% else %}Use this template{% endif %}
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12"><p class="text-muted mb-0">No templates available.</p></div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Confirmation modal -->
+<div class="modal fade" id="applyTemplateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Start over with this template?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">You're about to rebuild your site using the
+                    <strong id="applyTemplateName">template</strong>.</p>
+                <p class="mb-2 text-danger fw-semibold">This permanently deletes all of your current pages,
+                    sections, and navigation. It cannot be undone.</p>
+                <p class="mb-0 small text-muted">If you might want your current content later, leave this page and back it up first.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'core:dashboard_templates' %}" class="m-0">
+                    {% csrf_token %}
+                    <input type="hidden" name="pack_key" id="applyTemplateKey" value="">
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-arrow-repeat"></i> Erase &amp; rebuild</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var modalEl = document.getElementById('applyTemplateModal');
+    var modal = new bootstrap.Modal(modalEl);
+    var keyInput = document.getElementById('applyTemplateKey');
+    var nameEl = document.getElementById('applyTemplateName');
+    document.querySelectorAll('.js-apply-template').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            keyInput.value = btn.dataset.packKey;
+            nameEl.textContent = '"' + btn.dataset.packName + '" template';
+            modal.show();
+        });
+    });
+})();
+</script>
+{% endblock %}

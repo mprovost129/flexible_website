@@ -15,6 +15,7 @@ urlpatterns = [
 
     # CBL in-site dashboard (staff only)
     path('cbl/',                                      dashboard_views.dashboard_home,              name='dashboard_home'),
+    path('cbl/templates/',                            dashboard_views.templates_gallery,           name='dashboard_templates'),
     path('cbl/settings/',                             dashboard_views.site_settings,               name='dashboard_settings'),
     path('cbl/pages/',                                dashboard_views.page_list,                   name='dashboard_pages'),
     path('cbl/pages/add/',                            dashboard_views.page_create,                 name='dashboard_page_create'),

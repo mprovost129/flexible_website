@@ -287,6 +287,7 @@ def get_item_data(request, pk):
     item = get_object_or_404(SectionItem, pk=pk)
     return JsonResponse({
         'id': item.pk,
+        'item_type': item.item_type or '',
         'title': item.title,
         'text': item.text,
         'icon': item.icon,

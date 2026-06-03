@@ -62,6 +62,40 @@ def dashboard_home(request):
 
 
 @staff_required
+def templates_gallery(request):
+    """Pick a starter template (industry pack). Applying one ERASES the site
+    and rebuilds it fresh from the chosen template."""
+    from core.packs.definitions import list_packs as _list_packs, get_pack
+    from core.packs.applier import apply_pack
+
+    site = get_active_site(request)
+
+    if request.method == 'POST':
+        pack_key = (request.POST.get('pack_key') or '').strip()
+        pack = get_pack(pack_key)
+        if not pack:
+            messages.error(request, 'That template is no longer available.')
+            return redirect('core:dashboard_templates')
+        apply_pack(pack_key, wipe=True)
+        messages.success(
+            request,
+            f'Your site was rebuilt from the "{pack["name"]}" template. '
+            'Customize it in edit mode or from the dashboard.',
+        )
+        return redirect('core:dashboard_home')
+
+    packs = [
+        {'key': key, 'name': name, 'description': desc, 'is_current': key == site.active_pack_key}
+        for key, name, desc in _list_packs()
+    ]
+    return render(request, 'dashboard/templates.html', _dashboard_context(
+        request,
+        packs=packs,
+        current_pack_key=site.active_pack_key,
+    ))
+
+
+@staff_required
 def site_settings(request):
     site = get_active_site(request)
     if request.method == 'POST':
