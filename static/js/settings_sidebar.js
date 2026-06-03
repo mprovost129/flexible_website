@@ -1373,9 +1373,23 @@
     }
   }
 
+  // Read an element's current navbar slot from its live position in the DOM,
+  // falling back to a data attribute. Reading the live zone keeps the move
+  // arrows correct even after the item was dragged to another zone (a drag
+  // updates the DOM/DB but not necessarily the cached data attribute).
+  function slotFromZone(el, fallback) {
+    var zone = el && el.closest ? el.closest('.cbl-navbar-zone') : null;
+    if (zone) {
+      if (zone.classList.contains('cbl-navbar-center')) return 'center';
+      if (zone.classList.contains('cbl-navbar-right')) return 'right';
+      return 'left';
+    }
+    return (fallback || 'left').toLowerCase();
+  }
+
   function moveNavLinkBy(id, li, delta) {
     var order = ['left', 'center', 'right'];
-    var current = (li.dataset.navlinkSlot || 'left').toLowerCase();
+    var current = slotFromZone(li, li.dataset.navlinkSlot);
     var index = order.indexOf(current);
     if (index < 0) index = 0;
     var next = order[index + delta];
@@ -1625,7 +1639,7 @@
 
     var block = document.querySelector('[data-chrome-slot-field="' + field + '"]');
     if (!block) return;
-    var current = (block.dataset.chromeSlotValue || 'left').toLowerCase();
+    var current = slotFromZone(block, block.dataset.chromeSlotValue);
     var order = ['left', 'center', 'right'];
     var index = order.indexOf(current);
     if (index < 0) index = 0;

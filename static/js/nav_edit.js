@@ -1197,6 +1197,9 @@
     if (zone.classList.contains('cbl-navbar-right')) slot = 'right';
     var id = li.dataset.navlinkId;
     if (!id) return;
+    // Keep the DOM in sync with the DB so the inspector's move arrows (which
+    // read the live slot) don't act on a stale value after a drag.
+    li.dataset.navlinkSlot = slot;
     postJson('/edit/nav-link/' + id + '/update/', { field: 'slot', value: slot })
       .catch(function (err) { console.warn('Slot update failed:', err.message); });
   }
