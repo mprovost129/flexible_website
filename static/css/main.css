@@ -621,6 +621,10 @@ body.edit-mode #edit-sidebar {
 body.edit-mode .edit-sidebar-header {
     padding: 0.9rem 1rem 0.75rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
 }
 
 body.edit-mode .edit-sidebar-kicker {
@@ -750,9 +754,79 @@ body.edit-mode .cbl-inspector-selected {
     }
 }
 
+/* Floating toggle button + backdrop: desktop-hidden, only used on small screens. */
+#edit-sidebar-toggle,
+#edit-sidebar-backdrop,
+#edit-sidebar-close {
+    display: none;
+}
+
 @media (max-width: 1199.98px) {
+    /* Turn the inspector into a slide-in panel from the right (off-canvas). */
     body.edit-mode #edit-sidebar {
-        display: none;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(23rem, 90vw);
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        border-top: 0;
+        border-bottom: 0;
+        border-right: 0;
+        transform: translateX(105%);
+        transition: transform 0.28s ease;
+        will-change: transform;
+    }
+
+    body.edit-mode.edit-sidebar-open #edit-sidebar {
+        transform: translateX(0);
+    }
+
+    /* Floating action button to open/close the inspector. */
+    body.edit-mode #edit-sidebar-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        width: 3.25rem;
+        height: 3.25rem;
+        border-radius: 50%;
+        border: 0;
+        background: var(--cbl-chrome-bg, var(--bs-primary, #0d6efd));
+        color: #fff;
+        font-size: 1.35rem;
+        box-shadow: 0 8px 22px rgba(15, 23, 42, 0.28);
+        z-index: 1450;
+        cursor: pointer;
+    }
+
+    body.edit-mode #edit-sidebar-toggle:active {
+        transform: scale(0.95);
+    }
+
+    /* Dim/scrim behind the open panel. */
+    body.edit-mode #edit-sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.4);
+        z-index: 1399;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.28s ease;
+    }
+
+    body.edit-mode.edit-sidebar-open #edit-sidebar-backdrop {
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Close (×) button inside the panel header. */
+    body.edit-mode #edit-sidebar-close {
+        display: inline-flex;
     }
 }
 

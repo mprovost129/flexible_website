@@ -33,6 +33,28 @@
       .replace(/'/g, '&#39;');
   }
 
+  // ---------------------------------------------------------------------------
+  // Mobile/tablet: the inspector is off-canvas and opened via a floating button
+  // (see #edit-sidebar-toggle / #edit-sidebar-backdrop in base.html + main.css).
+  // On desktop the .edit-sidebar-open class is harmless (CSS ignores it).
+  // ---------------------------------------------------------------------------
+  function openMobilePanel() { document.body.classList.add('edit-sidebar-open'); }
+  function closeMobilePanel() { document.body.classList.remove('edit-sidebar-open'); }
+
+  function setupMobileSidebar() {
+    var toggle = document.getElementById('edit-sidebar-toggle');
+    var closeBtn = document.getElementById('edit-sidebar-close');
+    var backdrop = document.getElementById('edit-sidebar-backdrop');
+    if (toggle) toggle.addEventListener('click', function () {
+      document.body.classList.toggle('edit-sidebar-open');
+    });
+    if (closeBtn) closeBtn.addEventListener('click', closeMobilePanel);
+    if (backdrop) backdrop.addEventListener('click', closeMobilePanel);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeMobilePanel();
+    });
+  }
+
   var PAGE_TEMPLATES = [
     { key: 'landing',   name: 'Landing Page',   icon: 'rocket-takeoff-fill',  description: 'Hero, features, testimonials, call to action.' },
     { key: 'about',     name: 'About Page',      icon: 'people-fill',          description: 'Your story, values, and team highlights.' },
@@ -59,6 +81,9 @@
       body.innerHTML = renderSelection(selection, state.page);
       wireBody(body, selection, state.page);
       markSelected(selection);
+      // On small screens, slide the inspector in when the user picks something
+      // real to edit (not the default page/background selection).
+      if (selection && selection.kind !== 'page') openMobilePanel();
     }
 
     function defaultSelection() {
@@ -190,6 +215,7 @@
     defaultSelection();
     setupPageNav(state.page);
     setupFollowHint();
+    setupMobileSidebar();
   }
 
   // ---------------------------------------------------------------------------

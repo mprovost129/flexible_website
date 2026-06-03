@@ -175,12 +175,15 @@
     {% endif %}
 
     {% if edit_mode_active %}
+    <button type="button" id="edit-sidebar-toggle" aria-label="Toggle edit inspector" title="Edit panel"><i class="bi bi-sliders"></i></button>
+    <div id="edit-sidebar-backdrop"></div>
     <aside id="edit-sidebar" aria-label="Edit inspector">
         <div class="edit-sidebar-header">
             <div>
                 <div class="edit-sidebar-kicker">Inspector</div>
                 <h2 class="edit-sidebar-title">Selection</h2>
             </div>
+            <button type="button" id="edit-sidebar-close" class="btn-close" aria-label="Close inspector"></button>
         </div>
         <div id="edit-sidebar-body" class="edit-sidebar-body">
             <p class="text-body-secondary mb-0">Select a page area, section, nav item, or footer item to edit its settings.</p>
