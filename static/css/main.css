@@ -762,18 +762,26 @@ body.edit-mode .cbl-inspector-selected {
 }
 
 @media (max-width: 1199.98px) {
-    /* Turn the inspector into a slide-in panel from the right (off-canvas). */
+    /* Turn the inspector into a slide-in panel from the right (off-canvas).
+       Use dvh (dynamic viewport height) so the panel matches the *visible*
+       area on mobile — 100vh sits behind the address bar and pushes the
+       bottom (Save button) off-screen where it can't be scrolled to. */
     body.edit-mode #edit-sidebar {
         top: 0;
         right: 0;
         bottom: 0;
         width: min(23rem, 90vw);
         height: 100vh;
+        height: 100dvh;
         max-height: 100vh;
+        max-height: 100dvh;
         border-radius: 0;
         border-top: 0;
         border-bottom: 0;
         border-right: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
         transform: translateX(105%);
         transition: transform 0.28s ease;
         will-change: transform;
@@ -781,6 +789,11 @@ body.edit-mode .cbl-inspector-selected {
 
     body.edit-mode.edit-sidebar-open #edit-sidebar {
         transform: translateX(0);
+    }
+
+    /* Breathing room so the last control clears the home indicator / edge. */
+    body.edit-mode #edit-sidebar .edit-sidebar-body {
+        padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
     }
 
     /* Floating action button to open/close the inspector. */
@@ -805,6 +818,11 @@ body.edit-mode .cbl-inspector-selected {
 
     body.edit-mode #edit-sidebar-toggle:active {
         transform: scale(0.95);
+    }
+
+    /* Hide the FAB while the panel is open so it never sits over Save. */
+    body.edit-mode.edit-sidebar-open #edit-sidebar-toggle {
+        display: none;
     }
 
     /* Dim/scrim behind the open panel. */
