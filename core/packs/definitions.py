@@ -970,7 +970,7 @@ BLOG_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Get in Touch',
-                    'subheading': 'Questions, feedback, or just want to say hello — we would love to hear from you.',
+                    'subheading': 'Questions, feedback, or just want to say hello - we would love to hear from you.',
                 },
                 {
                     'type': 'contact_form',
@@ -1076,7 +1076,7 @@ ECOMMERCE_PACK = {
                     'type': 'text_block',
                     'layout': 'layout_1',
                     'heading': 'Our Story',
-                    'subheading': 'Tell your story here — why you started, what you stand for, who you make things for.',
+                    'subheading': 'Tell your story here - why you started, what you stand for, who you make things for.',
                 },
                 {
                     'type': 'feature_list',
@@ -1100,7 +1100,7 @@ ECOMMERCE_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Get in Touch',
-                    'subheading': 'Questions about an order, a product, or anything else — we are here.',
+                    'subheading': 'Questions about an order, a product, or anything else - we are here.',
                 },
                 {
                     'type': 'contact_form',
@@ -1119,7 +1119,7 @@ ECOMMERCE_PACK = {
 ARCHITECTURE_PACK = {
     'key': 'architecture',
     'name': 'Architect / Home Designer',
-    'description': 'For architects, home/house-plan designers, and drafting services — portfolio, services, process, and an inquiry form.',
+    'description': 'For architects, home/house-plan designers, and drafting services - portfolio, services, process, and an inquiry form.',
     'theme_key': 'slate',          # clean, professional, trustworthy
     'navbar': 'centered',
     'footer': 'footer_4',
@@ -1138,7 +1138,7 @@ ARCHITECTURE_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Thoughtful Home Design, Built to Code',
-                    'subheading': 'Stock and custom house plans designed with form, function, and style in mind — permit-ready and made for the way you live.',
+                    'subheading': 'Stock and custom house plans designed with form, function, and style in mind - permit-ready and made for the way you live.',
                     'items': [
                         {'item_type': 'button', 'link_text': 'View Our Work', 'link_url': '#work'},
                         {'item_type': 'button', 'link_text': 'Start a Project', 'link_url': '/contact/', 'link_style': 'btn-outline-secondary'},
@@ -1216,7 +1216,7 @@ ARCHITECTURE_PACK = {
                     'items': [
                         {'icon': 'house-door-fill',   'title': 'Custom House Plans',  'text': 'One-of-a-kind designs drawn around your site and lifestyle.'},
                         {'icon': 'grid-3x3-gap-fill', 'title': 'Stock Plan Library',  'text': 'Proven, ready-to-purchase plans you can build as-is or modify.'},
-                        {'icon': 'pencil-square',     'title': 'Modifications',       'text': 'Adjust an existing or stock plan — layouts, footprints, elevations.'},
+                        {'icon': 'pencil-square',     'title': 'Modifications',       'text': 'Adjust an existing or stock plan - layouts, footprints, elevations.'},
                         {'icon': 'file-earmark-text', 'title': 'Permit & Framing',    'text': 'Complete construction documents and framing plans for permitting.'},
                     ],
                 },
@@ -1224,7 +1224,7 @@ ARCHITECTURE_PACK = {
                     'type': 'pricing_table',
                     'layout': 'layout_1',
                     'heading': 'Simple, Transparent Pricing',
-                    'subheading': 'Every project is unique — these are typical starting points.',
+                    'subheading': 'Every project is unique - these are typical starting points.',
                     'config': {'highlighted_plan': 2},
                     'items': [
                         {'title': 'Stock Plan',    'link_text': 'from $1,200', 'link_url': '/contact/', 'text': 'one-time\nReady-to-build plan set\nPDF + CAD files\nEmail support'},
@@ -1259,7 +1259,7 @@ ARCHITECTURE_PACK = {
                     'layout': 'layout_1',
                     'heading': 'Our Approach',
                     'subheading': (
-                        'Tell your story here — how you got started, what kinds of homes you love to design, '
+                        'Tell your story here - how you got started, what kinds of homes you love to design, '
                         'and what clients can expect when they work with you.\n\n'
                         'A second paragraph is a good place to talk about your design philosophy and the '
                         'regions or code jurisdictions you serve.'
@@ -1323,7 +1323,7 @@ PACKS = {
 
 # Seller-only: the CBL product's own marketing site, built with CBL. This module
 # is marked `export-ignore` in .gitattributes, so it is absent from the buyer
-# package — in which case the import simply no-ops and the pack does not appear
+# package - in which case the import simply no-ops and the pack does not appear
 # in the setup dropdown. See core/packs/cbl_marketing.py.
 try:
     from .cbl_marketing import CBL_MARKETING_PACK

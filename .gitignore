@@ -69,7 +69,7 @@ secrets.json
 demo.sqlite3
 *.tmp.*
 
-# Design sources & dev captures — kept locally, never shipped in the package.
+# Design sources & dev captures - kept locally, never shipped in the package.
 # Logo working files (web-ready brand_logo.png stays tracked).
 static/cad/
 static/pdf/

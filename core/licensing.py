@@ -1,12 +1,12 @@
 """
-License validation (telemetry) — DISCLOSED in LICENSE.md and the README.
+License validation (telemetry) - DISCLOSED in LICENSE.md and the README.
 
 At most once per day, a running site sends a small JSON payload to the license
 server configured by the seller, so the seller can detect one license being used
 on multiple sites. It is:
 
   - report-only: it never blocks, disables, or alters the site;
-  - minimal: it sends ONLY the fields in `_payload()` below — license key, the
+  - minimal: it sends ONLY the fields in `_payload()` below - license key, the
     site domain, a random install id, site name, and versions;
   - privacy-safe: it never sends visitor data, customer PII, or site content;
   - non-blocking: the request runs in a background daemon thread with a short

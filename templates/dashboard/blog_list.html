@@ -35,8 +35,8 @@
                         <span class="badge text-bg-secondary">Draft</span>
                     {% endif %}
                 </td>
-                <td>{{ post.published_at|date:"M j, Y"|default:"—" }}</td>
-                <td>{{ post.author.get_full_name|default:post.author.username|default:"—" }}</td>
+                <td>{{ post.published_at|date:"M j, Y"|default:"-" }}</td>
+                <td>{{ post.author.get_full_name|default:post.author.username|default:"-" }}</td>
                 <td>
                     <div class="cbl-actions">
                         {% if post.is_published %}

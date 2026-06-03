@@ -55,7 +55,7 @@ MIDDLEWARE = [
 ]
 
 # ---------------------------------------------------------------------------
-# License validation (telemetry) — see core/licensing.py and LICENSE.md.
+# License validation (telemetry) - see core/licensing.py and LICENSE.md.
 # Report-only, throttled to once/day, sends minimal data (no PII/content).
 # Inactive until LICENSE_CHECK_URL is set. Buyers set LICENSE_KEY to their
 # purchased key; the seller sets LICENSE_CHECK_URL to their license server.
@@ -65,7 +65,7 @@ LICENSE_KEY = os.environ.get('LICENSE_KEY', '')
 # host (Render, Docker, VPS). Overridable via env.
 LICENSE_CHECK_URL = os.environ.get('LICENSE_CHECK_URL', 'https://cbl-license-server.onrender.com/api/ping')
 LICENSE_PING_ENABLED = os.environ.get('LICENSE_PING_ENABLED', 'True') == 'True'
-# Gumroad product ID — used to verify a buyer's license key at setup against
+# Gumroad product ID - used to verify a buyer's license key at setup against
 # Gumroad's public license API. Not secret. Overridable via env.
 GUMROAD_PRODUCT_ID = os.environ.get('GUMROAD_PRODUCT_ID', 'AkNPnlSFh9DrPJcmNtWWIA==')
 

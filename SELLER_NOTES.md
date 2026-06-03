@@ -17,7 +17,7 @@ ships with the package and every Render install reports in:
         value: "https://your-license-server.example.com/api/ping"
 ```
 
-(Buyers can still override/disable it — it's source code — but doing so violates
+(Buyers can still override/disable it - it's source code - but doing so violates
 the license. It's a deterrent + detection tool, not unbreakable DRM.)
 
 ## What you receive per ping (once/day per install)
@@ -50,6 +50,6 @@ row. Then to spot misuse:
 ## Legal
 
 Disclosure is already in `LICENSE.md` (§5) and `README.md` (License section), so
-buyers are informed — keep it that way. Fill in `<YEAR>`, `<YOUR NAME / COMPANY>`,
+buyers are informed - keep it that way. Fill in `<YEAR>`, `<YOUR NAME / COMPANY>`,
 and `<YOUR EMAIL>` placeholders in `LICENSE.md`. Consider having the EULA reviewed
 by a lawyer before selling.

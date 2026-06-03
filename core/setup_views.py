@@ -99,7 +99,7 @@ def setup_wizard(request):
         # Add the sandbox "Try Demo" nav link when the sandbox app is installed.
         # This block is a no-op in production deploys that don't have the sandbox.
         try:
-            import sandbox as _sb  # noqa: F401 — just checking it exists
+            import sandbox as _sb  # noqa: F401 - just checking it exists
             from .models import NavLink
             NavLink.objects.get_or_create(
                 site=site,

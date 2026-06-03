@@ -1,5 +1,5 @@
 """
-CBL License Server — SELLER-ONLY. Never ship this to buyers.
+CBL License Server - SELLER-ONLY. Never ship this to buyers.
 
 A tiny Flask + SQLite service that receives the daily license pings emitted by
 core/licensing.py in the product, and shows you a dashboard to spot misuse
@@ -69,7 +69,7 @@ init_db()
 
 
 # --------------------------------------------------------------------------- #
-# Ingest endpoint (public — the product POSTs here once/day)
+# Ingest endpoint (public - the product POSTs here once/day)
 # --------------------------------------------------------------------------- #
 @app.post('/api/ping')
 def ping():

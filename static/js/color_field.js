@@ -6,7 +6,7 @@
  * is upgraded into the same swatch + popover + native-picker widget used by the
  * live edit sidebar (reusing the .cbl-color-* styles from main.css). The
  * original <input> is preserved (name/id/value intact) so the form submits
- * exactly as before — this only adds UI around it.
+ * exactly as before - this only adds UI around it.
  */
 (function () {
     'use strict';

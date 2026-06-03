@@ -1,6 +1,6 @@
-# CBL — Single-Site License Agreement
+# CBL - Single-Site License Agreement
 
-**IMPORTANT — READ BEFORE USING.** By installing, deploying, or using this
+**IMPORTANT - READ BEFORE USING.** By installing, deploying, or using this
 software ("the Software"), you ("the Licensee") agree to the terms below. If you
 do not agree, do not use the Software and request a refund per the marketplace's
 policy.
@@ -55,7 +55,7 @@ sends the following to the author's license server:
 information, your content, or any database contents.** It is used solely to
 validate your license and identify use of one license across multiple sites.
 
-This check is **report-only** — it does not disable or interfere with your site.
+This check is **report-only** - it does not disable or interfere with your site.
 You may inspect exactly what is sent in `core/licensing.py`. License validation
 can be configured via the `LICENSE_*` environment variables (see the README);
 operating the Software with validation disabled, or without a valid license key,

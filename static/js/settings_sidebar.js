@@ -219,7 +219,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Page navigation select — injected into #staff-toolbar in edit mode
+  // Page navigation select - injected into #staff-toolbar in edit mode
   // ---------------------------------------------------------------------------
   function setupPageNav(page) {
     var toolbar = document.getElementById('staff-toolbar');
@@ -252,7 +252,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Follow hint — floating "Visit →" badge that appears on hover over any
+  // Follow hint - floating "Visit →" badge that appears on hover over any
   // link that edit mode intercepts, so users can still navigate the site.
   // ---------------------------------------------------------------------------
   function setupFollowHint() {
@@ -1108,7 +1108,7 @@
     }
 
     // Template picker now lives in the dashboard (/cbl/templates/) because
-    // applying one rebuilds the entire site — too destructive for quick edits.
+    // applying one rebuilds the entire site - too destructive for quick edits.
   }
 
   function wireSection(body, sectionEl) {
@@ -2136,7 +2136,7 @@
 
         var html = '<h3>' + typeLabel + '</h3>';
 
-        // Image — generic content cards only (feature/testimonial/etc.)
+        // Image - generic content cards only (feature/testimonial/etc.)
         if (isGeneric) {
           html +=
             '<div class="mb-2">' + imgHtml +
@@ -2146,26 +2146,26 @@
             '</div>';
         }
 
-        // Title — generic cards, or the heading text for a heading item
+        // Title - generic cards, or the heading text for a heading item
         if (isGeneric || isHeading) {
           html +=
             '<label class="form-label small mb-1">' + (isHeading ? 'Heading text' : 'Title') + '</label>' +
             '<input type="text" class="form-control form-control-sm mb-2 sidebar-item-title" value="' + escapeHtml(d.title || '') + '">';
         }
 
-        // Text — generic cards, or the body of a text item
+        // Text - generic cards, or the body of a text item
         if (isGeneric || isText) {
           html +=
             '<label class="form-label small mb-1">Text</label>' +
             renderRichTextEditor('sidebar-item-text', d.text || '');
         }
 
-        // Icon — generic cards only
+        // Icon - generic cards only
         if (isGeneric) {
           html += renderIconPicker(d.icon || '');
         }
 
-        // Button settings — button items, and generic cards (whose link doubles
+        // Button settings - button items, and generic cards (whose link doubles
         // as a CTA / role label / price depending on the section).
         if (isButton || isGeneric) {
           if (isGeneric) {
@@ -2184,12 +2184,12 @@
               '<option value=""'                      + (!d.link_style                          ? ' selected' : '') + '>Default (auto)</option>' +
               '<option value="btn-primary"'           + (d.link_style === 'btn-primary'           ? ' selected' : '') + '>Primary</option>' +
               '<option value="btn-secondary"'         + (d.link_style === 'btn-secondary'         ? ' selected' : '') + '>Secondary</option>' +
-              '<option value="btn-outline-primary"'   + (d.link_style === 'btn-outline-primary'   ? ' selected' : '') + '>Outline — Primary</option>' +
-              '<option value="btn-outline-secondary"' + (d.link_style === 'btn-outline-secondary' ? ' selected' : '') + '>Outline — Secondary</option>' +
+              '<option value="btn-outline-primary"'   + (d.link_style === 'btn-outline-primary'   ? ' selected' : '') + '>Outline - Primary</option>' +
+              '<option value="btn-outline-secondary"' + (d.link_style === 'btn-outline-secondary' ? ' selected' : '') + '>Outline - Secondary</option>' +
               '<option value="btn-light"'             + (d.link_style === 'btn-light'             ? ' selected' : '') + '>Light</option>' +
-              '<option value="btn-outline-light"'     + (d.link_style === 'btn-outline-light'     ? ' selected' : '') + '>Outline — Light</option>' +
+              '<option value="btn-outline-light"'     + (d.link_style === 'btn-outline-light'     ? ' selected' : '') + '>Outline - Light</option>' +
               '<option value="btn-dark"'              + (d.link_style === 'btn-dark'              ? ' selected' : '') + '>Dark</option>' +
-              '<option value="btn-outline-dark"'      + (d.link_style === 'btn-outline-dark'      ? ' selected' : '') + '>Outline — Dark</option>' +
+              '<option value="btn-outline-dark"'      + (d.link_style === 'btn-outline-dark'      ? ' selected' : '') + '>Outline - Dark</option>' +
               '<option value="btn-success"'           + (d.link_style === 'btn-success'           ? ' selected' : '') + '>Green</option>' +
               '<option value="btn-danger"'            + (d.link_style === 'btn-danger'            ? ' selected' : '') + '>Red</option>' +
               '<option value="btn-warning"'           + (d.link_style === 'btn-warning'           ? ' selected' : '') + '>Yellow</option>' +

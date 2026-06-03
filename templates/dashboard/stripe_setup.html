@@ -10,9 +10,9 @@
     <i class="bi {% if mode == 'live' %}bi-check-circle-fill{% elif mode == 'test' %}bi-exclamation-triangle-fill{% else %}bi-credit-card{% endif %} fs-4 flex-shrink-0"></i>
     <div>
         {% if mode == 'live' %}
-            <strong>Stripe is connected — Live mode.</strong> Your site can accept real payments.
+            <strong>Stripe is connected - Live mode.</strong> Your site can accept real payments.
         {% elif mode == 'test' %}
-            <strong>Stripe is connected — Test mode.</strong>
+            <strong>Stripe is connected - Test mode.</strong>
             You're using test keys. Real customers cannot pay until you switch to live keys.
         {% else %}
             Stripe keys saved.
@@ -78,16 +78,16 @@
                         <div class="mb-2 p-3 rounded border bg-light">
                             <div class="d-flex align-items-start gap-2 mb-2">
                                 <span class="badge text-bg-secondary font-monospace" style="font-size:.7rem;white-space:nowrap">pk_live_…</span>
-                                <span class="small"><strong>Publishable key</strong> — safe to show publicly. Starts with <code>pk_live_</code> (or <code>pk_test_</code> for testing).</span>
+                                <span class="small"><strong>Publishable key</strong> - safe to show publicly. Starts with <code>pk_live_</code> (or <code>pk_test_</code> for testing).</span>
                             </div>
                             <div class="d-flex align-items-start gap-2">
                                 <span class="badge text-bg-danger font-monospace" style="font-size:.7rem;white-space:nowrap">sk_live_…</span>
-                                <span class="small"><strong>Secret key</strong> — keep this private. Click <em>"Reveal live key"</em> to see it. Starts with <code>sk_live_</code>.</span>
+                                <span class="small"><strong>Secret key</strong> - keep this private. Click <em>"Reveal live key"</em> to see it. Starts with <code>sk_live_</code>.</span>
                             </div>
                         </div>
                         <div class="alert alert-warning border small py-2 px-3 mb-0">
                             <i class="bi bi-shield-exclamation me-1"></i>
-                            <strong>Never share your secret key</strong> — treat it like a password. We store it securely and never display it in full after you save.
+                            <strong>Never share your secret key</strong> - treat it like a password. We store it securely and never display it in full after you save.
                         </div>
                     </div>
                 </li>
@@ -113,7 +113,7 @@
                     <i class="bi bi-question-circle me-1 text-primary"></i>Test keys vs. Live keys
                 </div>
                 <p class="text-muted mb-2">
-                    Stripe gives you two sets of keys: <strong>test</strong> (for trying things out — no real money moves)
+                    Stripe gives you two sets of keys: <strong>test</strong> (for trying things out - no real money moves)
                     and <strong>live</strong> (for real payments from real customers).
                 </p>
                 <p class="text-muted mb-0">
@@ -151,7 +151,7 @@
                            value="{{ pub_key }}"
                            placeholder="pk_live_…"
                            autocomplete="off" spellcheck="false">
-                    <div class="form-text">Safe to share publicly — used in your checkout page code.</div>
+                    <div class="form-text">Safe to share publicly - used in your checkout page code.</div>
                 </div>
 
                 <div class="mb-4">
@@ -257,7 +257,7 @@
             })
             .then(function (r) { return r.json(); })
             .then(function (d) { showResult(d.ok, d.message); })
-            .catch(function () { showResult(false, 'Network error — could not reach server.'); })
+            .catch(function () { showResult(false, 'Network error - could not reach server.'); })
             .finally(function () {
                 testBtn.disabled = false;
                 testBtn.innerHTML = '<i class="bi bi-send me-1"></i>Test connection only';

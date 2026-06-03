@@ -291,7 +291,7 @@ PAGE_TEMPLATES = [
     {
         'key': 'ecommerce',
         'name': 'Shop',
-        'description': 'A working storefront — add products in the dashboard, accept payments via Stripe.',
+        'description': 'A working storefront - add products in the dashboard, accept payments via Stripe.',
         'icon': 'bag-fill',
         'page_type': 'ecommerce',
         'suggested_slug': 'shop',

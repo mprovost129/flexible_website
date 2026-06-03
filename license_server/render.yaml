@@ -15,7 +15,7 @@ services:
       - key: PYTHON_VERSION
         value: "3.12"
       # SQLite lives on the instance's disk. On Render's free tier the disk is
-      # ephemeral (wiped on redeploy), so data resets periodically — fine for a
+      # ephemeral (wiped on redeploy), so data resets periodically - fine for a
       # lightweight tracker since installs re-ping within a day. For durable
       # history, attach a Render Disk (paid) and set LICENSE_DB to a path on it,
       # or swap SQLite for a managed database.

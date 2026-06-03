@@ -83,7 +83,7 @@ ITEM_TEXT_FIELDS = {'title', 'text', 'icon', 'link_url', 'link_text', 'link_styl
 # to the field defaults that make the new item render right away.
 ITEM_KIND_DEFAULTS = {
     'button':  {'link_text': 'New Button', 'link_url': '#'},
-    'text':    {'text': 'New text — click to edit.'},
+    'text':    {'text': 'New text - click to edit.'},
     'heading': {'title': 'New heading'},
 }
 

@@ -1,7 +1,7 @@
 """
 Seller-only marketing pack: the CBL product's own marketing site.
 
-This is the site that sells CBL itself ("Create · Build · Launch") — built
+This is the site that sells CBL itself ("Create · Build · Launch") - built
 *with* CBL to dogfood the product. It is intentionally NOT shipped to buyers:
 
   - `.gitattributes` marks this file `export-ignore`, so it is stripped from the
@@ -24,14 +24,14 @@ BUY_URL = 'https://gumroad.com/l/cbl'
 CBL_MARKETING_PACK = {
     'key': 'cbl_marketing',
     'name': 'CBL Marketing Site',
-    'description': "The CBL product's own marketing site — built with CBL. Seller-only; not part of the buyer package.",
+    'description': "The CBL product's own marketing site - built with CBL. Seller-only; not part of the buyer package.",
     'theme_key': 'midnight',        # bold, premium product feel
     'navbar': 'app',
     'footer': 'footer_4',
     'brand_position': 'left',
     'show_brand_logo': True,
     'show_brand_name': True,
-    'tagline': 'Create · Build · Launch — your website, owned forever.',
+    'tagline': 'Create · Build · Launch - your website, owned forever.',
     'pages': [
         # ------------------------------------------------------------------ Home
         {
@@ -44,7 +44,7 @@ CBL_MARKETING_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Launch a Professional Website. Own It Forever.',
-                    'subheading': 'CBL is a complete website builder you buy once and run yourself — no monthly fees, no code, no lock-in. Pick a template, customize it in your browser, and go live.',
+                    'subheading': 'CBL is a complete website builder you buy once and run yourself - no monthly fees, no code, no lock-in. Pick a template, customize it in your browser, and go live.',
                     'items': [
                         {'item_type': 'button', 'link_text': 'Get CBL', 'link_url': BUY_URL},
                         {'item_type': 'button', 'link_text': 'See Features', 'link_url': '/features/', 'link_style': 'btn-outline-secondary'},
@@ -54,11 +54,11 @@ CBL_MARKETING_PACK = {
                     'type': 'feature_list',
                     'layout': 'layout_1',
                     'heading': 'Why CBL',
-                    'subheading': 'Everything a small business needs to get online — without the subscription treadmill.',
+                    'subheading': 'Everything a small business needs to get online - without the subscription treadmill.',
                     'config': {'columns_desktop': 3},
                     'items': [
                         {'icon': 'cursor-fill',      'title': 'Edit Visually',      'text': 'Click any heading, button, image, or section and change it right on the page. No code, no admin maze.'},
-                        {'icon': 'grid-1x2-fill',    'title': '10+ Templates',      'text': 'Start from a polished, industry-specific design — contractor, salon, law, medical, store, blog, and more.'},
+                        {'icon': 'grid-1x2-fill',    'title': '10+ Templates',      'text': 'Start from a polished, industry-specific design - contractor, salon, law, medical, store, blog, and more.'},
                         {'icon': 'unlock-fill',      'title': 'Buy Once, Own It',   'text': 'A one-time purchase you self-host. No recurring fees and your content is always yours.'},
                     ],
                 },
@@ -78,11 +78,11 @@ CBL_MARKETING_PACK = {
                     'type': 'feature_list',
                     'layout': 'layout_1',
                     'heading': 'More Than a Landing Page',
-                    'subheading': 'Real features, included — not paid add-ons.',
+                    'subheading': 'Real features, included - not paid add-ons.',
                     'config': {'columns_desktop': 2},
                     'items': [
                         {'icon': 'newspaper',        'title': 'Built-in Blog',      'text': 'Publish articles and news with a clean, ready-to-use blog.'},
-                        {'icon': 'bag-fill',         'title': 'Online Store',       'text': 'Sell products with a cart and secure Stripe checkout — paste your own keys, keep 100% of your sales.'},
+                        {'icon': 'bag-fill',         'title': 'Online Store',       'text': 'Sell products with a cart and secure Stripe checkout - paste your own keys, keep 100% of your sales.'},
                         {'icon': 'rulers',           'title': 'Plans & Portfolio',  'text': 'A flexible catalog for projects, plans, or listings with your own spec fields and galleries.'},
                         {'icon': 'megaphone-fill',   'title': 'Banners & SEO',      'text': 'Announcement banners, social share images, and per-page SEO controls out of the box.'},
                     ],
@@ -93,7 +93,7 @@ CBL_MARKETING_PACK = {
                     'heading': 'Loved by Builders',
                     'config': {'columns_desktop': 3},
                     'items': [
-                        {'title': 'Dana P.',   'link_text': 'Freelance Designer', 'icon': 'star-fill', 'text': 'I spun up a client site in an afternoon and handed it off. No monthly bill for them — they were thrilled.'},
+                        {'title': 'Dana P.',   'link_text': 'Freelance Designer', 'icon': 'star-fill', 'text': 'I spun up a client site in an afternoon and handed it off. No monthly bill for them - they were thrilled.'},
                         {'title': 'Marcus L.', 'link_text': 'Contractor',         'icon': 'star-fill', 'text': 'Finally a site I actually own. Edit mode is so simple my office manager updates it herself.'},
                         {'title': 'Priya S.',  'link_text': 'Shop Owner',         'icon': 'star-fill', 'text': 'The store and Stripe setup just worked. I was taking orders the same week.'},
                     ],
@@ -121,7 +121,7 @@ CBL_MARKETING_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Everything You Need to Build and Launch',
-                    'subheading': 'CBL is a full website platform — not a one-page theme. Here is what comes in the box.',
+                    'subheading': 'CBL is a full website platform - not a one-page theme. Here is what comes in the box.',
                     'items': [
                         {'item_type': 'button', 'link_text': 'Get CBL', 'link_url': BUY_URL},
                     ],
@@ -132,9 +132,9 @@ CBL_MARKETING_PACK = {
                     'heading': 'Design & Editing',
                     'config': {'columns_desktop': 2},
                     'items': [
-                        {'icon': 'cursor-fill',        'title': 'Visual Edit Mode',   'text': 'Select any element on the page and change its text, color, link, spacing, and more — live.'},
+                        {'icon': 'cursor-fill',        'title': 'Visual Edit Mode',   'text': 'Select any element on the page and change its text, color, link, spacing, and more - live.'},
                         {'icon': 'palette-fill',       'title': 'Theme System',       'text': 'Switch the whole site palette in one click, or fine-tune colors and fonts per page.'},
-                        {'icon': 'columns-gap',        'title': 'Reusable Sections',  'text': 'Hero, features, gallery, testimonials, pricing, CTA, and more — stack them like blocks.'},
+                        {'icon': 'columns-gap',        'title': 'Reusable Sections',  'text': 'Hero, features, gallery, testimonials, pricing, CTA, and more - stack them like blocks.'},
                         {'icon': 'menu-button-wide-fill', 'title': 'Custom Navigation', 'text': 'Multi-level menus, button links, and footer columns you arrange visually.'},
                     ],
                 },
@@ -156,7 +156,7 @@ CBL_MARKETING_PACK = {
                     'heading': 'Launch & Ownership',
                     'items': [
                         {'icon': 'unlock-fill',        'title': 'No Subscription',    'text': 'Pay once. There is nothing to renew and nothing to cancel.'},
-                        {'icon': 'hdd-network-fill',   'title': 'Self-Hosted',        'text': 'Runs on your own Render + Cloudinary accounts — generous free tiers, full control.'},
+                        {'icon': 'hdd-network-fill',   'title': 'Self-Hosted',        'text': 'Runs on your own Render + Cloudinary accounts - generous free tiers, full control.'},
                         {'icon': 'search',             'title': 'SEO Ready',          'text': 'Per-page titles, descriptions, and social share images built in.'},
                     ],
                 },
@@ -164,7 +164,7 @@ CBL_MARKETING_PACK = {
                     'type': 'image_grid',
                     'layout': 'layout_1',
                     'heading': 'Templates Included',
-                    'subheading': 'Start from a polished design for your industry — then make it yours.',
+                    'subheading': 'Start from a polished design for your industry - then make it yours.',
                     'config': {'columns_desktop': 3},
                     'items': [
                         {'title': 'Contractor / Home Services'},
@@ -211,7 +211,7 @@ CBL_MARKETING_PACK = {
                     'config': {'highlighted_plan': 1},
                     'items': [
                         {
-                            'title': 'CBL — Single Site License',
+                            'title': 'CBL - Single Site License',
                             'link_text': '$49 one-time',
                             'link_url': BUY_URL,
                             'icon': 'star-fill',
@@ -235,7 +235,7 @@ CBL_MARKETING_PACK = {
                     'subheading': 'CBL replaces a stack of monthly bills.',
                     'config': {'columns_desktop': 3},
                     'items': [
-                        {'icon': 'x-circle-fill',  'title': 'No Monthly Fee',     'text': 'Unlike Wix or Squarespace, there is no recurring charge — ever.'},
+                        {'icon': 'x-circle-fill',  'title': 'No Monthly Fee',     'text': 'Unlike Wix or Squarespace, there is no recurring charge - ever.'},
                         {'icon': 'x-circle-fill',  'title': 'No Transaction Cut',  'text': 'Your store runs on your own Stripe account. We never touch your sales.'},
                         {'icon': 'x-circle-fill',  'title': 'No Lock-In',          'text': 'You own the code and the content. Move or back it up whenever you like.'},
                     ],
@@ -247,7 +247,7 @@ CBL_MARKETING_PACK = {
                     'config': {'columns_desktop': 2},
                     'items': [
                         {'icon': 'patch-question-fill', 'title': 'Do I need to know how to code?', 'text': 'No. You customize everything visually in edit mode. The deploy guide walks you through setup step by step.'},
-                        {'icon': 'patch-question-fill', 'title': 'Where does my site live?',       'text': 'On your own Render and Cloudinary accounts — both have free tiers that comfortably run a small business site.'},
+                        {'icon': 'patch-question-fill', 'title': 'Where does my site live?',       'text': 'On your own Render and Cloudinary accounts - both have free tiers that comfortably run a small business site.'},
                         {'icon': 'patch-question-fill', 'title': 'Can I sell products?',           'text': 'Yes. Connect your own Stripe keys and the included store handles cart and checkout.'},
                         {'icon': 'patch-question-fill', 'title': 'What does the license cover?',   'text': 'One live website. Need another? Grab an additional license for each site you launch.'},
                     ],
@@ -275,7 +275,7 @@ CBL_MARKETING_PACK = {
                     'type': 'hero',
                     'layout': 'layout_1',
                     'heading': 'Questions Before You Buy?',
-                    'subheading': 'Ask about features, setup, or licensing — we usually reply within one business day.',
+                    'subheading': 'Ask about features, setup, or licensing - we usually reply within one business day.',
                 },
                 {
                     'type': 'contact_form',

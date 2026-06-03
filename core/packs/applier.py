@@ -143,7 +143,7 @@ def _apply_page(site, page_def, replace=False):
     # Match an existing page by slug first (slug is unique per the schema), then
     # fall back to the first page of this type. We use .filter(...).first()
     # rather than get_or_create because the schema allows more than one page of
-    # the same page_type on a site — get_or_create raises MultipleObjectsReturned
+    # the same page_type on a site - get_or_create raises MultipleObjectsReturned
     # in that case and crashes the whole apply.
     page = (
         Page.objects.filter(site=site, slug=slug).first()

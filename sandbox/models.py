@@ -10,7 +10,7 @@ class SandboxSession(models.Model):
     """
     session_key = models.CharField(max_length=40, unique=True, db_index=True)
     site_id     = models.IntegerField(null=True, blank=True)  # per-session core.Site clone
-    page_id     = models.IntegerField()   # core.Page pk — not a FK so we can delete freely
+    page_id     = models.IntegerField()   # core.Page pk - not a FK so we can delete freely
     is_preview  = models.BooleanField(default=False)
     created_at  = models.DateTimeField(auto_now_add=True)
     last_active = models.DateTimeField(auto_now=True)

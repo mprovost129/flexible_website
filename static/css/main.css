@@ -764,7 +764,7 @@ body.edit-mode .cbl-inspector-selected {
 @media (max-width: 1199.98px) {
     /* Turn the inspector into a slide-in panel from the right (off-canvas).
        Use dvh (dynamic viewport height) so the panel matches the *visible*
-       area on mobile — 100vh sits behind the address bar and pushes the
+       area on mobile - 100vh sits behind the address bar and pushes the
        bottom (Save button) off-screen where it can't be scrolled to. */
     body.edit-mode #edit-sidebar {
         top: 0;

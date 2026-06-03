@@ -1,13 +1,13 @@
-# CBL — Create · Build · Launch
+# CBL - Create · Build · Launch
 
-A self-hosted Django website builder. Build professional websites with a visual editor, no coding required. Includes a blog, shop with Stripe checkout, and a full dashboard — all manageable from the browser.
+A self-hosted Django website builder. Build professional websites with a visual editor, no coding required. Includes a blog, shop with Stripe checkout, and a full dashboard - all manageable from the browser.
 
 ---
 
 ## Table of Contents
 
 1. [What's included](#whats-included)
-2. [Before you start — accounts to create](#before-you-start)
+2. [Before you start - accounts to create](#before-you-start)
 3. [Quick start with Docker](#quick-start-with-docker) ← **recommended for testing**
 4. [Manual setup (without Docker)](#manual-setup)
 5. [Deploying to Render (free hosting)](#deploying-to-render-free-hosting)
@@ -22,15 +22,15 @@ A self-hosted Django website builder. Build professional websites with a visual 
 
 | Feature | Details |
 |---|---|
-| **Visual page editor** | Click anything on your page to edit it — text, images, buttons, layout |
+| **Visual page editor** | Click anything on your page to edit it - text, images, buttons, layout |
 | **Pages & sections** | Build pages from reusable sections (hero, features, gallery, testimonials, pricing, contact form, and more) |
 | **Blog** | Write, publish, and manage posts. Embedded in the visual editor. |
 | **Shop / Ecommerce** | Product catalog, session-based cart, Stripe Checkout. No monthly fees. |
-| **Payments (Stripe)** | Paste your Stripe keys in the dashboard — money goes straight to you |
+| **Payments (Stripe)** | Paste your Stripe keys in the dashboard - money goes straight to you |
 | **Navigation editor** | Live navbar editing with multiple layout presets |
 | **Footer editor** | 5 footer styles, social links, multi-column link lists |
 | **Themes** | 8 built-in color themes, customizable |
-| **Image hosting** | Cloudinary integration — images served from a global CDN |
+| **Image hosting** | Cloudinary integration - images served from a global CDN |
 | **Contact forms** | Every submission saved to the database; optional email notification |
 | **SEO** | Per-page title, description, and Open Graph image |
 | **Responsive** | Bootstrap 5, mobile-first out of the box |
@@ -41,7 +41,7 @@ A self-hosted Django website builder. Build professional websites with a visual 
 
 You will need to create accounts with two services before everything works. Both have generous free tiers.
 
-### 1. Cloudinary — image uploads (free)
+### 1. Cloudinary - image uploads (free)
 
 All uploaded images (logos, section photos, blog thumbnails, product photos) are stored on Cloudinary, which serves them fast from a global CDN. The free tier (25 GB storage + 25 GB/month bandwidth) is plenty for most sites.
 
@@ -50,20 +50,20 @@ All uploaded images (logos, section photos, blog thumbnails, product photos) are
 1. Go to **[cloudinary.com](https://cloudinary.com)** and click **Sign up for free** (no credit card required). You can sign up with Google/GitHub or an email.
 2. After verifying your email you land on the **Dashboard** (Home). Near the top you'll see a **"Product Environment Credentials"** box (sometimes under **Settings → API Keys**).
 3. Copy these **three** values:
-   - **Cloud name** — a short word/slug (e.g. `dxample123`)
-   - **API Key** — a long number
-   - **API Secret** — click the eye/reveal icon to show it, then copy
+   - **Cloud name** - a short word/slug (e.g. `dxample123`)
+   - **API Key** - a long number
+   - **API Secret** - click the eye/reveal icon to show it, then copy
 4. Put them where your install reads config:
    - **Local / Docker:** in your `.env` file as `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
    - **Render:** in the service's **Environment** tab (see the [Render section](#deploying-to-render-free-hosting) below)
 
-> **You can skip this at first.** Without Cloudinary the site runs fine — you just can't upload images (logos/photos). Add the keys any time and uploads start working immediately; nothing else breaks.
+> **You can skip this at first.** Without Cloudinary the site runs fine - you just can't upload images (logos/photos). Add the keys any time and uploads start working immediately; nothing else breaks.
 
-> **Tip:** The API Secret is sensitive — treat it like a password. Never commit it to a public repo (your `.env` is already git-ignored).
+> **Tip:** The API Secret is sensitive - treat it like a password. Never commit it to a public repo (your `.env` is already git-ignored).
 
 ---
 
-### 2. Stripe — payments (free account, pay-per-transaction)
+### 2. Stripe - payments (free account, pay-per-transaction)
 
 Only needed if you want the shop to accept real payments. You can skip this entirely if you are just testing or building a non-ecommerce site.
 
@@ -71,19 +71,19 @@ Only needed if you want the shop to accept real payments. You can skip this enti
 2. Complete the identity verification to activate your account (takes ~5 minutes)
 3. In your Stripe dashboard go to **Developers → API keys**
 4. You will see two keys:
-   - **Publishable key** — starts with `pk_live_...` (or `pk_test_...` for testing)
-   - **Secret key** — starts with `sk_live_...` (or `sk_test_...` for testing)
-5. You can enter these inside CBL at any time — go to **Dashboard → Payments** after logging in
+   - **Publishable key** - starts with `pk_live_...` (or `pk_test_...` for testing)
+   - **Secret key** - starts with `sk_live_...` (or `sk_test_...` for testing)
+5. You can enter these inside CBL at any time - go to **Dashboard → Payments** after logging in
 
 > **Start with test keys** (`pk_test_...` / `sk_test_...`). They look and feel identical to real payments but no money moves. Test card: `4242 4242 4242 4242`, any future expiry, any 3-digit CVV. Switch to live keys when you are ready to go live.
 
-> **Stripe's fee:** ~2.9% + 30¢ per successful transaction. No monthly fee. CBL takes nothing — money goes directly from your customer to your Stripe account.
+> **Stripe's fee:** ~2.9% + 30¢ per successful transaction. No monthly fee. CBL takes nothing - money goes directly from your customer to your Stripe account.
 
 ---
 
 ## Quick start with Docker
 
-**Requirements:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running. That's it — no Python, PostgreSQL, or anything else needed locally.
+**Requirements:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running. That's it - no Python, PostgreSQL, or anything else needed locally.
 
 ```bash
 # 1. Get the code
@@ -119,14 +119,14 @@ docker-compose down
 # Restart (your database is preserved in a Docker volume)
 docker-compose up
 
-# Full reset — deletes the database and starts fresh
+# Full reset - deletes the database and starts fresh
 docker-compose down -v
 docker-compose up --build
 ```
 
 ### Making code changes
 
-The project folder is mounted as a volume, so any file you edit is immediately reflected — Django's dev server restarts automatically.
+The project folder is mounted as a volume, so any file you edit is immediately reflected - Django's dev server restarts automatically.
 
 ---
 
@@ -153,7 +153,7 @@ createdb cbl_db                  # or use pgAdmin
 
 # 4. Set up your environment
 cp .env.example .env
-# Edit .env — set DB_NAME, DB_USER, DB_PASSWORD, and your Cloudinary keys
+# Edit .env - set DB_NAME, DB_USER, DB_PASSWORD, and your Cloudinary keys
 
 # 5. Run migrations
 python manage.py migrate
@@ -168,13 +168,13 @@ Visit [http://localhost:8000/setup/](http://localhost:8000/setup/) on first run.
 
 ## Deploying to Render (free hosting)
 
-Render hosts your site for free on a `your-name.onrender.com` subdomain with a managed PostgreSQL database. The included `render.yaml` sets almost everything up automatically — you only have to paste in your Cloudinary keys.
+Render hosts your site for free on a `your-name.onrender.com` subdomain with a managed PostgreSQL database. The included `render.yaml` sets almost everything up automatically - you only have to paste in your Cloudinary keys.
 
-### Step 1 — Put the code in a Git repository
+### Step 1 - Put the code in a Git repository
 
 Render deploys from a Git repo, so the unzipped folder needs to live on **GitHub** (free; a private repo is fine).
 
-**Easiest (no command line) — GitHub Desktop:**
+**Easiest (no command line) - GitHub Desktop:**
 1. Install **[GitHub Desktop](https://desktop.github.com/)** and sign in (create a free GitHub account if needed).
 2. **File → Add Local Repository →** choose the unzipped `flexible_website` folder → click **create a repository** when prompted → **Create Repository**.
 3. Click **Publish repository** (keep "Keep this code private" checked) → done.
@@ -189,14 +189,14 @@ git branch -M main
 git push -u origin main
 ```
 
-### Step 2 — Create the Render services from the blueprint
+### Step 2 - Create the Render services from the blueprint
 
 1. Create a free account at **[render.com](https://render.com)** and connect your GitHub.
 2. In Render click **New → Blueprint**.
 3. Select the repository you just pushed. Render detects **`render.yaml`** and shows the resources it will create: a **web service** (`cbl`) and a **free PostgreSQL database** (`cbl-db`).
-4. Click **Apply**. Render auto-generates the secret key, wires up the database, and sets `DEBUG`, `ALLOWED_HOSTS`, `DJANGO_SETTINGS_MODULE`, and `CSRF_TRUSTED_ORIGINS` for you — no manual entry needed for those.
+4. Click **Apply**. Render auto-generates the secret key, wires up the database, and sets `DEBUG`, `ALLOWED_HOSTS`, `DJANGO_SETTINGS_MODULE`, and `CSRF_TRUSTED_ORIGINS` for you - no manual entry needed for those.
 
-### Step 3 — Add your Cloudinary keys
+### Step 3 - Add your Cloudinary keys
 
 The blueprint intentionally leaves the three Cloudinary values blank for you to fill in (they're your private keys):
 
@@ -205,11 +205,11 @@ The blueprint intentionally leaves the three Cloudinary values blank for you to 
    - `CLOUDINARY_CLOUD_NAME`
    - `CLOUDINARY_API_KEY`
    - `CLOUDINARY_API_SECRET`
-3. Click **Save Changes** — Render redeploys automatically.
+3. Click **Save Changes** - Render redeploys automatically.
 
 > You can deploy without these to see the site first; just add them before you upload any images.
 
-### Step 4 — Finish setup
+### Step 4 - Finish setup
 
 1. Wait ~3–5 minutes for the first build (watch the **Logs** tab; it runs install → collectstatic → migrate).
 2. When it's **Live**, open **`https://your-name.onrender.com/setup/`** and complete the [first-time setup](#first-time-site-setup).
@@ -228,13 +228,13 @@ Push changes to your GitHub repo's `main` branch (GitHub Desktop: **Commit** the
 
 ## First-time site setup
 
-When you visit the site for the very first time you will see a setup screen. It runs once — after you complete it, it disappears permanently.
+When you visit the site for the very first time you will see a setup screen. It runs once - after you complete it, it disappears permanently.
 
 **What the setup screen does:**
 
-1. **Creates your admin account** — enter an email and password. This is how you log into the dashboard.
-2. **Names your site** — sets the site name shown in the navbar and browser tab.
-3. **Picks a starting point** — choose a pre-built industry template (coffee shop, agency, portfolio, etc.) or start blank. You can always change everything later.
+1. **Creates your admin account** - enter an email and password. This is how you log into the dashboard.
+2. **Names your site** - sets the site name shown in the navbar and browser tab.
+3. **Picks a starting point** - choose a pre-built industry template (coffee shop, agency, portfolio, etc.) or start blank. You can always change everything later.
 
 After completing setup you will be logged in and dropped onto your site in **edit mode**, ready to start customizing.
 
@@ -242,7 +242,7 @@ After completing setup you will be logged in and dropped onto your site in **edi
 
 ## Using the site
 
-### The dashboard — `/cbl/`
+### The dashboard - `/cbl/`
 
 The dashboard is where you manage everything behind the scenes:
 
@@ -252,12 +252,12 @@ The dashboard is where you manage everything behind the scenes:
 | **Blog** | Write and publish blog posts |
 | **Products** | Add products to your shop |
 | **Orders** | See customer orders |
-| **Payments** | Connect Stripe — paste your keys here |
+| **Payments** | Connect Stripe - paste your keys here |
 | **Navigation** | Manage navbar links |
 | **Footer** | Manage footer links and columns |
 | **Site Settings** | Name, logo, theme, navbar style, social links |
 
-### Edit mode — editing your site visually
+### Edit mode - editing your site visually
 
 Toggle edit mode using the **"Edit"** button in the floating toolbar at the top of any page (visible only when logged in as staff).
 
@@ -267,7 +267,7 @@ In edit mode:
 - **Click a button/CTA** to change its text, link, color, size, hover effect
 - **Click a section heading** to change it
 - **Click a nav link** to edit its label or URL
-- **Hover over an intercepted link** — a small **"→ Visit"** badge appears so you can follow it and navigate to another page while staying in edit mode
+- **Hover over an intercepted link** - a small **"→ Visit"** badge appears so you can follow it and navigate to another page while staying in edit mode
 - **Use the "Switch page" dropdown** in the toolbar to jump to any page
 
 **Adding and removing sections:**
@@ -291,14 +291,14 @@ Each page is built from sections stacked vertically. In edit mode, hover over an
 1. Go to **Dashboard → Blog → New Post**
 2. Write your post (HTML is supported in the body)
 3. Set the status to **Published** and set a publish date
-4. Save — the post appears at `/blog/`
+4. Save - the post appears at `/blog/`
 
 To add a "Recent Posts" section to any page, go into edit mode, hover over the add-section bar at the bottom of the page, and choose **Recent Blog Posts**.
 
 ### Setting up the shop
 
 1. Go to **Dashboard → Payments** and paste your Stripe API keys
-2. Go to **Dashboard → Products → Add Product** — add name, price, description, and a photo
+2. Go to **Dashboard → Products → Add Product** - add name, price, description, and a photo
 3. Add a **Product Grid** section to any page (or use the "Shop" page template from the new-page picker)
 4. Customers can browse products, add to cart, and check out via Stripe's hosted payment page
 5. Completed orders appear in **Dashboard → Orders**
@@ -319,7 +319,7 @@ All variables go in your `.env` file (local) or your hosting provider's environm
 | `DB_PASSWORD` | **Yes** | PostgreSQL password |
 | `DB_HOST` | No | Database host (default: `localhost`) |
 | `DB_PORT` | No | Database port (default: `5432`) |
-| `DATABASE_URL` | No | Full connection string — overrides the `DB_*` vars above. Used on Render/Heroku. |
+| `DATABASE_URL` | No | Full connection string - overrides the `DB_*` vars above. Used on Render/Heroku. |
 | `CLOUDINARY_CLOUD_NAME` | No* | From cloudinary.com dashboard |
 | `CLOUDINARY_API_KEY` | No* | From cloudinary.com dashboard |
 | `CLOUDINARY_API_SECRET` | No* | From cloudinary.com dashboard |
@@ -334,9 +334,9 @@ All variables go in your `.env` file (local) or your hosting provider's environm
 | `REDIS_URL` | No | Redis connection string for production caching |
 | `DJANGO_LOG_LEVEL` | No | Default `INFO` |
 | `LICENSE_KEY` | Yes† | Your purchase license key (from your receipt). See License below. |
-| `LICENSE_CHECK_URL` | — | Seller-set license server. Blank = license check disabled. |
+| `LICENSE_CHECK_URL` | - | Seller-set license server. Blank = license check disabled. |
 | `LICENSE_PING_ENABLED` | No | `True`/`False`. Default `True`. |
-| `GUMROAD_PRODUCT_ID` | — | Seller-set. Used to verify license keys at setup; ships with a default. |
+| `GUMROAD_PRODUCT_ID` | - | Seller-set. Used to verify license keys at setup; ships with a default. |
 
 \* Required for image uploads. Everything else still works without these.
 † Required by the license terms; the software runs without it but doing so is a license breach.
@@ -345,7 +345,7 @@ All variables go in your `.env` file (local) or your hosting provider's environm
 
 ## License
 
-This software is sold under a **single-site license** — one purchase covers one
+This software is sold under a **single-site license** - one purchase covers one
 live production website. See **[LICENSE.md](LICENSE.md)** for the full terms,
 including agency / multi-site options.
 
@@ -404,7 +404,7 @@ flexible_website/
 
 **Tech stack:**
 - Django 6 + PostgreSQL
-- Bootstrap 5.3 (themed via CSS custom properties — no SCSS compilation)
+- Bootstrap 5.3 (themed via CSS custom properties - no SCSS compilation)
 - Cloudinary for media storage
 - Stripe Checkout for payments
 - WhiteNoise for static file serving in production

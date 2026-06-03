@@ -1,12 +1,12 @@
 # Files and directories marked export-ignore are excluded from `git archive`
 # (i.e. the ZIP you send to testers via `git archive --format=zip HEAD`).
 
-# Sandbox demo — not part of the distributable product
+# Sandbox demo - not part of the distributable product
 sandbox/                    export-ignore
 templates/sandbox/          export-ignore
 static/sandbox/             export-ignore
 
-# Seller-only — never ship to buyers
+# Seller-only - never ship to buyers
 SELLER_NOTES.md             export-ignore
 license_server/             export-ignore
 core/packs/cbl_marketing.py export-ignore

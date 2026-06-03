@@ -6,7 +6,7 @@ Only used in production (wired in config/Settings/prod.py). The dev server keeps
 serving the original, readable source files untouched.
 
 Minification is best-effort: any failure on a single file is swallowed so it
-can never break a deploy — that file just ships unminified.
+can never break a deploy - that file just ships unminified.
 """
 
 import rcssmin

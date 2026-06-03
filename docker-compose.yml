@@ -37,7 +37,7 @@ services:
       - "8000:8000"
     env_file:
       - path: .env
-        required: false          # .env is optional — pre-set defaults cover basics
+        required: false          # .env is optional - pre-set defaults cover basics
     environment:
       DJANGO_SETTINGS_MODULE: config.Settings.docker
       SECRET_KEY: "local-dev-only-please-change-before-any-public-deployment"

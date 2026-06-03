@@ -18,7 +18,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         url = (getattr(settings, 'LICENSE_CHECK_URL', '') or '').strip()
         if not url:
-            self.stdout.write(self.style.WARNING('LICENSE_CHECK_URL is not set — nothing sent.'))
+            self.stdout.write(self.style.WARNING('LICENSE_CHECK_URL is not set - nothing sent.'))
             return
         payload = licensing._payload(options['host'])
         licensing._send(url, payload)

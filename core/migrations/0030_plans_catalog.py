@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
             name='Plan',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(help_text='Plan header — e.g. a job number or project name.', max_length=200)),
+                ('title', models.CharField(help_text='Plan header - e.g. a job number or project name.', max_length=200)),
                 ('slug', models.SlugField(max_length=200, unique=True)),
                 ('description', models.TextField(blank=True, help_text='Optional longer description shown on the detail page.')),
                 ('specs', models.JSONField(blank=True, default=list)),

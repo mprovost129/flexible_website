@@ -2,8 +2,8 @@
 sandbox/views.py
 
 Two concerns:
-  1. Visitor-facing views  — landing page, enter/exit, the sandbox page itself.
-  2. API endpoints          — mirror every /edit/ endpoint but auth via sandbox
+  1. Visitor-facing views  - landing page, enter/exit, the sandbox page itself.
+  2. API endpoints          - mirror every /edit/ endpoint but auth via sandbox
                               session key instead of staff login.
 
 The fetch interceptor in sandbox_patch.js rewrites /edit/<path> → /sandbox/api/<path>
@@ -206,7 +206,7 @@ def sandbox_home(request):
     try:
         page = Page.objects.get(pk=sandbox.page_id)
     except Page.DoesNotExist:
-        # Page was deleted (cleanup?) — clear session and show landing
+        # Page was deleted (cleanup?) - clear session and show landing
         del request.session[SESSION_KEY]
         return redirect('sandbox:home')
 
@@ -349,7 +349,7 @@ def api_sandbox_set_theme(request):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Nav link API — operates on the session site's cloned NavLinks
+# Nav link API - operates on the session site's cloned NavLinks
 # ─────────────────────────────────────────────────────────────────────────────
 
 NAVLINK_FIELDS = {'label', 'url', 'is_button', 'open_new_tab', 'is_visible', 'slot', 'page_id', 'margin_left', 'margin_right'}

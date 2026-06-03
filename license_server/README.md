@@ -1,7 +1,7 @@
 # CBL License Server (seller-only)
 
 Receives the daily license pings from deployed CBL installs and shows you a
-dashboard to spot misuse. **Do not ship this to buyers** — it's excluded from
+dashboard to spot misuse. **Do not ship this to buyers** - it's excluded from
 the product package via `.gitattributes` (`export-ignore`).
 
 ## Run locally
@@ -21,7 +21,7 @@ ADMIN_TOKEN=pick-a-long-secret python app.py
 1. Push this repo to GitHub (the license server lives in `license_server/`).
 2. Render → **New → Blueprint** → select the repo. The `license_server/render.yaml`
    blueprint creates the service (note `rootDir: license_server`).
-3. Render auto-generates `ADMIN_TOKEN` — open the service → **Environment** to copy it.
+3. Render auto-generates `ADMIN_TOKEN` - open the service → **Environment** to copy it.
 4. Your ping URL is `https://cbl-license-server.onrender.com/api/ping`.
    Dashboard: `https://cbl-license-server.onrender.com/?token=YOUR_ADMIN_TOKEN`.
 
@@ -38,9 +38,9 @@ every install reports to you:
 
 ## Reading the dashboard
 
-- **By license key** — each key with the count of distinct production **domains**.
+- **By license key** - each key with the count of distinct production **domains**.
   More than one domain on a key = one license used on multiple sites (flagged red).
-- **No license key** — installs running without a key (flagged amber).
+- **No license key** - installs running without a key (flagged amber).
 - `GET /api/installs?token=...` returns the same summary as JSON for scripting.
 
 ## Verifying keys against Gumroad (optional)

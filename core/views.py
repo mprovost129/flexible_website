@@ -186,7 +186,7 @@ def _client_ip(request):
 
 
 def blog_list_public(request):
-    """Public blog listing — paginated, published posts only (staff sees all)."""
+    """Public blog listing - paginated, published posts only (staff sees all)."""
     site = get_active_site(request)
     is_staff = request.user.is_authenticated and request.user.is_staff
     qs = BlogPost.objects.filter(site=site)

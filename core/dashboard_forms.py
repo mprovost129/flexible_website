@@ -264,8 +264,8 @@ class PlanForm(BootstrapModelForm):
             'is_published': 'Published (visible on the site)',
         }
         help_texts = {
-            'title': 'Used as the header — e.g. a job number or project name.',
-            'slug': 'URL-safe identifier — auto-filled from the title.',
+            'title': 'Used as the header - e.g. a job number or project name.',
+            'slug': 'URL-safe identifier - auto-filled from the title.',
             'description': 'Optional longer description shown on the plan detail page.',
         }
 
@@ -316,7 +316,7 @@ class ProductForm(BootstrapModelForm):
             'stock': 'Stock quantity',
         }
         help_texts = {
-            'slug': 'URL-safe identifier — auto-filled from name.',
+            'slug': 'URL-safe identifier - auto-filled from name.',
             'price': 'Price in dollars, e.g. 9.99',
             'stock': 'Leave blank for unlimited.',
         }
@@ -342,7 +342,7 @@ class BlogPostForm(BootstrapModelForm):
             'published_at': 'Publish date/time',
         }
         help_texts = {
-            'slug': 'URL-safe identifier. Auto-filled from title — only change if needed.',
+            'slug': 'URL-safe identifier. Auto-filled from title - only change if needed.',
             'excerpt': 'Shown on the blog listing page. If blank, the first paragraph of the body is used.',
             'body': 'Full post content. HTML is supported.',
             'meta_title': 'Overrides the title in search results. Leave blank to use the post title.',

@@ -63,7 +63,7 @@
             var row = badgeDiv.closest('.mb-3');
             if (row && !row.dataset.sandboxPatched) {
                 row.dataset.sandboxPatched = '1';
-                row.innerHTML = '<span class="badge text-bg-secondary">Sandbox — changes are not saved</span>';
+                row.innerHTML = '<span class="badge text-bg-secondary">Sandbox - changes are not saved</span>';
             }
         }
     }

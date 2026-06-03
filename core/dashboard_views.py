@@ -489,7 +489,7 @@ def _validate_stripe_keys(publishable_key, secret_key):
         )
         return name, None
     except stripe.AuthenticationError:
-        return None, 'Invalid secret key — Stripe rejected it. Double-check you copied the full key.'
+        return None, 'Invalid secret key - Stripe rejected it. Double-check you copied the full key.'
     except stripe.PermissionError:
         return None, 'Key does not have permission to read account details. Use a Standard (not Restricted) key.'
     except Exception as e:
@@ -529,7 +529,7 @@ def stripe_setup(request):
                 site.stripe_publishable_key = pub
                 site.stripe_secret_key = sec
                 site.save(update_fields=['stripe_publishable_key', 'stripe_secret_key'])
-                messages.success(request, f'Stripe connected — {account_name}.')
+                messages.success(request, f'Stripe connected - {account_name}.')
         else:
             # Clearing keys.
             site.stripe_publishable_key = pub
@@ -555,7 +555,7 @@ def stripe_setup(request):
 
 @staff_required
 def stripe_validate(request):
-    """AJAX endpoint — validate keys without saving. Returns JSON."""
+    """AJAX endpoint - validate keys without saving. Returns JSON."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
     pub = request.POST.get('publishable_key', '').strip()
@@ -746,7 +746,7 @@ def plan_duplicate(request, pk):
     )
     for img in src.images.all():
         PlanImage.objects.create(plan=clone, image=img.image, order=img.order)
-    messages.success(request, 'Plan duplicated — edit the copy below, then change its images and values.')
+    messages.success(request, 'Plan duplicated - edit the copy below, then change its images and values.')
     return redirect('core:dashboard_plan_edit', pk=clone.pk)
 
 
