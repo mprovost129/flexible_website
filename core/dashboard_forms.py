@@ -71,7 +71,12 @@ class SiteSettingsForm(BootstrapModelForm):
         ('light', 'Light pill'),
     ]
 
-    nav_height_px = forms.IntegerField(min_value=48, max_value=180, required=False, label='Navbar height (px)')
+    nav_height_mode = forms.ChoiceField(
+        choices=[('fixed', 'Fixed height'), ('auto', 'Auto (fit logo + padding)')],
+        required=False, label='Navbar height mode',
+    )
+    nav_height_px = forms.IntegerField(min_value=48, max_value=180, required=False,
+                                       label='Navbar height (px) — used in Fixed mode')
     nav_padding_x = forms.FloatField(min_value=0, max_value=6, required=False, label='Navbar horizontal padding (rem)')
     nav_padding_y = forms.FloatField(min_value=0, max_value=3, required=False, label='Navbar vertical padding (rem)')
     nav_gap_px = forms.IntegerField(min_value=0, max_value=64, required=False, label='Navbar zone gap (px)')
@@ -146,6 +151,7 @@ class SiteSettingsForm(BootstrapModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         cfg = self.instance.navbar_config_merged if self.instance and self.instance.pk else {}
+        self.fields['nav_height_mode'].initial = cfg.get('height_mode', 'fixed')
         self.fields['nav_height_px'].initial = cfg.get('height_px')
         self.fields['nav_padding_x'].initial = cfg.get('padding_x')
         self.fields['nav_padding_y'].initial = cfg.get('padding_y')
@@ -201,6 +207,7 @@ class SiteSettingsForm(BootstrapModelForm):
         site = super().save(commit=False)
         cfg = dict(site.navbar_config_merged if hasattr(site, 'navbar_config_merged') else {})
         cfg.update({
+            'height_mode': self.cleaned_data.get('nav_height_mode') or cfg.get('height_mode', 'fixed'),
             'height_px': self.cleaned_data.get('nav_height_px') or cfg.get('height_px'),
             'padding_x': self.cleaned_data.get('nav_padding_x') if self.cleaned_data.get('nav_padding_x') is not None else cfg.get('padding_x'),
             'padding_y': self.cleaned_data.get('nav_padding_y') if self.cleaned_data.get('nav_padding_y') is not None else cfg.get('padding_y'),

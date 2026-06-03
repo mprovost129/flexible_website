@@ -1423,6 +1423,12 @@ body:not(.edit-mode) .nav-drag-handle {
     min-height: var(--cbl-nav-height, auto);
     background: inherit !important;
     color: inherit !important;
+    /* Bootstrap's .navbar adds its own vertical padding on top of our control.
+       Zero it so the "Navbar vertical padding" setting (applied to the inner
+       container as --cbl-nav-pad-y) is the single source of truth. */
+    --bs-navbar-padding-y: 0;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 .cbl-navbar-shell .navbar > .container,
 .cbl-navbar-shell .navbar > .container-fluid {

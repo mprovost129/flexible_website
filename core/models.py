@@ -6,6 +6,7 @@ from cloudinary.models import CloudinaryField
 def default_navbar_config():
     """Default low-risk navbar design controls for v1."""
     return {
+        'height_mode': 'fixed',  # 'fixed' = use height_px; 'auto' = fit content + padding
         'height_px': 76,
         'padding_x': 0.0,      # rem
         'padding_y': 0.4,      # rem

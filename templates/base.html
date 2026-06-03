@@ -213,6 +213,7 @@
              data-nav-sticky="{{ cms_site.navbar_sticky|yesno:'1,0' }}"
              data-nav-shadow="{{ cms_site.navbar_shadow|yesno:'1,0' }}"
              data-nav-container="{{ cms_site.navbar_container }}"
+             data-nav-height-mode="{{ nc.height_mode|default:'fixed' }}"
              data-nav-height="{{ nc.height_px|default:76 }}"
              data-nav-pad-y="{{ nc.padding_y|default_if_none:'0.4' }}"
              data-nav-gap="{{ nc.gap_px|default_if_none:'12' }}"

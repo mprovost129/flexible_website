@@ -258,6 +258,7 @@ NAVBAR_CONFIG_NUMERIC_KEYS = {
     'border_width_px', 'container_max_px', 'brand_weight',
 }
 NAVBAR_CONFIG_CHOICE_KEYS = {
+    'height_mode': {'fixed', 'auto'},
     'link_style': {'pill', 'underline', 'plain'},
     'zone_distribution': {'balanced', 'center-heavy', 'split'},
     'mobile_menu_style': {'collapse', 'offcanvas'},

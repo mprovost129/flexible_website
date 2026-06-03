@@ -1747,6 +1747,7 @@
     var sticky    = r ? r.dataset.navSticky      === '1'        : false;
     var shadow    = r ? r.dataset.navShadow      === '1'        : true;
     var container = r ? (r.dataset.navContainer  || 'container'): 'container';
+    var heightMode = r ? (r.dataset.navHeightMode || 'fixed')   : 'fixed';
     var height    = r ? (r.dataset.navHeight     || '76')       : '76';
     var padY      = r ? (r.dataset.navPadY       || '0.4')      : '0.4';
     var gap       = r ? (r.dataset.navGap        || '12')       : '12';
@@ -1787,7 +1788,12 @@
       '</div>' +
       '<div class="edit-sidebar-section">' +
         '<h3>Layout</h3>' +
-        '<label class="form-label small mb-1">Height (px)</label>' +
+        '<label class="form-label small mb-1">Height</label>' +
+        '<select class="form-select form-select-sm mb-2 sidebar-navbar-height-mode">' +
+          '<option value="fixed"' + (heightMode === 'auto' ? '' : ' selected') + '>Fixed (set px)</option>' +
+          '<option value="auto"'  + (heightMode === 'auto' ? ' selected' : '') + '>Auto (fit logo + padding)</option>' +
+        '</select>' +
+        '<label class="form-label small mb-1">Height (px) — Fixed mode</label>' +
         '<input type="number" class="form-control form-control-sm mb-2 sidebar-navbar-height" value="' + escapeHtml(height) + '" min="48" max="180">' +
         '<div class="d-flex gap-2 mb-2">' +
           '<div class="flex-fill">' +
@@ -1852,6 +1858,7 @@
       var bg           = body.querySelector('.sidebar-navbar-bg');
       var textCol      = body.querySelector('.sidebar-navbar-text-color');
       var linkCol      = body.querySelector('.sidebar-navbar-link-color');
+      var heightMode   = body.querySelector('.sidebar-navbar-height-mode');
       var height       = body.querySelector('.sidebar-navbar-height');
       var padY         = body.querySelector('.sidebar-navbar-pad-y');
       var gap          = body.querySelector('.sidebar-navbar-gap');
@@ -1882,6 +1889,7 @@
         .then(function () { return cfg('bg_color',        bg           ? bg.value.trim()        : ''); })
         .then(function () { return cfg('text_color',      textCol      ? textCol.value.trim()   : ''); })
         .then(function () { return cfg('link_color',      linkCol      ? linkCol.value.trim()   : ''); })
+        .then(function () { return cfg('height_mode',     heightMode   ? heightMode.value       : 'fixed'); })
         .then(function () { return cfg('height_px',       height       ? height.value           : '76'); })
         .then(function () { return cfg('padding_y',       padY         ? padY.value             : '0.4'); })
         .then(function () { return cfg('gap_px',          gap          ? gap.value              : '12'); });

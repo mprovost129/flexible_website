@@ -18,7 +18,7 @@ left, center, or right through Site Settings and NavLink.slot.
         --cbl-nav-text: {% if nc.text_color %}{{ nc.text_color }}{% elif theme == 'light' %}#212529{% else %}#ffffff{% endif %};
         --cbl-nav-link: {% if nc.link_color %}{{ nc.link_color }}{% else %}currentColor{% endif %};
         --cbl-nav-link-hover: {% if nc.link_hover_color %}{{ nc.link_hover_color }}{% else %}currentColor{% endif %};
-        --cbl-nav-height: {{ nc.height_px|default_if_none:76 }}px;
+        --cbl-nav-height: {% if nc.height_mode == 'auto' %}auto{% else %}{{ nc.height_px|default_if_none:76 }}px{% endif %};
         --cbl-nav-pad-x: {{ nc.padding_x|default_if_none:0 }}rem;
         --cbl-nav-pad-y: {{ nc.padding_y|default_if_none:0.4 }}rem;
         --cbl-nav-gap: {{ nc.gap_px|default_if_none:12 }}px;
