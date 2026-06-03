@@ -139,6 +139,10 @@
     {% endif %}
 
     {% block extra_css %}{% endblock %}
+
+    {# Owner custom code (staff-entered, trusted). Analytics, fonts, meta tags. #}
+    {% if cms_site.custom_css %}<style>{{ cms_site.custom_css|safe }}</style>{% endif %}
+    {% if cms_site.head_html %}{{ cms_site.head_html|safe }}{% endif %}
 </head>
 {% if cms_site %}{% with bnc=cms_site.navbar_config_merged %}
 <body{% if edit_mode_active or request.user.is_authenticated and request.user.is_staff %}
@@ -347,5 +351,7 @@
     {% endif %}
     {% block extra_js %}{% endblock %}
 
+    {# Owner custom code injected before </body> (deferred scripts, chat, pixels). #}
+    {% if cms_site.body_end_html %}{{ cms_site.body_end_html|safe }}{% endif %}
 </body>
 </html>

@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 from .dashboard_forms import (
     BannerForm,
     BlogPostForm,
+    CustomCodeForm,
     FooterColumnForm,
     FooterLinkForm,
     NavLinkForm,
@@ -93,6 +94,22 @@ def templates_gallery(request):
         packs=packs,
         current_pack_key=site.active_pack_key,
     ))
+
+
+@staff_required
+def custom_code(request):
+    """Advanced: inject head/body HTML and custom CSS site-wide (analytics,
+    pixels, fonts, CSS tweaks)."""
+    site = get_active_site(request)
+    if request.method == 'POST':
+        form = CustomCodeForm(request.POST, instance=site)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Custom code saved. It now runs on every public page.')
+            return redirect('core:dashboard_custom_code')
+    else:
+        form = CustomCodeForm(instance=site)
+    return render(request, 'dashboard/custom_code.html', _dashboard_context(request, form=form))
 
 
 @staff_required

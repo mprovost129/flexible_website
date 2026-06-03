@@ -24,6 +24,31 @@ class BootstrapModelForm(forms.ModelForm):
                 widget.attrs.setdefault('class', 'form-control')
 
 
+class CustomCodeForm(BootstrapModelForm):
+    """Advanced: raw head/body HTML and custom CSS injected on every page."""
+
+    class Meta:
+        model = Site
+        fields = ['head_html', 'custom_css', 'body_end_html']
+        widgets = {
+            'head_html': forms.Textarea(attrs={
+                'rows': 8, 'spellcheck': 'false',
+                'style': 'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem',
+                'placeholder': '<!-- e.g. Google Analytics, fonts, verification meta tags -->',
+            }),
+            'custom_css': forms.Textarea(attrs={
+                'rows': 8, 'spellcheck': 'false',
+                'style': 'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem',
+                'placeholder': '/* e.g. .my-class { color: #333; } */',
+            }),
+            'body_end_html': forms.Textarea(attrs={
+                'rows': 8, 'spellcheck': 'false',
+                'style': 'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem',
+                'placeholder': '<!-- e.g. chat widget or pixel scripts -->',
+            }),
+        }
+
+
 class SiteSettingsForm(BootstrapModelForm):
     LINK_STYLE_CHOICES = [
         ('pill', 'Pill'),

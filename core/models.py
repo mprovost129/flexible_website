@@ -217,6 +217,26 @@ class Site(models.Model):
     # When multi-tenant is enabled, site_resolver matches request host to this.
     domain = models.CharField(max_length=255, blank=True, db_index=True)
 
+    # --- Custom code injection (advanced) -----------------------------------
+    # Owner-supplied markup rendered verbatim into every public page. Used for
+    # analytics (Google Analytics, Meta Pixel), verification meta tags, web
+    # fonts, chat widgets, and small style/script tweaks. Only site staff can
+    # edit these (dashboard, login-gated), so the raw HTML is trusted output.
+    head_html = models.TextField(
+        blank=True, default='',
+        help_text='Code added inside <head> on every page — analytics tags, '
+                  'verification meta tags, fonts. Paste exactly what your provider gives you.',
+    )
+    body_end_html = models.TextField(
+        blank=True, default='',
+        help_text='Code added just before </body> on every page — deferred '
+                  'scripts, chat widgets, pixels that load late.',
+    )
+    custom_css = models.TextField(
+        blank=True, default='',
+        help_text='Custom CSS applied site-wide. Do not include <style> tags — just the CSS rules.',
+    )
+
     def __str__(self):
         return self.name
 

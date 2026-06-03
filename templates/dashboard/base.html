@@ -53,6 +53,7 @@
             <a href="{% url 'core:dashboard_orders' %}" class="{% if request.resolver_match.url_name == 'dashboard_orders' %}active{% endif %}"><i class="bi bi-receipt"></i> Orders</a>
             <a href="{% url 'core:dashboard_stripe' %}" class="{% if 'dashboard_stripe' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-credit-card"></i> Payments</a>
             <a href="{% url 'core:dashboard_settings' %}" class="{% if request.resolver_match.url_name == 'dashboard_settings' %}active{% endif %}"><i class="bi bi-sliders"></i> Site Settings</a>
+            <a href="{% url 'core:dashboard_custom_code' %}" class="{% if request.resolver_match.url_name == 'dashboard_custom_code' %}active{% endif %}"><i class="bi bi-code-slash"></i> Custom Code</a>
             <a href="/" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> View Site</a>
             <a href="/admin/" target="_blank" rel="noopener"><i class="bi bi-tools"></i> Advanced Admin</a>
         </nav>

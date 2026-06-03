@@ -1,0 +1,54 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Custom Code | CBL{% endblock %}
+{% block heading %}Custom Code{% endblock %}
+{% block content %}
+
+<div class="alert alert-warning d-flex gap-2 align-items-start" role="alert">
+    <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+    <div>
+        <strong>Advanced feature.</strong> Code here runs on every public page exactly as written.
+        Only paste code from sources you trust (Google, Meta, your font or chat provider).
+        Invalid markup can affect how your site looks or loads — if something breaks, clear the box and save again.
+    </div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+
+    <div class="cbl-card p-3 mb-3">
+        <h2 class="h6 fw-bold mb-1"><i class="bi bi-google me-1"></i> Header code <span class="text-muted fw-normal">(inside &lt;head&gt;)</span></h2>
+        <p class="text-muted small mb-2">
+            Best place for <strong>Google Analytics</strong>, search-console verification meta tags,
+            and web-font links. Paste exactly what your provider gives you (including any
+            <code>&lt;script&gt;</code> tags).
+        </p>
+        {{ form.head_html }}
+        {% if form.head_html.errors %}<div class="text-danger small mt-1">{{ form.head_html.errors }}</div>{% endif %}
+    </div>
+
+    <div class="cbl-card p-3 mb-3">
+        <h2 class="h6 fw-bold mb-1"><i class="bi bi-palette me-1"></i> Custom CSS</h2>
+        <p class="text-muted small mb-2">
+            Site-wide style rules. Write plain CSS — no <code>&lt;style&gt;</code> tags needed.
+        </p>
+        {{ form.custom_css }}
+        {% if form.custom_css.errors %}<div class="text-danger small mt-1">{{ form.custom_css.errors }}</div>{% endif %}
+    </div>
+
+    <div class="cbl-card p-3 mb-3">
+        <h2 class="h6 fw-bold mb-1"><i class="bi bi-chat-dots me-1"></i> Footer code <span class="text-muted fw-normal">(before &lt;/body&gt;)</span></h2>
+        <p class="text-muted small mb-2">
+            Best place for <strong>chat widgets</strong>, marketing <strong>pixels</strong>
+            (Meta, TikTok), and any script that should load after the page.
+        </p>
+        {{ form.body_end_html }}
+        {% if form.body_end_html.errors %}<div class="text-danger small mt-1">{{ form.body_end_html.errors }}</div>{% endif %}
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Save custom code</button>
+        <a href="/" target="_blank" rel="noopener" class="btn btn-outline-secondary">Preview site <i class="bi bi-box-arrow-up-right"></i></a>
+    </div>
+</form>
+{% endblock %}
