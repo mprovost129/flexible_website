@@ -48,6 +48,12 @@ else:
     }
 
 # HTTPS / security
+# Render (and most PaaS hosts) terminate TLS at their edge proxy and forward
+# plain HTTP to the app, tagging the original scheme in X-Forwarded-Proto.
+# Without trusting that header, request.is_secure() is always False, so
+# SECURE_SSL_REDIRECT below would 301 every request to https forever (the proxy
+# re-forwards it as http) -> "redirected too many times". Trust the header.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
