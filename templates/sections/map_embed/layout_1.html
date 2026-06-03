@@ -1,0 +1,23 @@
+<!-- Map embed: config.embed_url is a Google Maps "embed" iframe src. -->
+<section class="py-4"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="fw-bold mb-3 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.config.embed_url %}
+            <div class="ratio ratio-21x9 rounded overflow-hidden">
+                <iframe src="{{ section.config.embed_url }}" style="border:0;" allowfullscreen loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade" title="{{ section.heading|default:'Map' }}"></iframe>
+            </div>
+        {% elif edit_mode_active %}
+            <div class="border border-2 border-dashed rounded p-4 text-center text-body-secondary">
+                <i class="bi bi-geo-alt fs-3 d-block mb-2"></i>
+                Map embed — paste your Google Maps "Embed a map" URL in this section's
+                settings (<strong>Map embed URL</strong>) in the dashboard.
+            </div>
+        {% endif %}
+    </div>
+</section>

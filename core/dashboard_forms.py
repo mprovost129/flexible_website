@@ -111,6 +111,8 @@ class SiteSettingsForm(BootstrapModelForm):
             'show_nav_profile', 'nav_auth_slot', 'nav_cta_label', 'nav_cta_url', 'nav_cta_slot',
             'footer_variant', 'theme', 'copyright_text', 'facebook_url', 'instagram_url', 'twitter_url',
             'linkedin_url', 'newsletter_enabled', 'newsletter_heading', 'newsletter_blurb',
+            'cookie_consent_enabled', 'cookie_consent_text', 'cookie_consent_button_text',
+            'error_404_title', 'error_404_message', 'error_500_title', 'error_500_message',
             'domain', 'robots_txt', 'og_image', 'license_key',
         ]
         widgets = {
@@ -237,13 +239,22 @@ class PageForm(BootstrapModelForm):
     class Meta:
         model = Page
         fields = [
-            'title', 'slug', 'page_type', 'variant', 'order', 'is_enabled',
+            'title', 'slug', 'page_type', 'variant', 'order', 'is_enabled', 'publish_at',
             'inherit_site_theme', 'theme',
             'meta_title', 'canonical_url',
             'og_title', 'og_description', 'og_image',
+            'head_html', 'custom_css',
         ]
         widgets = {
             'og_description': forms.Textarea(attrs={'rows': 4}),
+            'publish_at': forms.DateTimeInput(attrs={'type': 'datetime-local'}, format='%Y-%m-%dT%H:%M'),
+            'head_html': forms.Textarea(attrs={'rows': 5, 'spellcheck': 'false',
+                                               'style': 'font-family:ui-monospace,Menlo,monospace;font-size:.85rem'}),
+            'custom_css': forms.Textarea(attrs={'rows': 5, 'spellcheck': 'false',
+                                                'style': 'font-family:ui-monospace,Menlo,monospace;font-size:.85rem'}),
+        }
+        help_texts = {
+            'publish_at': 'Optional: schedule this page to publish automatically at this time.',
         }
         labels = {
             'is_enabled': 'Published',

@@ -1319,6 +1319,83 @@ body:not(.edit-mode) .nav-drag-handle {
 /* --------------------------------------------------------------------------
    CBL universal navbar engine
    -------------------------------------------------------------------------- */
+/* Timeline section */
+.cbl-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    border-left: 2px solid var(--bs-primary, #0d6efd);
+}
+.cbl-timeline-item {
+    position: relative;
+    padding: 0 0 1.5rem 1.5rem;
+}
+.cbl-timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 0.35rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bs-primary, #0d6efd);
+}
+.cbl-timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+/* Code block section */
+.cbl-code-block {
+    background: #0f172a;
+    color: #e2e8f0;
+    overflow-x: auto;
+    font-size: 0.85rem;
+}
+.cbl-code-block code {
+    color: inherit;
+    white-space: pre;
+}
+
+/* Logo wall: muted by default, full color on hover. */
+.cbl-logo-wall-img {
+    filter: grayscale(1);
+    opacity: 0.7;
+    transition: filter 0.2s ease, opacity 0.2s ease;
+}
+.cbl-logo-wall-img:hover {
+    filter: grayscale(0);
+    opacity: 1;
+}
+
+/* Cookie consent banner (toggleable in Site Settings). */
+.cbl-cookie-banner {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1600;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 0.85rem 1.1rem;
+    background: #111827;
+    color: #fff;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.3);
+}
+.cbl-cookie-banner .cbl-cookie-text {
+    font-size: 0.9rem;
+    flex: 1 1 16rem;
+}
+.cbl-cookie-banner[hidden] {
+    display: none;
+}
+
 /* Anchor-link targets (section anchor_id) clear a sticky navbar when jumped to. */
 .section-wrap[id],
 .cbl-anchored[id] {

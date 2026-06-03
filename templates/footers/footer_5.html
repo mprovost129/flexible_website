@@ -30,8 +30,10 @@
             </div>
             {% if site.newsletter_enabled %}
                 <div class="col-md-5 offset-md-1 mb-3">
-                    <form method="post" action="#">
+                    <form method="post" action="{% url 'core:newsletter_subscribe' %}">
                         {% csrf_token %}
+                        <input type="hidden" name="source" value="footer">
+                        <input type="text" name="website" class="d-none" tabindex="-1" autocomplete="off" aria-hidden="true">
                         <h5>{{ site.newsletter_heading }}</h5>
                         <p>{{ site.newsletter_blurb }}</p>
                         <div class="d-flex flex-column flex-sm-row w-100 gap-2">

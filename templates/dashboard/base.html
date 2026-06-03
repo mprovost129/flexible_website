@@ -51,6 +51,8 @@
             <a href="{% url 'core:dashboard_footer' %}" class="{% if 'dashboard_footer' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-layout-three-columns"></i> Footer</a>
             <a href="{% url 'core:dashboard_products' %}" class="{% if 'dashboard_product' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-bag"></i> Products</a>
             <a href="{% url 'core:dashboard_orders' %}" class="{% if request.resolver_match.url_name == 'dashboard_orders' %}active{% endif %}"><i class="bi bi-receipt"></i> Orders</a>
+            <a href="{% url 'core:dashboard_newsletter' %}" class="{% if 'dashboard_newsletter' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-envelope-at"></i> Newsletter</a>
+            <a href="{% url 'core:dashboard_trash' %}" class="{% if 'dashboard_trash' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-trash"></i> Trash</a>
             <a href="{% url 'core:dashboard_stripe' %}" class="{% if 'dashboard_stripe' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-credit-card"></i> Payments</a>
             <a href="{% url 'core:dashboard_settings' %}" class="{% if request.resolver_match.url_name == 'dashboard_settings' %}active{% endif %}"><i class="bi bi-sliders"></i> Site Settings</a>
             <a href="{% url 'core:dashboard_custom_code' %}" class="{% if request.resolver_match.url_name == 'dashboard_custom_code' %}active{% endif %}"><i class="bi bi-code-slash"></i> Custom Code</a>

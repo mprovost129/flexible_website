@@ -99,6 +99,24 @@ SECTION_CONFIG_SCHEMA = {
         {'key': 'html', 'label': 'Custom HTML', 'type': 'textarea', 'default': '',
          'help': 'Paste embed/iframe/script code. Rendered exactly as written — only paste code you trust.'},
     ],
+    'team': [
+        {'key': 'columns_desktop', 'label': 'Columns (desktop)', 'type': 'choice_int', 'default': 3,
+         'choices': [(2, '2'), (3, '3'), (4, '4')]},
+    ],
+    'logo_wall': [
+        {'key': 'columns_desktop', 'label': 'Logos per row (desktop)', 'type': 'choice_int', 'default': 4,
+         'choices': [(3, '3'), (4, '4'), (5, '5'), (6, '6')]},
+    ],
+    'map_embed': [
+        {'key': 'embed_url', 'label': 'Map embed URL', 'type': 'text', 'default': '',
+         'help': 'In Google Maps: Share → Embed a map → copy the src="..." URL and paste it here.'},
+    ],
+    'code_block': [
+        {'key': 'language', 'label': 'Language label', 'type': 'text', 'default': '',
+         'help': 'Optional, e.g. python, html, js.'},
+        {'key': 'code', 'label': 'Code', 'type': 'textarea', 'default': '',
+         'help': 'Shown as plain text in a code box — not executed.'},
+    ],
     # faq, cta_banner, text_block, product_grid have no display options
     # (FAQ items are edited as question/answer pairs).
 }

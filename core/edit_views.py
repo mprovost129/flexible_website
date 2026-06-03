@@ -477,6 +477,12 @@ ADDABLE_SECTION_TYPES = [
     ('faq',           'FAQ / Accordion'),
     ('stats',         'Stats / Counters'),
     ('html_embed',    'Raw HTML Embed'),
+    ('tabs',          'Tabs'),
+    ('team',          'Team / Staff Bios'),
+    ('logo_wall',     'Logo Wall'),
+    ('timeline',      'Timeline'),
+    ('map_embed',     'Map Embed'),
+    ('code_block',    'Code Block'),
 ]
 
 # Sensible starter content per section type so a freshly added section isn't
@@ -588,6 +594,45 @@ SECTION_DEFAULTS = {
     'html_embed': {
         'heading': '',
         'config': {'html': ''},
+        'items': [],
+    },
+    'tabs': {
+        'heading': 'Details',
+        'items': [
+            {'title': 'Tab one', 'text': 'Content for the first tab.'},
+            {'title': 'Tab two', 'text': 'Content for the second tab.'},
+        ],
+    },
+    'team': {
+        'heading': 'Meet the Team',
+        'subheading': 'The people behind our work.',
+        'config': {'columns_desktop': 3},
+        'items': [
+            {'title': 'Alex Doe', 'link_text': 'Founder', 'text': 'Short bio goes here.'},
+            {'title': 'Sam Lee', 'link_text': 'Designer', 'text': 'Short bio goes here.'},
+            {'title': 'Jordan Kim', 'link_text': 'Developer', 'text': 'Short bio goes here.'},
+        ],
+    },
+    'logo_wall': {
+        'heading': 'Trusted By',
+        'config': {'columns_desktop': 4},
+        'items': [{}, {}, {}, {}],
+    },
+    'timeline': {
+        'heading': 'Our Story',
+        'items': [
+            {'title': '2021', 'text': 'Something happened.'},
+            {'title': '2023', 'text': 'Something else happened.'},
+        ],
+    },
+    'map_embed': {
+        'heading': 'Find Us',
+        'config': {'embed_url': ''},
+        'items': [],
+    },
+    'code_block': {
+        'heading': '',
+        'config': {'code': '', 'language': ''},
         'items': [],
     },
 }

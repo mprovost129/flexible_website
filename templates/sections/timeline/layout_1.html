@@ -1,0 +1,33 @@
+<!-- Timeline: each item is title=date/heading, text=description. -->
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-5 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <ul class="cbl-timeline">
+                    {% for item in section.items.all %}
+                    <li class="cbl-timeline-item">
+                        {% if item.title %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                            <div class="fw-bold text-primary edit-content">{{ item.title }}</div>
+                        </div>
+                        {% endif %}
+                        {% if item.text %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                            <div class="text-body-secondary edit-content" data-edit-value="{{ item.text }}">{{ item.text|safe }}</div>
+                        </div>
+                        {% endif %}
+                    </li>
+                    {% empty %}
+                    {% if edit_mode_active %}<p class="text-body-secondary">Add items: each one is a milestone (date/heading + description).</p>{% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>

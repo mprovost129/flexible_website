@@ -581,8 +581,82 @@ To test locally without breaking your own Postgres:
 - When showing code: explain key aspects of each block, give the full snippet, then bullet point explanations of the key pieces.
 - No em dashes (use commas, parentheses, or sentence breaks).
 - Wants the product to do "as much work upfront" to be flexible. Willing to invest in better architecture if it produces a better product.
-- Goal: ship a sellable template. Speed to "customer can buy and deploy" matters more than feature completeness.
+- Goal: Now that we have a working template, we need to focus on making the features user friendly and flexible. Less clicks, visually organized, high functioning.
 
+
+============================================================
+IMPLEMENTATION STATUS (last updated 2026-06-03)
+============================================================
+Tracks what has actually shipped against the wishlist below and elsewhere.
+
+--- Shipped ---
+Editing / builder UX:
+- Mobile + iPad edit inspector: off-canvas slide-in panel with a floating toggle,
+  backdrop, and Escape/close; auto-opens on selection; fixed bottom-cutoff (dvh)
+  so Save is reachable on small screens.
+- Type-aware item inspector: editing a Button/Text/Heading shows only the fields
+  that apply (no more image/title/icon on a button); Save no longer wipes hidden
+  fields.
+- Friendly Section config editor: the raw JSON "config" box in the dashboard is
+  replaced by per-section-type labelled controls (columns, toggles, etc).
+  See core/section_config.py.
+- Dashboard Templates picker (/cbl/templates/): moved out of the edit sidebar;
+  applying a template now warns it ERASES the site and rebuilds from scratch
+  (apply_pack(wipe=True)).
+- Fixed nav-item slot move arrows acting on a stale slot after a drag.
+- Fixed brand-logo resize (removed the max-height cap that ignored sizes > ~55px).
+- Per-side navbar borders: independent width + color for top/bottom/left/right
+  (Site Settings).
+
+Content / SEO / a11y:
+- Custom Code page (/cbl/code/): head HTML, footer HTML, and custom CSS injected
+  site-wide -> covers Google Analytics / Tag Manager / Meta Pixel / fonts / CSS.
+- Per-page SEO finished: meta_title (drives <title>) and canonical_url on Page,
+  on top of the existing per-page OG title/description/image.
+- Image alt text on SectionItem, Product, BlogPost, and PlanImage, rendered in all
+  image templates and editable in the inspector + dashboard forms.
+- Duplicate page and duplicate section actions (dashboard).
+- New section types: FAQ / accordion, Stats / counters, Raw HTML embed.
+- Section anchor links (Section.anchor_id) for in-page jump links.
+- Blog RSS feed at /blog/feed/ + auto-discovery <link>.
+
+Product / packaging / infra:
+- Seller-only "CBL Marketing Site" pack (core/packs/cbl_marketing.py), export-ignored
+  so it never ships to buyers; registered via a guarded import.
+- apply_pack: fixed MultipleObjectsReturned when a site has >1 page of a type;
+  added wipe=True clean-slate rebuild.
+- Fixed Render redirect loop (ERR_TOO_MANY_REDIRECTS): added SECURE_PROXY_SSL_HEADER
+  in prod.py so SECURE_SSL_REDIRECT works behind Render's TLS proxy. Ships in the
+  buyer package too.
+
+Already present before this round (do not rebuild): sitemap.xml, editable robots.txt,
+favicon upload, OG/Twitter card tags, contact-form submissions stored in the DB.
+
+--- Tier 1 closeout (all shipped 2026-06-03) ---
+- Newsletter signup capture: NewsletterSubscriber model, /newsletter/subscribe/ endpoint
+  (honeypot + throttle), footer_5 wired, dashboard list at /cbl/newsletter/ + CSV export.
+- Editable 404 / 500 pages: Site.error_404_* / error_500_* fields, handler404/handler500
+  in config/urls.py -> core.views.error_404/error_500, templates read the fields
+  (500.html stays DB-safe with defaults).
+- Cookie consent banner: Site.cookie_consent_* fields, banner + localStorage dismiss in
+  base.html, styled in main.css.
+- Trash / restore UI: /cbl/trash/ lists soft-deleted sections; restore (brings back the
+  items deleted with it) and delete-forever.
+- Bulk publish / unpublish / delete on the Pages list (checkbox column + bulk form;
+  home page protected from unpublish/delete).
+- Scheduled publishing: Page.publish_at + core/scheduling.py (publish_due_pages),
+  publish_scheduled management command (for Render Cron) AND a throttled per-request
+  fallback so it works with no cron. Blog scheduling is query-gated by published_at.
+- Image bulk upload for gallery / image_grid / logo_wall sections (dashboard page-edit,
+  "Bulk images").
+- Remaining section types added: tabs, team/staff bios, logo wall, timeline, map embed,
+  code block. (Earlier: FAQ/accordion, stats, raw HTML embed.)
+- Per-PAGE custom code: Page.head_html + Page.custom_css, injected after the site-wide
+  custom code in base.html.
+
+==> Tier 1 is COMPLETE. Tiers 2-4 below are untouched.
+
+============================================================
 
 Tier 1: Quick wins (hours to a couple of days each)
 These are small additions that punch above their weight, especially because they're things buyers will literally check for before purchase.

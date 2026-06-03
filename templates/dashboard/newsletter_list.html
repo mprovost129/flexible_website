@@ -1,0 +1,35 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Newsletter | CBL{% endblock %}
+{% block heading %}Newsletter Subscribers{% endblock %}
+{% block content %}
+<div class="cbl-card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h2 class="h5 mb-0">Subscribers</h2>
+            <div class="text-muted small">Emails captured from your newsletter signup forms.</div>
+        </div>
+        {% if subscribers %}
+        <a href="{% url 'core:dashboard_newsletter_export' %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-download"></i> Export CSV</a>
+        {% endif %}
+    </div>
+    <div class="table-responsive">
+        <table class="table cbl-table mb-0">
+            <thead><tr><th>Email</th><th>Source</th><th>Subscribed</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            {% for s in subscribers %}
+            <tr>
+                <td>{{ s.email }}</td>
+                <td class="text-muted small">{{ s.source|default:"—" }}</td>
+                <td class="text-muted small">{{ s.created_at|date:"M j, Y" }}</td>
+                <td class="text-end">
+                    <form method="post" action="{% url 'core:dashboard_newsletter_delete' s.pk %}" onsubmit="return confirm('Remove this subscriber?');" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Remove</button></form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-muted py-4 text-center">No subscribers yet. Enable the newsletter in Site Settings (footer style 5) to start collecting emails.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

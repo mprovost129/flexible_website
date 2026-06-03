@@ -247,6 +247,30 @@ class Site(models.Model):
         help_text='Custom CSS applied site-wide. Do not include <style> tags — just the CSS rules.',
     )
 
+    # --- Cookie consent banner -----------------------------------------------
+    cookie_consent_enabled = models.BooleanField(
+        default=False, help_text='Show a cookie-consent banner until the visitor dismisses it.')
+    cookie_consent_text = models.CharField(
+        max_length=300, blank=True,
+        default='We use cookies to improve your experience. By using this site, you accept our use of cookies.',
+        help_text='Message shown in the cookie banner.')
+    cookie_consent_button_text = models.CharField(
+        max_length=40, blank=True, default='Got it', help_text='Dismiss button label.')
+
+    # --- Editable error pages (shown on 404 / 500) ---------------------------
+    error_404_title = models.CharField(
+        max_length=120, blank=True, default='Page not found',
+        help_text='Heading shown on the 404 (page not found) error page.')
+    error_404_message = models.TextField(
+        blank=True, default="Sorry, we couldn't find the page you were looking for.",
+        help_text='Message shown on the 404 page.')
+    error_500_title = models.CharField(
+        max_length=120, blank=True, default='Something went wrong',
+        help_text='Heading shown on the 500 (server error) page.')
+    error_500_message = models.TextField(
+        blank=True, default='An unexpected error occurred. Please try again in a moment.',
+        help_text='Message shown on the 500 page.')
+
     def __str__(self):
         return self.name
 
@@ -298,7 +322,18 @@ class Page(models.Model):
     slug = models.SlugField(unique=True)
     title = models.CharField(max_length=200, blank=True)
     is_enabled = models.BooleanField(default=True)
+    publish_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text='Optional: schedule this page to go live automatically at this date/time.',
+    )
     order = models.IntegerField(default=0)
+
+    # Per-page custom code (advanced). Injected only on this page, after the
+    # site-wide custom code. Staff-entered and trusted.
+    head_html = models.TextField(blank=True, default='',
+                                 help_text='Code added inside <head> on this page only.')
+    custom_css = models.TextField(blank=True, default='',
+                                  help_text='CSS applied to this page only (no <style> tags).')
 
     # SEO / Open Graph overrides -- leave blank to inherit from Site defaults
     meta_title = models.CharField(
@@ -444,6 +479,12 @@ class Section(models.Model):
         ('faq',           'FAQ / Accordion'),
         ('stats',         'Stats / Counters'),
         ('html_embed',    'Raw HTML Embed'),
+        ('tabs',          'Tabs'),
+        ('team',          'Team / Staff Bios'),
+        ('logo_wall',     'Logo Wall'),
+        ('timeline',      'Timeline'),
+        ('map_embed',     'Map Embed'),
+        ('code_block',    'Code Block'),
     ]
     LAYOUT_CHOICES = [
         ('layout_1', 'Layout 1'),
@@ -892,3 +933,20 @@ class ContactSubmission(models.Model):
 
     def __str__(self):
         return f'{self.name} <{self.email}> - {self.created_at:%Y-%m-%d %H:%M}'
+
+
+class NewsletterSubscriber(models.Model):
+    """An email captured from a newsletter signup form (footer or section)."""
+    site       = models.ForeignKey(Site, on_delete=models.CASCADE, related_name='newsletter_subscribers')
+    email      = models.EmailField()
+    source     = models.CharField(max_length=50, blank=True, default='',
+                                  help_text='Where the signup came from (e.g. footer).')
+    is_active  = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = [('site', 'email')]
+
+    def __str__(self):
+        return self.email

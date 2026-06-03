@@ -10,12 +10,27 @@
         </div>
         <a href="{% url 'core:dashboard_page_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Page</a>
     </div>
+
+    {# Bulk-action form lives outside the table; checkboxes link to it via form="". #}
+    <form method="post" id="pages-bulk-form" action="{% url 'core:dashboard_pages_bulk' %}" class="d-flex align-items-center gap-2 mb-2"
+          onsubmit="return this.bulk_action.value !== 'delete' || confirm('Delete the selected pages? This cannot be undone.');">
+        {% csrf_token %}
+        <select name="bulk_action" class="form-select form-select-sm" style="width:auto">
+            <option value="">Bulk action…</option>
+            <option value="publish">Publish</option>
+            <option value="unpublish">Unpublish</option>
+            <option value="delete">Delete</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-outline-secondary">Apply to selected</button>
+    </form>
+
     <div class="table-responsive">
         <table class="table cbl-table mb-0">
-            <thead><tr><th>Order</th><th>Page</th><th>Type</th><th>Status</th><th>Sections</th><th>Menu</th><th class="text-end">Actions</th></tr></thead>
+            <thead><tr><th><input type="checkbox" id="bulk-select-all" title="Select all"></th><th>Order</th><th>Page</th><th>Type</th><th>Status</th><th>Sections</th><th>Menu</th><th class="text-end">Actions</th></tr></thead>
             <tbody>
             {% for page in pages %}
             <tr>
+                <td><input type="checkbox" name="page_ids" value="{{ page.pk }}" form="pages-bulk-form" class="bulk-page-check"></td>
                 <td>{{ page.order }}</td>
                 <td><strong>{{ page.title|default:page.slug }}</strong><br><span class="text-muted small">/{{ page.slug }}/</span></td>
                 <td>{{ page.get_page_type_display }}<br><span class="text-muted small">{{ page.variant }}</span></td>
@@ -33,10 +48,19 @@
                 </td>
             </tr>
             {% empty %}
-            <tr><td colspan="7" class="text-muted">No pages yet.</td></tr>
+            <tr><td colspan="8" class="text-muted">No pages yet.</td></tr>
             {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+<script>
+(function () {
+    var all = document.getElementById('bulk-select-all');
+    if (!all) return;
+    all.addEventListener('change', function () {
+        document.querySelectorAll('.bulk-page-check').forEach(function (c) { c.checked = all.checked; });
+    });
+})();
+</script>
 {% endblock %}

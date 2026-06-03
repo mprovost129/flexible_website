@@ -68,10 +68,9 @@
 <body>
     <div class="card">
         <div class="code">500</div>
-        <h1>Something went wrong</h1>
+        <h1>{{ cms_site.error_500_title|default:'Something went wrong' }}</h1>
         <p>
-            An unexpected error occurred on the server. The site owner has been
-            notified. Please try again in a few minutes.
+            {{ cms_site.error_500_message|default:'An unexpected error occurred on the server. Please try again in a few minutes.' }}
         </p>
         <a href="/" class="btn">Return to home page</a>
     </div>

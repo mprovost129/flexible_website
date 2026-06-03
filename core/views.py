@@ -12,8 +12,11 @@ from django.views.generic import TemplateView
 
 import stripe as stripe_lib
 
+from django.db.models import Q
+from django.utils import timezone
+
 from .cart import Cart
-from .models import BlogPost, ContactSubmission, Order, Page, Plan, Product, Section, Site
+from .models import BlogPost, ContactSubmission, NewsletterSubscriber, Order, Page, Plan, Product, Section, Site
 from .site_resolver import get_active_site
 
 
@@ -192,7 +195,9 @@ def blog_list_public(request):
     is_staff = request.user.is_authenticated and request.user.is_staff
     qs = BlogPost.objects.filter(site=site)
     if not is_staff:
-        qs = qs.filter(status=BlogPost.STATUS_PUBLISHED)
+        # Published and not scheduled for a future date.
+        qs = qs.filter(status=BlogPost.STATUS_PUBLISHED).filter(
+            Q(published_at__isnull=True) | Q(published_at__lte=timezone.now()))
     qs = qs.order_by('-published_at', '-created_at')
 
     from django.core.paginator import Paginator
@@ -212,7 +217,8 @@ def blog_post_detail(request, slug):
     is_staff = request.user.is_authenticated and request.user.is_staff
     qs = BlogPost.objects.filter(site=site, slug=slug)
     if not is_staff:
-        qs = qs.filter(status=BlogPost.STATUS_PUBLISHED)
+        qs = qs.filter(status=BlogPost.STATUS_PUBLISHED).filter(
+            Q(published_at__isnull=True) | Q(published_at__lte=timezone.now()))
     post = get_object_or_404(qs)
     return render(request, 'blog/post.html', {'post': post})
 
@@ -247,6 +253,67 @@ class BlogFeed(Feed):
 
     def item_pubdate(self, item):
         return item.published_at or item.created_at
+
+
+# ---------------------------------------------------------------------------
+# Newsletter capture
+# ---------------------------------------------------------------------------
+
+@require_POST
+def newsletter_subscribe(request):
+    """Store an email from a newsletter signup form (footer/section)."""
+    site = get_active_site(request)
+    # Honeypot for bots.
+    if request.POST.get('website'):
+        messages.success(request, 'Thanks for subscribing!')
+        return _redirect_back(request)
+
+    email = (request.POST.get('email') or '').strip().lower()
+    source = (request.POST.get('source') or 'footer').strip()[:50]
+    if not email:
+        messages.error(request, 'Please enter a valid email address.')
+        return _redirect_back(request)
+
+    # Light throttle per IP.
+    ip = _client_ip(request)
+    key = f'newsletter-sub:{ip}'
+    if cache.get_or_set(key, 0, timeout=60) >= 10:
+        messages.error(request, 'Too many attempts. Please wait a minute.')
+        return _redirect_back(request)
+    cache.incr(key)
+
+    NewsletterSubscriber.objects.get_or_create(
+        site=site, email=email, defaults={'source': source})
+    messages.success(request, 'Thanks for subscribing!')
+    return _redirect_back(request)
+
+
+def _redirect_back(request):
+    ref = request.META.get('HTTP_REFERER')
+    return redirect(ref) if ref else redirect('core:home')
+
+
+# ---------------------------------------------------------------------------
+# Editable error pages (404 / 500). Wired via handler404/handler500 in
+# config/urls.py. Content comes from Site so owners can edit it.
+# ---------------------------------------------------------------------------
+
+def error_404(request, exception=None):
+    try:
+        site = get_active_site(request)
+    except Exception:
+        site = None
+    return render(request, '404.html', {'cms_site': site}, status=404)
+
+
+def error_500(request):
+    # Keep this defensive: a 500 may mean the DB itself is unhappy.
+    site = None
+    try:
+        site = get_active_site(request)
+    except Exception:
+        pass
+    return render(request, '500.html', {'cms_site': site}, status=500)
 
 
 # ---------------------------------------------------------------------------

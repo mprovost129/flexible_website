@@ -62,6 +62,12 @@
                         </div>
                         <div class="cbl-actions">
                             <a href="{% url 'core:dashboard_section_edit' section.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            {% if section.section_type == 'gallery' or section.section_type == 'image_grid' or section.section_type == 'logo_wall' %}
+                            <label class="btn btn-sm btn-outline-secondary mb-0" title="Upload multiple images at once">
+                                <i class="bi bi-images"></i> Bulk images
+                                <input type="file" accept="image/*" multiple class="d-none js-bulk-images" data-action="{% url 'core:dashboard_section_bulk_images' section.pk %}">
+                            </label>
+                            {% endif %}
                             <form method="post" action="{% url 'core:dashboard_section_duplicate' section.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-success" title="Duplicate this section">Duplicate</button></form>
                             <form method="post" action="{% url 'core:dashboard_section_delete' section.pk %}" onsubmit="return confirm('Delete this section?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete</button></form>
                         </div>
@@ -91,6 +97,28 @@
 
         inheritEl.addEventListener('change', syncThemeOverrideState);
         syncThemeOverrideState();
+    })();
+
+    // Bulk image upload for gallery/image-grid/logo-wall sections.
+    (function () {
+        function csrf() {
+            var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+            return m ? decodeURIComponent(m[1]) : '';
+        }
+        document.querySelectorAll('.js-bulk-images').forEach(function (input) {
+            input.addEventListener('change', function () {
+                if (!input.files || !input.files.length) return;
+                var fd = new FormData();
+                for (var i = 0; i < input.files.length; i++) fd.append('images', input.files[i]);
+                var label = input.closest('label');
+                if (label) label.style.opacity = '.5';
+                fetch(input.dataset.action, {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { 'X-CSRFToken': csrf() }, body: fd,
+                }).then(function () { window.location.reload(); })
+                  .catch(function () { window.location.reload(); });
+            });
+        });
     })();
 </script>
 {% endblock %}

@@ -1,0 +1,26 @@
+<!-- Logo wall: each item is image=logo, link_url=optional website. -->
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-4 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        <div class="row g-4 align-items-center justify-content-center">
+            {% for item in section.items.all %}
+                <div class="col-6 col-md-3 text-center">
+                    {% if item.link_url %}<a href="{{ item.link_url }}" target="_blank" rel="noopener">{% endif %}
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.image_alt|default:item.title }}" class="img-fluid cbl-logo-wall-img" style="max-height:60px;width:auto;">
+                    {% elif edit_mode_active %}
+                        <span class="text-body-secondary small">Logo {{ forloop.counter }} — upload an image on this item</span>
+                    {% endif %}
+                    {% if item.link_url %}</a>{% endif %}
+                </div>
+            {% empty %}
+                {% if edit_mode_active %}<p class="text-center text-body-secondary">Add items and upload a logo image to each.</p>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>

@@ -1,0 +1,42 @@
+<!-- Team: each item is title=name, link_text=role, text=bio, image=photo, link_url=profile. -->
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|safe }}</p>
+            </div>
+        {% endif %}
+        <div class="row g-4 justify-content-center">
+            {% for item in section.items.all %}
+                <div class="{{ section.bootstrap_col_class }} text-center">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.image_alt|default:item.title }}" class="rounded-circle mb-3" style="width:120px;height:120px;object-fit:cover;">
+                    {% endif %}
+                    {% if item.title %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                            <h5 class="fw-semibold mb-0 edit-content">{{ item.title }}</h5>
+                        </div>
+                    {% endif %}
+                    {% if item.link_text %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">
+                            <div class="text-primary small mb-2 edit-content">{{ item.link_text }}</div>
+                        </div>
+                    {% endif %}
+                    {% if item.text %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                            <p class="text-body-secondary small edit-content" data-edit-value="{{ item.text }}">{{ item.text }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                {% if edit_mode_active %}<p class="text-center text-body-secondary">Add items: each one is a team member (name, role, bio, photo).</p>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>

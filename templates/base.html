@@ -144,6 +144,9 @@
     {# Owner custom code (staff-entered, trusted). Analytics, fonts, meta tags. #}
     {% if cms_site.custom_css %}<style>{{ cms_site.custom_css|safe }}</style>{% endif %}
     {% if cms_site.head_html %}{{ cms_site.head_html|safe }}{% endif %}
+    {# Per-page custom code, after the site-wide code so it can override. #}
+    {% if page.custom_css %}<style>{{ page.custom_css|safe }}</style>{% endif %}
+    {% if page.head_html %}{{ page.head_html|safe }}{% endif %}
 </head>
 {% if cms_site %}{% with bnc=cms_site.navbar_config_merged %}
 <body{% if edit_mode_active or request.user.is_authenticated and request.user.is_staff %}
@@ -354,5 +357,26 @@
 
     {# Owner custom code injected before </body> (deferred scripts, chat, pixels). #}
     {% if cms_site.body_end_html %}{{ cms_site.body_end_html|safe }}{% endif %}
+
+    {% if cms_site.cookie_consent_enabled %}
+    <div id="cbl-cookie-banner" class="cbl-cookie-banner" role="dialog" aria-label="Cookie notice" hidden>
+        <span class="cbl-cookie-text">{{ cms_site.cookie_consent_text }}</span>
+        <button type="button" id="cbl-cookie-accept" class="btn btn-sm btn-light">{{ cms_site.cookie_consent_button_text|default:"Got it" }}</button>
+    </div>
+    <script>
+    (function () {
+        var KEY = 'cbl_cookie_consent';
+        var banner = document.getElementById('cbl-cookie-banner');
+        if (!banner) return;
+        try { if (localStorage.getItem(KEY) === '1') return; } catch (e) {}
+        banner.hidden = false;
+        var btn = document.getElementById('cbl-cookie-accept');
+        if (btn) btn.addEventListener('click', function () {
+            try { localStorage.setItem(KEY, '1'); } catch (e) {}
+            banner.hidden = true;
+        });
+    })();
+    </script>
+    {% endif %}
 </body>
 </html>

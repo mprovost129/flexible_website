@@ -46,4 +46,9 @@ class LicensePingMiddleware:
             maybe_ping(request)
         except Exception:
             pass
+        try:
+            from .scheduling import maybe_publish_due
+            maybe_publish_due()
+        except Exception:
+            pass
         return response

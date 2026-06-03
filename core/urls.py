@@ -23,6 +23,14 @@ urlpatterns = [
     path('cbl/pages/<int:pk>/edit/',                  dashboard_views.page_edit,                   name='dashboard_page_edit'),
     path('cbl/pages/<int:pk>/delete/',                dashboard_views.page_delete,                 name='dashboard_page_delete'),
     path('cbl/pages/<int:pk>/duplicate/',             dashboard_views.page_duplicate,              name='dashboard_page_duplicate'),
+    path('cbl/pages/bulk/',                           dashboard_views.pages_bulk,                  name='dashboard_pages_bulk'),
+    path('cbl/sections/<int:pk>/bulk-images/',        dashboard_views.section_bulk_images,         name='dashboard_section_bulk_images'),
+    path('cbl/trash/',                                dashboard_views.trash,                       name='dashboard_trash'),
+    path('cbl/trash/<int:pk>/restore/',               dashboard_views.trash_restore,               name='dashboard_trash_restore'),
+    path('cbl/trash/<int:pk>/purge/',                 dashboard_views.trash_purge,                 name='dashboard_trash_purge'),
+    path('cbl/newsletter/',                           dashboard_views.newsletter_list,             name='dashboard_newsletter'),
+    path('cbl/newsletter/export/',                    dashboard_views.newsletter_export,           name='dashboard_newsletter_export'),
+    path('cbl/newsletter/<int:pk>/delete/',           dashboard_views.newsletter_delete,           name='dashboard_newsletter_delete'),
     path('cbl/pages/<int:pk>/publish-toggle/',        dashboard_views.page_toggle_publish,         name='dashboard_page_toggle_publish'),
     path('cbl/pages/<int:page_pk>/sections/add/',     dashboard_views.section_create,              name='dashboard_section_create'),
     path('cbl/sections/<int:pk>/edit/',               dashboard_views.section_edit,                name='dashboard_section_edit'),
@@ -141,6 +149,7 @@ urlpatterns = [
 
     # Contact form submission (section type: contact_form)
     path('contact/submit/', views.contact_submit, name='contact_submit'),
+    path('newsletter/subscribe/', views.newsletter_subscribe, name='newsletter_subscribe'),
 
     # Shop public routes -- must come before the generic <slug:slug> catch-all
     path('shop/cart/',               views.cart_view,         name='cart'),

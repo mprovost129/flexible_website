@@ -1,0 +1,33 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Trash | CBL{% endblock %}
+{% block heading %}Trash{% endblock %}
+{% block content %}
+<div class="cbl-card p-3">
+    <div class="mb-3">
+        <h2 class="h5 mb-0">Deleted sections</h2>
+        <div class="text-muted small">Restore a section (and the items deleted with it) or remove it permanently.</div>
+    </div>
+    <div class="table-responsive">
+        <table class="table cbl-table mb-0">
+            <thead><tr><th>Section</th><th>Page</th><th>Deleted</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+            {% for section in sections %}
+            <tr>
+                <td><strong>{{ section.heading|default:section.get_section_type_display }}</strong><br><span class="text-muted small">{{ section.get_section_type_display }}</span></td>
+                <td class="text-muted small">{{ section.page.title|default:section.page.slug }}</td>
+                <td class="text-muted small">{{ section.deleted_at|date:"M j, Y H:i" }}</td>
+                <td class="text-end">
+                    <div class="cbl-actions">
+                        <form method="post" action="{% url 'core:dashboard_trash_restore' section.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-success">Restore</button></form>
+                        <form method="post" action="{% url 'core:dashboard_trash_purge' section.pk %}" onsubmit="return confirm('Permanently delete this section? This cannot be undone.');" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete forever</button></form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-muted py-4 text-center">Trash is empty.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

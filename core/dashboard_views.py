@@ -3,7 +3,7 @@ import stripe
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Count, F, Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -22,8 +22,8 @@ from .dashboard_forms import (
     SiteSettingsForm,
 )
 from .models import (
-    Banner, BlogPost, FooterColumn, FooterLink, NavLink, Order, Page, Plan, PlanImage,
-    Product, Section, Site,
+    Banner, BlogPost, FooterColumn, FooterLink, NavLink, NewsletterSubscriber, Order, Page, Plan,
+    PlanImage, Product, Section, SectionItem, Site,
 )
 from .site_resolver import get_active_site
 
@@ -898,3 +898,122 @@ def banner_delete(request, pk):
     banner.delete()
     messages.success(request, 'Banner deleted.')
     return redirect('core:dashboard_banners')
+
+
+# ---------------------------------------------------------------------------
+# Newsletter subscribers
+# ---------------------------------------------------------------------------
+
+@staff_required
+def newsletter_list(request):
+    site = get_active_site(request)
+    subscribers = NewsletterSubscriber.objects.filter(site=site)
+    return render(request, 'dashboard/newsletter_list.html',
+                  _dashboard_context(request, subscribers=subscribers))
+
+
+@staff_required
+def newsletter_export(request):
+    import csv
+    site = get_active_site(request)
+    resp = HttpResponse(content_type='text/csv')
+    resp['Content-Disposition'] = 'attachment; filename="newsletter-subscribers.csv"'
+    writer = csv.writer(resp)
+    writer.writerow(['email', 'source', 'active', 'subscribed_at'])
+    for s in NewsletterSubscriber.objects.filter(site=site):
+        writer.writerow([s.email, s.source, s.is_active, s.created_at.isoformat()])
+    return resp
+
+
+@staff_required
+@require_POST
+def newsletter_delete(request, pk):
+    site = get_active_site(request)
+    NewsletterSubscriber.objects.filter(site=site, pk=pk).delete()
+    messages.success(request, 'Subscriber removed.')
+    return redirect('core:dashboard_newsletter')
+
+
+# ---------------------------------------------------------------------------
+# Trash / restore (soft-deleted sections)
+# ---------------------------------------------------------------------------
+
+@staff_required
+def trash(request):
+    site = get_active_site(request)
+    sections = (Section.all_objects
+                .filter(page__site=site, deleted_at__isnull=False)
+                .select_related('page').order_by('-deleted_at'))
+    return render(request, 'dashboard/trash.html', _dashboard_context(request, sections=sections))
+
+
+@staff_required
+@require_POST
+def trash_restore(request, pk):
+    site = get_active_site(request)
+    section = get_object_or_404(Section.all_objects, pk=pk, page__site=site)
+    deleted_at = section.deleted_at
+    section.deleted_at = None
+    section.save(update_fields=['deleted_at'])
+    # Restore exactly the items that were cascaded when this section was deleted
+    # (they share the same timestamp set in Section.soft_delete()).
+    if deleted_at:
+        SectionItem.all_objects.filter(section=section, deleted_at=deleted_at).update(deleted_at=None)
+    messages.success(request, 'Section restored.')
+    return redirect('core:dashboard_trash')
+
+
+@staff_required
+@require_POST
+def trash_purge(request, pk):
+    site = get_active_site(request)
+    section = get_object_or_404(Section.all_objects, pk=pk, page__site=site)
+    SectionItem.all_objects.filter(section=section).delete()
+    section.delete()
+    messages.success(request, 'Permanently deleted.')
+    return redirect('core:dashboard_trash')
+
+
+# ---------------------------------------------------------------------------
+# Bulk actions on the Pages list
+# ---------------------------------------------------------------------------
+
+@staff_required
+@require_POST
+def pages_bulk(request):
+    site = get_active_site(request)
+    action = request.POST.get('bulk_action', '')
+    ids = request.POST.getlist('page_ids')
+    qs = Page.objects.filter(site=site, pk__in=ids)
+    if action == 'publish':
+        n = qs.update(is_enabled=True)
+        messages.success(request, f'Published {n} page(s).')
+    elif action == 'unpublish':
+        n = qs.exclude(slug='home').update(is_enabled=False)
+        messages.success(request, f'Unpublished {n} page(s).')
+    elif action == 'delete':
+        deletable = qs.exclude(slug='home')
+        n = deletable.count()
+        deletable.delete()
+        messages.success(request, f'Deleted {n} page(s).')
+    else:
+        messages.error(request, 'Pick a bulk action first.')
+    return redirect('core:dashboard_pages')
+
+
+# ---------------------------------------------------------------------------
+# Gallery / image-grid bulk image upload
+# ---------------------------------------------------------------------------
+
+@staff_required
+@require_POST
+def section_bulk_images(request, pk):
+    site = get_active_site(request)
+    section = get_object_or_404(Section, pk=pk, page__site=site)
+    files = request.FILES.getlist('images')
+    last = section.items.order_by('-order').first()
+    start = (last.order + 1) if last else 0
+    for i, f in enumerate(files):
+        SectionItem.objects.create(section=section, image=f, order=start + i)
+    messages.success(request, f'Added {len(files)} image(s).')
+    return redirect('core:dashboard_page_edit', pk=section.page.pk)

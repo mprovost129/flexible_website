@@ -1,0 +1,33 @@
+<!-- Tabs: each item is title=tab label, text=tab content. -->
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-4 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        <ul class="nav nav-tabs" role="tablist">
+            {% for item in section.items.all %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link{% if forloop.first %} active{% endif %}" id="tab-{{ section.id }}-{{ item.id }}"
+                        data-bs-toggle="tab" data-bs-target="#tabp-{{ section.id }}-{{ item.id }}" type="button" role="tab"
+                        aria-controls="tabp-{{ section.id }}-{{ item.id }}" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                    <span class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title"><span class="edit-content">{{ item.title|default:"Tab" }}</span></span>
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="tab-content border border-top-0 p-4">
+            {% for item in section.items.all %}
+            <div class="tab-pane fade{% if forloop.first %} show active{% endif %}" id="tabp-{{ section.id }}-{{ item.id }}" role="tabpanel" aria-labelledby="tab-{{ section.id }}-{{ item.id }}">
+                <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                    <div class="edit-content" data-edit-value="{{ item.text }}">{{ item.text|default:"Tab content."|safe }}</div>
+                </div>
+            </div>
+            {% empty %}
+            {% if edit_mode_active %}<p class="text-body-secondary mb-0">Add items: each one becomes a tab (label + content).</p>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>

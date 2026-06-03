@@ -1,0 +1,20 @@
+<!-- Code block: config.code rendered (escaped) in a <pre><code> block. -->
+<section class="py-4"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="fw-bold mb-3 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.config.code %}
+            <pre class="cbl-code-block p-3 rounded"><code{% if section.config.language %} class="language-{{ section.config.language }}"{% endif %}>{{ section.config.code }}</code></pre>
+        {% elif edit_mode_active %}
+            <div class="border border-2 border-dashed rounded p-4 text-center text-body-secondary">
+                <i class="bi bi-code-square fs-3 d-block mb-2"></i>
+                Code block — paste the code to display in this section's settings
+                (<strong>Code</strong>) in the dashboard. It is shown as text, not run.
+            </div>
+        {% endif %}
+    </div>
+</section>

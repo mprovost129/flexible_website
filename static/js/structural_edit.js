@@ -42,6 +42,12 @@
     ['faq', 'FAQ / Accordion'],
     ['stats', 'Stats / Counters'],
     ['html_embed', 'Raw HTML Embed'],
+    ['tabs', 'Tabs'],
+    ['team', 'Team / Staff Bios'],
+    ['logo_wall', 'Logo Wall'],
+    ['timeline', 'Timeline'],
+    ['map_embed', 'Map Embed'],
+    ['code_block', 'Code Block'],
   ];
 
   function getCsrf() {

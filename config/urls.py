@@ -20,6 +20,10 @@ with contextlib.suppress(ImportError):
 
 urlpatterns += [path('', include('core.urls'))]
 
+# Editable error pages — content comes from Site settings (see core/views.py).
+handler404 = 'core.views.error_404'
+handler500 = 'core.views.error_500'
+
 if settings.DEBUG:
     with contextlib.suppress(ImportError):
         import debug_toolbar
