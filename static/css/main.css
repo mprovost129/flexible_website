@@ -1323,9 +1323,16 @@ body:not(.edit-mode) .nav-drag-handle {
     background: var(--cbl-chrome-bg, var(--bs-body-bg));
     z-index: 1020;
     min-height: var(--cbl-nav-height, auto);
-    border-bottom-width: var(--cbl-nav-border-width, 0);
-    border-bottom-style: solid;
-    border-bottom-color: rgba(0, 0, 0, .12);
+    /* Per-side navbar borders (each side: own width + color from navbar_config). */
+    border-style: solid;
+    border-top-width: var(--cbl-nav-border-top-width, 0);
+    border-top-color: var(--cbl-nav-border-top-color, rgba(0, 0, 0, .12));
+    border-bottom-width: var(--cbl-nav-border-bottom-width, 0);
+    border-bottom-color: var(--cbl-nav-border-bottom-color, rgba(0, 0, 0, .12));
+    border-left-width: var(--cbl-nav-border-left-width, 0);
+    border-left-color: var(--cbl-nav-border-left-color, rgba(0, 0, 0, .12));
+    border-right-width: var(--cbl-nav-border-right-width, 0);
+    border-right-color: var(--cbl-nav-border-right-color, rgba(0, 0, 0, .12));
     background: var(--cbl-nav-bg, var(--cbl-chrome-bg, var(--bs-body-bg))) !important;
     color: var(--cbl-nav-text, var(--cbl-chrome-text, inherit)) !important;
 }
@@ -1343,7 +1350,8 @@ body:not(.edit-mode) .nav-drag-handle {
     padding-bottom: var(--cbl-nav-pad-y, 0);
 }
 .cbl-navbar-shadow {
-    border-bottom: 1px solid rgba(0, 0, 0, .08);
+    /* Shadow only — the per-side border controls own the navbar's borders so
+       an explicit bottom border isn't overridden when the shadow is enabled. */
     box-shadow: 0 0.25rem 1rem rgba(15, 23, 42, .04);
 }
 .cbl-navbar-dark {
@@ -1551,12 +1559,12 @@ body:not(.edit-mode) .nav-drag-handle {
     margin-left: 0 !important;
     border-radius: 999px;
 }
-/* Brand logo: respects the configured height but never taller than the navbar
-   inner area, so growing the logo can't force the navbar taller. To make the
-   logo bigger, raise the navbar height. */
+/* Brand logo: renders at exactly the configured height. The navbar uses
+   min-height (not a fixed height), so if the logo is taller than the navbar's
+   base height the navbar grows to fit it — setting a bigger logo makes a
+   bigger logo, as expected. */
 .cbl-brand-logo {
     height: var(--cbl-brand-h, 32px);
-    max-height: calc(var(--cbl-nav-height, 76px) - (var(--cbl-nav-pad-y, 0.4rem) * 2) - 8px);
     width: auto;
     object-fit: contain;
     display: block;

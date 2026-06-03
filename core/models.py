@@ -13,7 +13,17 @@ def default_navbar_config():
         'brand_size_rem': 1.6,
         'link_size_rem': 1.0,
         'radius_px': 999,
-        'border_width_px': 0,
+        'border_width_px': 0,   # legacy single bottom border; kept for back-compat
+        # Per-side navbar borders. Each side has its own width (px) and color.
+        # An empty color falls back to a neutral line; width 0 hides the side.
+        'border_top_width_px': 0,
+        'border_bottom_width_px': 0,
+        'border_left_width_px': 0,
+        'border_right_width_px': 0,
+        'border_top_color': '',
+        'border_bottom_color': '',
+        'border_left_color': '',
+        'border_right_color': '',
         'bg_color': '',
         'text_color': '',
         'link_color': '',

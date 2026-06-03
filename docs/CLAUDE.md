@@ -582,3 +582,77 @@ To test locally without breaking your own Postgres:
 - No em dashes (use commas, parentheses, or sentence breaks).
 - Wants the product to do "as much work upfront" to be flexible. Willing to invest in better architecture if it produces a better product.
 - Goal: ship a sellable template. Speed to "customer can buy and deploy" matters more than feature completeness.
+
+
+Tier 1: Quick wins (hours to a couple of days each)
+These are small additions that punch above their weight, especially because they're things buyers will literally check for before purchase.
+
+SEO meta fields per page (meta title, meta description, OG image, canonical URL). Both WP and Wix have this. A buyer will look for it. Small Page model addition + form fields + template tags. Actually moves sales.
+Auto-generated sitemap.xml and editable robots.txt. Django has a built-in sitemaps framework. Actually moves sales.
+Favicon upload in site settings (you have site logo, this is the small missing companion).
+Custom 404 and 500 pages editable through the dashboard rather than the static templates.
+Google Analytics / Tag Manager / Meta Pixel as a simple paste-your-ID field on site settings. Wix and WP both ship this trivially via plugins. One template tag.
+Cookie consent banner as a toggleable site setting. EU buyers will ask about it.
+Open Graph / Twitter card previews auto-rendered from page meta fields.
+Image alt text field on SectionItem. Single field, accessibility win, SEO win.
+Duplicate page and duplicate section actions. Both competitors have it. Lowers the barrier to experimenting.
+Anchor links on sections (smooth-scroll target IDs). Wix has this; WP does via plugins.
+Custom CSS / custom <head> field per site (and ideally per page). Power users expect it. WP needs a plugin; Wix has it on paid tiers.
+RSS feed for the blog. Django has it built in. Five lines of code.
+Trash / restore UI. You already have soft delete on sections and items; expose it as a dashboard view so deletions are reversible from the UI, not just the database.
+Bulk publish/unpublish/delete on the Pages list.
+Newsletter signup capture (a model that stores email addresses from a section block). No third party needed for v1. Actually moves sales.
+Contact form submissions stored in the database + emailed. You have a contact_form section but I didn't see submissions persisted; right now the form likely just emails. Storing them in a FormSubmission model with a dashboard list is a small addition with big perceived value. Actually moves sales.
+Scheduled publishing (publish_at datetime on Page and BlogPost). Both competitors have it. Field plus a small cron-friendly view or management command that flips is_enabled at the right time.
+Image gallery bulk upload (drop 20 images at once into a gallery section).
+Pre-built section types you don't have yet: FAQ/accordion, tabs, stats counters, team/staff bios, logo wall, timeline, map embed, raw HTML embed, code block. Each is one new section template plus a SECTION_TYPES entry. Wix and WP page builders ship dozens of these out of the box; even five more would close a real gap.
+
+Tier 2: Moderate (a few days to a couple of weeks)
+Real features needing new models, endpoints, or modest refactoring.
+
+Multi-user roles (editor, author, viewer, not just is_staff). Both competitors have this. Django has Group and Permission ready; you'd add a small permissions layer to the dashboard views.
+Page-level access control: password-protected pages, members-only pages, draft pages visible to staff only (you already do the staff-draft part).
+Categories and tags for the blog (a Category model and Tag many-to-many). WP's core taxonomy system.
+Comments on blog posts with moderation queue. WP-standard; Wix has it via the Wix Forum/Blog. Spam protection via honeypot is enough for v1.
+Form builder beyond the fixed contact form (admin defines fields, frontend renders, submissions stored). WP has Contact Form 7, Gravity Forms; Wix has its built-in forms. Actually moves sales for agencies.
+Page revisions and restore. WP has this natively. Add a PageRevision model that snapshots on save, plus a "view history / restore" UI. Same for BlogPost.
+Search. A /search?q= endpoint with Postgres full-text search across pages, blog posts, products. Both competitors have site search.
+Two-factor authentication for admin login. Django packages exist (django-otp). Buyers selling business sites will want it.
+Activity log of who changed what when. WP has this via plugins; agencies value it.
+Reusable/synced blocks: save a section configuration as a template, reuse it on multiple pages, and edit-once-update-everywhere. WP calls these synced patterns; this is high-value for buyers maintaining several sites.
+Email integration beyond contact form: SMTP settings UI, transactional email logs, send-to-list for the newsletter capture. Actually moves sales.
+Backup/restore through the UI (download a SQL dump + Cloudinary asset list as a zip, restore from same). Reduces buyer anxiety enormously.
+Site clone / export as a starter for another deployment.
+Subscriptions / recurring billing via Stripe (you have one-off products; add a Subscription model and Stripe Subscriptions API). Both competitors have this in ecommerce tiers.
+Coupons / discount codes on Products. Wix and WooCommerce both have this.
+Inventory tracking on products (stock counts, low-stock warnings).
+Product variants (size, color). Real ecommerce expects this.
+Booking / appointment scheduling: a Service + Booking model with availability and Stripe deposit. Wix Bookings is one of their flagship features; WP does it via plugins like Amelia. Actually moves sales for service businesses, which is your contractor/restaurant pack audience.
+Events with ticketing: similar shape, different model.
+Custom domain helper docs / one-click guidance in the admin (DNS guidance, SSL verification status).
+Performance and SEO dashboard showing simple metrics (Lighthouse-style audit results, broken links, missing alt text, missing meta). Wix has this; WP needs plugins.
+
+Tier 3: Substantial (weeks to months, real architecture work)
+These are real product investments, not weekend tasks.
+
+Multi-language content with translations per page and per section item. Wix has it built in; WP uses WPML or Polylang. Requires a translation table model and a language switcher in the public templates. Touches almost every template.
+Membership / paid content gating (members area, member-only pages, content drip, member directory). Wix has this as a core product; WP has MemberPress and similar. Needs a Member model separate from staff users, plus gate-checking middleware.
+Custom post types and taxonomies the way WordPress has them, where a buyer can define "Recipes" or "Properties" as a new content type without editing code. This is real work because your Page/Section/SectionItem schema is fixed; you'd need a ContentType/Field meta layer (a registry, an admin to define types, dynamic forms to edit instances). This is the single feature people switch to WordPress for.
+A/B testing of pages or sections.
+Marketing automation / drip campaigns triggered by user actions.
+Customer accounts on the storefront (not just staff), with order history, saved addresses, wishlists.
+REST API + webhook system for external integrations. Django REST Framework handles the API part; the design work is what to expose and how to secure it.
+Headless CMS mode (decoupled frontend consuming your API).
+Image editing in-browser (crop, filters). Wix has this; WP has it via the media library.
+Mobile-specific layout edits (separate breakpoint editing). Wix has this as a major selling point. Your current Bootstrap responsive approach is fine, but a buyer who wants to hide a section on mobile or rearrange columns just for phones can't easily.
+A real plugin / extension system so other people can ship add-ons. WordPress's $10B+ ecosystem is built on this. Django apps can act as plugins, but a safe install/uninstall/update flow inside the running site, with sandboxing, is significant work and is also where WordPress security problems mostly come from.
+AI site generation from a prompt (Wix ADI, and Wix's newer AI website builder). Wire your existing wizard answers to an LLM that generates copy, suggests sections, and picks images. The infrastructure isn't huge; the cost and reliability story is. Could actually move sales if marketed right.
+
+Tier 4: Would change what CBL fundamentally is
+You probably should not chase these unless your strategy shifts.
+
+Multi-tenant architecture (one CBL install hosting many independent customer sites with isolated data, separate domains, billing). Your current Site.get_current singleton plus the per-buyer self-host model is a deliberate choice; multi-tenancy would mean becoming a SaaS, which is a different business than the $200 sold-on-Gumroad product you have.
+Free-form drag-and-drop positioning (Wix's signature feature: place any element at any X/Y on a canvas, including overlapping). Your section-based Bootstrap layout is the opposite philosophy on purpose; chasing this turns CBL into a different product and inherits Wix's downside of producing fragile, non-semantic, hard-to-maintain markup.
+Block-based editor like Gutenberg where every paragraph, image, button is its own composable block with its own settings and registry, nestable in any combination. Your current Section + SectionItem model is a coarser-grained version of the same idea; converting to true blocks is a rewrite of the editor and the data model.
+Real-time collaborative editing (Google Docs style with simultaneous cursors). Requires CRDTs or operational transform, a websocket server, conflict resolution. Months of work for a feature very few buyers will actually use.
+Full theme marketplace + theming engine where buyers can install third-party themes that ship their own templates and override existing ones safely. WordPress's wp-content/themes model is its core value; your current Theme model is colors-and-fonts, which is a lighter and saner version.

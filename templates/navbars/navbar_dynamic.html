@@ -26,7 +26,14 @@ left, center, or right through Site Settings and NavLink.slot.
         --cbl-nav-link-size: {{ nc.link_size_rem|default_if_none:1 }}rem;
         --cbl-nav-brand-weight: {{ nc.brand_weight|default_if_none:600 }};
         --cbl-nav-radius: {{ nc.radius_px|default_if_none:999 }}px;
-        --cbl-nav-border-width: {{ nc.border_width_px|default_if_none:0 }}px;
+        --cbl-nav-border-top-width: {{ nc.border_top_width_px|default_if_none:0 }}px;
+        --cbl-nav-border-top-color: {{ nc.border_top_color|default:'rgba(0,0,0,.12)' }};
+        --cbl-nav-border-bottom-width: {{ nc.border_bottom_width_px|default_if_none:nc.border_width_px|default_if_none:0 }}px;
+        --cbl-nav-border-bottom-color: {{ nc.border_bottom_color|default:'rgba(0,0,0,.12)' }};
+        --cbl-nav-border-left-width: {{ nc.border_left_width_px|default_if_none:0 }}px;
+        --cbl-nav-border-left-color: {{ nc.border_left_color|default:'rgba(0,0,0,.12)' }};
+        --cbl-nav-border-right-width: {{ nc.border_right_width_px|default_if_none:0 }}px;
+        --cbl-nav-border-right-color: {{ nc.border_right_color|default:'rgba(0,0,0,.12)' }};
         --cbl-nav-container-max: {{ nc.container_max_px|default_if_none:1320 }}px;
         {# Theme-driven shell colors are intentionally authoritative so theme
            switching visibly updates navbar/footer every time. #}

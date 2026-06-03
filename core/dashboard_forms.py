@@ -78,7 +78,10 @@ class SiteSettingsForm(BootstrapModelForm):
     nav_brand_size = forms.FloatField(min_value=0.8, max_value=4, required=False, label='Brand text size (rem)')
     nav_link_size = forms.FloatField(min_value=0.7, max_value=3, required=False, label='Link text size (rem)')
     nav_radius_px = forms.IntegerField(min_value=0, max_value=1000, required=False, label='Link/button radius (px)')
-    nav_border_width_px = forms.IntegerField(min_value=0, max_value=10, required=False, label='Navbar border width (px)')
+    nav_border_top_width = forms.IntegerField(min_value=0, max_value=20, required=False, label='Border top width (px)')
+    nav_border_bottom_width = forms.IntegerField(min_value=0, max_value=20, required=False, label='Border bottom width (px)')
+    nav_border_left_width = forms.IntegerField(min_value=0, max_value=20, required=False, label='Border left width (px)')
+    nav_border_right_width = forms.IntegerField(min_value=0, max_value=20, required=False, label='Border right width (px)')
     nav_container_max_px = forms.IntegerField(min_value=720, max_value=2400, required=False, label='Container max width (px)')
     nav_brand_weight = forms.IntegerField(min_value=300, max_value=900, required=False, label='Brand font weight')
     nav_link_style = forms.ChoiceField(choices=LINK_STYLE_CHOICES, required=False, label='Nav link style')
@@ -92,6 +95,10 @@ class SiteSettingsForm(BootstrapModelForm):
     nav_link_color = forms.CharField(required=False, label='Nav link color', widget=_color_widget())
     nav_link_hover_bg = forms.CharField(required=False, label='Nav link hover background', widget=_color_widget())
     nav_link_hover_color = forms.CharField(required=False, label='Nav link hover text color', widget=_color_widget())
+    nav_border_top_color = forms.CharField(required=False, label='Border top color', widget=_color_widget())
+    nav_border_bottom_color = forms.CharField(required=False, label='Border bottom color', widget=_color_widget())
+    nav_border_left_color = forms.CharField(required=False, label='Border left color', widget=_color_widget())
+    nav_border_right_color = forms.CharField(required=False, label='Border right color', widget=_color_widget())
 
     class Meta:
         model = Site
@@ -144,7 +151,15 @@ class SiteSettingsForm(BootstrapModelForm):
         self.fields['nav_brand_size'].initial = cfg.get('brand_size_rem')
         self.fields['nav_link_size'].initial = cfg.get('link_size_rem')
         self.fields['nav_radius_px'].initial = cfg.get('radius_px')
-        self.fields['nav_border_width_px'].initial = cfg.get('border_width_px')
+        # Bottom width falls back to the legacy single border value if unset.
+        self.fields['nav_border_top_width'].initial = cfg.get('border_top_width_px')
+        self.fields['nav_border_bottom_width'].initial = cfg.get('border_bottom_width_px', cfg.get('border_width_px'))
+        self.fields['nav_border_left_width'].initial = cfg.get('border_left_width_px')
+        self.fields['nav_border_right_width'].initial = cfg.get('border_right_width_px')
+        self.fields['nav_border_top_color'].initial = cfg.get('border_top_color')
+        self.fields['nav_border_bottom_color'].initial = cfg.get('border_bottom_color')
+        self.fields['nav_border_left_color'].initial = cfg.get('border_left_color')
+        self.fields['nav_border_right_color'].initial = cfg.get('border_right_color')
         self.fields['nav_container_max_px'].initial = cfg.get('container_max_px')
         self.fields['nav_brand_weight'].initial = cfg.get('brand_weight')
         self.fields['nav_link_style'].initial = cfg.get('link_style')
@@ -159,7 +174,8 @@ class SiteSettingsForm(BootstrapModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        for name in ['nav_bg_color', 'nav_text_color', 'nav_link_color', 'nav_link_hover_bg', 'nav_link_hover_color']:
+        for name in ['nav_bg_color', 'nav_text_color', 'nav_link_color', 'nav_link_hover_bg', 'nav_link_hover_color',
+                     'nav_border_top_color', 'nav_border_bottom_color', 'nav_border_left_color', 'nav_border_right_color']:
             val = (cleaned.get(name) or '').strip()
             if val and not self.COLOR_RE.match(val):
                 self.add_error(name, 'Enter a valid CSS color value (hex, color name, rgb/rgba, hsl/hsla).')
@@ -190,7 +206,14 @@ class SiteSettingsForm(BootstrapModelForm):
             'brand_size_rem': self.cleaned_data.get('nav_brand_size') if self.cleaned_data.get('nav_brand_size') is not None else cfg.get('brand_size_rem'),
             'link_size_rem': self.cleaned_data.get('nav_link_size') if self.cleaned_data.get('nav_link_size') is not None else cfg.get('link_size_rem'),
             'radius_px': self.cleaned_data.get('nav_radius_px') if self.cleaned_data.get('nav_radius_px') is not None else cfg.get('radius_px'),
-            'border_width_px': self.cleaned_data.get('nav_border_width_px') if self.cleaned_data.get('nav_border_width_px') is not None else cfg.get('border_width_px'),
+            'border_top_width_px': self.cleaned_data.get('nav_border_top_width') if self.cleaned_data.get('nav_border_top_width') is not None else (cfg.get('border_top_width_px') or 0),
+            'border_bottom_width_px': self.cleaned_data.get('nav_border_bottom_width') if self.cleaned_data.get('nav_border_bottom_width') is not None else (cfg.get('border_bottom_width_px') or 0),
+            'border_left_width_px': self.cleaned_data.get('nav_border_left_width') if self.cleaned_data.get('nav_border_left_width') is not None else (cfg.get('border_left_width_px') or 0),
+            'border_right_width_px': self.cleaned_data.get('nav_border_right_width') if self.cleaned_data.get('nav_border_right_width') is not None else (cfg.get('border_right_width_px') or 0),
+            'border_top_color': self.cleaned_data.get('nav_border_top_color', ''),
+            'border_bottom_color': self.cleaned_data.get('nav_border_bottom_color', ''),
+            'border_left_color': self.cleaned_data.get('nav_border_left_color', ''),
+            'border_right_color': self.cleaned_data.get('nav_border_right_color', ''),
             'container_max_px': self.cleaned_data.get('nav_container_max_px') if self.cleaned_data.get('nav_container_max_px') is not None else cfg.get('container_max_px'),
             'brand_weight': self.cleaned_data.get('nav_brand_weight') if self.cleaned_data.get('nav_brand_weight') is not None else cfg.get('brand_weight'),
             'link_style': self.cleaned_data.get('nav_link_style') or cfg.get('link_style'),
