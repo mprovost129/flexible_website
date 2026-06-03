@@ -2,6 +2,7 @@ from django import forms
 import re
 
 from .models import Banner, BlogPost, FooterColumn, FooterLink, NavLink, Page, Plan, Product, Section, Site
+from .section_config import get_config_options
 
 
 class BootstrapModelForm(forms.ModelForm):
@@ -234,19 +235,131 @@ class PageForm(BootstrapModelForm):
 
 
 class SectionForm(BootstrapModelForm):
+    """Section editor. The section's `config` JSON is presented as friendly,
+    labelled controls (one per available display option for the section type)
+    instead of a raw JSON box — see core/section_config.py."""
+
+    CONFIG_PREFIX = 'cfg__'
+
     class Meta:
         model = Section
         fields = [
             'section_type', 'layout', 'order', 'is_visible', 'heading', 'subheading',
-            'background_color', 'primary_image', 'config',
+            'background_color', 'primary_image',
         ]
         widgets = {
             'subheading': forms.Textarea(attrs={'rows': 4}),
-            'config': forms.Textarea(attrs={
-                'rows': 8,
-                'placeholder': '{\n  "button_text": "Get Started",\n  "button_url": "/contact/"\n}',
-            }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Which section type's options to show: prefer submitted data (so a
+        # changed type still validates), then the instance, then initial.
+        section_type = (
+            (self.data.get('section_type') if self.is_bound else None)
+            or getattr(self.instance, 'section_type', None)
+            or self.initial.get('section_type')
+        )
+        existing = self.instance.config if isinstance(getattr(self.instance, 'config', None), dict) else {}
+
+        self._config_options = get_config_options(section_type)
+        for opt in self._config_options:
+            self.fields[self.CONFIG_PREFIX + opt['key']] = self._build_config_field(opt, existing)
+
+        # Apply Bootstrap classes to the dynamically-added config fields (the
+        # base styling pass in BootstrapModelForm.__init__ already ran above).
+        for name, field in self.fields.items():
+            if not name.startswith(self.CONFIG_PREFIX):
+                continue
+            widget = field.widget
+            if isinstance(widget, forms.CheckboxInput):
+                widget.attrs.setdefault('class', 'form-check-input')
+            elif isinstance(widget, forms.Select):
+                widget.attrs.setdefault('class', 'form-select')
+            elif widget.attrs.get('type') == 'color':
+                widget.attrs.setdefault('class', 'form-control form-control-color')
+            else:
+                widget.attrs.setdefault('class', 'form-control')
+
+    def _build_config_field(self, opt, existing):
+        key, kind = opt['key'], opt['type']
+        label, help_text = opt['label'], opt.get('help', '')
+        has = key in existing
+        raw = existing.get(key)
+
+        if kind == 'bool':
+            default_on = bool(opt.get('default', False))
+            # Templates read most flags as "on unless the string 'false'", and a
+            # couple as "off unless the string 'true'". Mirror that here.
+            if default_on:
+                initial = (str(raw).lower() != 'false') if has else True
+            else:
+                initial = (str(raw).lower() == 'true') if has else False
+            return forms.BooleanField(required=False, initial=initial, label=label, help_text=help_text)
+
+        if kind == 'choice':
+            return forms.ChoiceField(
+                choices=opt['choices'], required=False, label=label, help_text=help_text,
+                initial=str(raw) if has else opt.get('default'),
+            )
+
+        if kind == 'choice_int':
+            return forms.TypedChoiceField(
+                choices=opt['choices'], coerce=int, required=False, empty_value=None,
+                label=label, help_text=help_text,
+                initial=int(raw) if has and str(raw).lstrip('-').isdigit() else opt.get('default'),
+            )
+
+        if kind == 'int':
+            return forms.IntegerField(
+                required=False, label=label, help_text=help_text,
+                min_value=opt.get('min'), max_value=opt.get('max'),
+                initial=raw if has else opt.get('default'),
+            )
+
+        if kind == 'color':
+            return forms.CharField(
+                required=False, label=label, help_text=help_text,
+                widget=forms.TextInput(attrs={'type': 'color'}),
+                initial=raw if has else opt.get('default'),
+            )
+
+        # text
+        return forms.CharField(
+            required=False, label=label, help_text=help_text,
+            initial=raw if has else opt.get('default'),
+        )
+
+    def save(self, commit=True):
+        section = super().save(commit=False)
+        # Preserve any config keys we don't expose, only updating known options.
+        cfg = dict(section.config) if isinstance(section.config, dict) else {}
+        for opt in self._config_options:
+            key, kind = opt['key'], opt['type']
+            val = self.cleaned_data.get(self.CONFIG_PREFIX + key)
+            if kind == 'bool':
+                # Store the string the templates compare against.
+                cfg[key] = 'true' if val else 'false'
+            elif kind == 'choice_int':
+                if val is None:
+                    cfg.pop(key, None)
+                else:
+                    cfg[key] = int(val)
+            elif kind == 'int':
+                if val in (None, ''):
+                    cfg.pop(key, None)
+                else:
+                    cfg[key] = int(val)
+            else:  # choice / text / color
+                if val in (None, ''):
+                    cfg.pop(key, None)
+                else:
+                    cfg[key] = val
+        section.config = cfg
+        if commit:
+            section.save()
+        return section
 
 
 class NavLinkForm(BootstrapModelForm):
