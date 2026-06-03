@@ -31,7 +31,7 @@ picking all work with no extra JS.
 {% elif item.item_type == 'image' %}
     <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="image" data-edit-type="image">
         {% if item.image %}
-            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-fluid rounded">
+            <img src="{{ item.image.url }}" alt="{{ item.image_alt|default:item.title }}" class="img-fluid rounded">
         {% else %}
             <div class="bg-secondary-subtle rounded d-flex align-items-center justify-content-center edit-img-placeholder" style="aspect-ratio: 16/9; min-height: 140px;">
                 <span class="text-body-secondary small">{% if request.user.is_staff %}Click camera to upload{% else %}No image{% endif %}</span>

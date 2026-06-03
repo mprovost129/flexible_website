@@ -62,6 +62,7 @@
                         </div>
                         <div class="cbl-actions">
                             <a href="{% url 'core:dashboard_section_edit' section.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form method="post" action="{% url 'core:dashboard_section_duplicate' section.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-success" title="Duplicate this section">Duplicate</button></form>
                             <form method="post" action="{% url 'core:dashboard_section_delete' section.pk %}" onsubmit="return confirm('Delete this section?');">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Delete</button></form>
                         </div>
                     </div>

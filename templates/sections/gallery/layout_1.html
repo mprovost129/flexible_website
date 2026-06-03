@@ -42,7 +42,7 @@
                          data-link-url="{{ item.link_url }}"
                          data-link-text="{{ item.link_text|default:'View' }}">
                         {% if item.image %}
-                            <img src="{{ item.image.url }}" alt="{{ item.title }}"
+                            <img src="{{ item.image.url }}" alt="{{ item.image_alt|default:item.title }}"
                                  class="img-fluid w-100 gallery-thumb"
                                  style="aspect-ratio: 1; object-fit: cover;">
                         {% else %}

@@ -1,0 +1,46 @@
+<!-- FAQ / accordion: each item is title=question, text=answer. -->
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-4 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|safe }}</p>
+            </div>
+        {% endif %}
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion" id="faq-{{ section.id }}">
+                    {% for item in section.items.all %}
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="faq-{{ section.id }}-h{{ item.id }}">
+                            <button class="accordion-button{% if not forloop.first %} collapsed{% endif %}" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#faq-{{ section.id }}-c{{ item.id }}"
+                                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                                    aria-controls="faq-{{ section.id }}-c{{ item.id }}">
+                                <span class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                                    <span class="edit-content">{{ item.title|default:"Question" }}</span>
+                                </span>
+                            </button>
+                        </h3>
+                        <div id="faq-{{ section.id }}-c{{ item.id }}" class="accordion-collapse collapse{% if forloop.first %} show{% endif %}"
+                             aria-labelledby="faq-{{ section.id }}-h{{ item.id }}" data-bs-parent="#faq-{{ section.id }}">
+                            <div class="accordion-body">
+                                <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                                    <div class="edit-content" data-edit-value="{{ item.text }}">{{ item.text|default:"Answer goes here."|safe }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    {% if edit_mode_active %}<p class="text-center text-body-secondary">Add items to this section to create questions and answers.</p>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

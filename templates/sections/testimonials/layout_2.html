@@ -65,7 +65,7 @@
 
                                 {% if item.image %}
                                     <div class="edit-wrap d-inline-block mb-3" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="image" data-edit-type="image">
-                                        <img src="{{ item.image.url }}" alt="{{ item.title }}"
+                                        <img src="{{ item.image.url }}" alt="{{ item.image_alt|default:item.title }}"
                                              class="rounded-circle mx-auto d-block"
                                              style="width: 4.5rem; height: 4.5rem; object-fit: cover;">
                                     </div>

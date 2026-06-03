@@ -1319,6 +1319,12 @@ body:not(.edit-mode) .nav-drag-handle {
 /* --------------------------------------------------------------------------
    CBL universal navbar engine
    -------------------------------------------------------------------------- */
+/* Anchor-link targets (section anchor_id) clear a sticky navbar when jumped to. */
+.section-wrap[id],
+.cbl-anchored[id] {
+    scroll-margin-top: 6rem;
+}
+
 .cbl-navbar-shell {
     background: var(--cbl-chrome-bg, var(--bs-body-bg));
     z-index: 1020;

@@ -77,7 +77,7 @@ def _cloudinary_upload_or_error(file_obj, **kwargs):
 # ---------------------------------------------------------------------------
 
 SECTION_TEXT_FIELDS = {'heading', 'subheading'}
-ITEM_TEXT_FIELDS = {'title', 'text', 'icon', 'link_url', 'link_text', 'link_style'}
+ITEM_TEXT_FIELDS = {'title', 'text', 'icon', 'link_url', 'link_text', 'link_style', 'image_alt'}
 
 # Item kinds offered by the "Add item" picker on hero / CTA sections. Each maps
 # to the field defaults that make the new item render right away.
@@ -300,6 +300,7 @@ def get_item_data(request, pk):
         'link_style': item.link_style,
         'link_config': item.link_config if isinstance(item.link_config, dict) else {},
         'image_url': item.image.url if item.image else '',
+        'image_alt': item.image_alt or '',
         'section_id': item.section_id,
     })
 
@@ -473,6 +474,9 @@ ADDABLE_SECTION_TYPES = [
     ('recent_posts',  'Recent Blog Posts'),
     ('product_grid',  'Product Grid'),
     ('plan_grid',     'Plans / Projects Grid'),
+    ('faq',           'FAQ / Accordion'),
+    ('stats',         'Stats / Counters'),
+    ('html_embed',    'Raw HTML Embed'),
 ]
 
 # Sensible starter content per section type so a freshly added section isn't
@@ -561,6 +565,29 @@ SECTION_DEFAULTS = {
     'plan_grid': {
         'heading': 'Plans & Projects',
         'config': {'columns_desktop': 3},
+        'items': [],
+    },
+    'faq': {
+        'heading': 'Frequently Asked Questions',
+        'subheading': '',
+        'items': [
+            {'title': 'What is your question?', 'text': 'Write the answer here.'},
+            {'title': 'Another common question?', 'text': 'And its answer here.'},
+        ],
+    },
+    'stats': {
+        'heading': 'By the Numbers',
+        'config': {'columns_desktop': 4},
+        'items': [
+            {'icon': 'graph-up-arrow', 'title': '100+', 'text': 'Projects'},
+            {'icon': 'people-fill', 'title': '50', 'text': 'Clients'},
+            {'icon': 'star-fill', 'title': '4.9', 'text': 'Rating'},
+            {'icon': 'award-fill', 'title': '10', 'text': 'Years'},
+        ],
+    },
+    'html_embed': {
+        'heading': '',
+        'config': {'html': ''},
         'items': [],
     },
 }

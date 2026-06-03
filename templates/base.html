@@ -10,7 +10,7 @@
     <!-- Priority: page og_title > page title > site name                   -->
     <!-- ------------------------------------------------------------------ -->
     {% if page %}
-        {% with page_title=page.og_title|default:page.title %}
+        {% with page_title=page.meta_title|default:page.og_title|default:page.title %}
         <title>{% block title %}{% if page_title %}{{ page_title }} | {% endif %}{% if cms_site %}{{ cms_site.name }}{% else %}My Site{% endif %}{% endblock %}</title>
         {% endwith %}
     {% else %}
@@ -25,7 +25,8 @@
     {% else %}
         <meta name="description" content="{% block meta_description %}{% if cms_site %}{{ cms_site.tagline|default:'' }}{% endif %}{% endblock %}">
     {% endif %}
-    <link rel="canonical" href="{{ request.build_absolute_uri }}">
+    <link rel="canonical" href="{% if page.canonical_url %}{{ page.canonical_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+    <link rel="alternate" type="application/rss+xml" title="{% if cms_site %}{{ cms_site.name }}{% endif %} Blog" href="/blog/feed/">
 
     <!-- ------------------------------------------------------------------ -->
     <!-- Favicon                                                             -->

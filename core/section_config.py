@@ -91,7 +91,16 @@ SECTION_CONFIG_SCHEMA = {
     'plan_grid': [
         {'key': 'plan_count', 'label': 'Number of plans to show', 'type': 'int', 'default': 6, 'min': 1, 'max': 24},
     ],
-    # cta_banner, text_block, product_grid have no display options.
+    'stats': [
+        {'key': 'columns_desktop', 'label': 'Columns (desktop)', 'type': 'choice_int', 'default': 4,
+         'choices': [(2, '2'), (3, '3'), (4, '4')]},
+    ],
+    'html_embed': [
+        {'key': 'html', 'label': 'Custom HTML', 'type': 'textarea', 'default': '',
+         'help': 'Paste embed/iframe/script code. Rendered exactly as written — only paste code you trust.'},
+    ],
+    # faq, cta_banner, text_block, product_grid have no display options
+    # (FAQ items are edited as question/answer pairs).
 }
 
 

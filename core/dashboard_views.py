@@ -2,7 +2,7 @@ import stripe
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -256,6 +256,74 @@ def section_edit(request, pk):
         back_url=reverse('core:dashboard_page_edit', kwargs={'pk': section.page.pk}),
         submit_label='Save section',
     ))
+
+
+def _unique_page_slug(base):
+    """Return a page slug based on `base` that isn't already taken."""
+    slug = base or 'page'
+    i = 2
+    while Page.objects.filter(slug=slug).exists():
+        slug = f'{base}-{i}'
+        i += 1
+    return slug
+
+
+def _clone_section(section, target_page, order=None):
+    """Deep-copy a Section (and its items) onto target_page. Mutates and saves
+    the passed `section` instance into the new row, so callers should pass a
+    freshly-fetched copy they don't need to keep referencing."""
+    items = list(section.items.all())  # capture before reassigning the pk
+    section.pk = None
+    section.id = None
+    section._state.adding = True
+    section.page = target_page
+    if order is not None:
+        section.order = order
+    section.save()
+    for item in items:
+        item.pk = None
+        item.id = None
+        item._state.adding = True
+        item.section = section
+        item.save()
+    return section
+
+
+@staff_required
+@require_POST
+def section_duplicate(request, pk):
+    site = get_active_site(request)
+    section = get_object_or_404(Section, pk=pk, page__site=site)
+    page = section.page
+    # Insert the copy right after the original, shifting later sections down.
+    Section.objects.filter(page=page, order__gt=section.order).update(order=F('order') + 1)
+    _clone_section(section, page, order=section.order + 1)
+    messages.success(request, 'Section duplicated.')
+    return redirect('core:dashboard_page_edit', pk=page.pk)
+
+
+@staff_required
+@require_POST
+def page_duplicate(request, pk):
+    site = get_active_site(request)
+    page = get_object_or_404(Page, pk=pk, site=site)
+    sections = list(page.sections.all())  # capture before reassigning the pk
+    original_title = page.title or page.slug
+
+    page.pk = None
+    page.id = None
+    page._state.adding = True
+    page.slug = _unique_page_slug(f'copy-of-{page.slug}')
+    page.title = f'Copy of {original_title}'
+    page.is_enabled = False  # land as a draft so the copy isn't live immediately
+    page.order = Page.objects.filter(site=site).count()
+    page.save()
+
+    for section in sections:
+        _clone_section(section, page, order=section.order)
+
+    messages.success(request, f'Page duplicated as “{page.title}” (draft).')
+    return redirect('core:dashboard_page_edit', pk=page.pk)
 
 
 @staff_required
@@ -673,15 +741,23 @@ def _save_plan_specs(request, plan):
 
 
 def _save_plan_images(request, plan):
-    """Remove checked images, then append any newly uploaded ones."""
+    """Remove checked images, update alt text on remaining ones, then append
+    any newly uploaded images."""
     remove_ids = request.POST.getlist('remove_image')
     if remove_ids:
         PlanImage.objects.filter(plan=plan, pk__in=remove_ids).delete()
+    # Per-image alt text (field name image_alt_<pk>).
+    for img in plan.images.all():
+        alt = request.POST.get(f'image_alt_{img.pk}')
+        if alt is not None and alt != img.image_alt:
+            img.image_alt = alt
+            img.save(update_fields=['image_alt'])
     files = request.FILES.getlist('new_images')
+    new_alt = (request.POST.get('new_images_alt') or '').strip()
     last = plan.images.order_by('-order').first()
     start = (last.order + 1) if last else 0
     for i, f in enumerate(files):
-        PlanImage.objects.create(plan=plan, image=f, order=start + i)
+        PlanImage.objects.create(plan=plan, image=f, order=start + i, image_alt=new_alt)
 
 
 @staff_required

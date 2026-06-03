@@ -39,6 +39,9 @@
     ['recent_posts', 'Recent Blog Posts'],
     ['product_grid', 'Product Grid'],
     ['plan_grid', 'Plans / Projects Grid'],
+    ['faq', 'FAQ / Accordion'],
+    ['stats', 'Stats / Counters'],
+    ['html_embed', 'Raw HTML Embed'],
   ];
 
   function getCsrf() {

@@ -21,7 +21,7 @@
                     {% with imgs=plan.images.all %}
                     {% if imgs %}
                         {% for img in imgs %}
-                        <img src="{{ img.image.url }}" alt="{{ plan.title }}"
+                        <img src="{{ img.image.url }}" alt="{{ img.image_alt|default:plan.title }}"
                              class="img-fluid rounded-3 shadow-sm mb-3 w-100" style="object-fit:cover;">
                         {% endfor %}
                     {% else %}

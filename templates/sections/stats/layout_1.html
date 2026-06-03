@@ -1,0 +1,41 @@
+<!-- Stats / counters: each item is title=number (e.g. "500+"), text=label, optional icon. -->
+<section class="py-5"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="text-center fw-bold mb-2 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.subheading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="subheading" data-edit-type="textarea">
+                <p class="text-center text-body-secondary mb-5 edit-content" data-edit-value="{{ section.subheading }}">{{ section.subheading|safe }}</p>
+            </div>
+        {% endif %}
+        <div class="row g-4 text-center">
+            {% for item in section.items.all %}
+                <div class="{{ section.bootstrap_col_class }}">
+                    {% if item.icon %}
+                        <span class="cbl-icon-edit d-inline-block mb-2" data-item-id="{{ item.id }}" title="Click to change icon">
+                            <i class="bi bi-{{ item.icon }} fs-1 text-primary d-block"></i>
+                        </span>
+                    {% elif edit_mode_active %}
+                        <span class="cbl-icon-edit d-inline-block mb-2" data-item-id="{{ item.id }}" title="Click to add an icon">
+                            <i class="bi bi-plus-square-dashed fs-1 text-body-secondary d-block" style="opacity:.4"></i>
+                        </span>
+                    {% endif %}
+                    <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+                        <div class="display-4 fw-bold text-primary edit-content">{{ item.title|default:"0" }}</div>
+                    </div>
+                    {% if item.text %}
+                        <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+                            <div class="text-body-secondary text-uppercase small fw-semibold edit-content" data-edit-value="{{ item.text }}">{{ item.text }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                {% if edit_mode_active %}<p class="text-center text-body-secondary">Add items: each one is a number and a label.</p>{% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>

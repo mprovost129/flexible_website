@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.syndication.views import Feed
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.http import HttpResponse, JsonResponse
@@ -214,6 +215,38 @@ def blog_post_detail(request, slug):
         qs = qs.filter(status=BlogPost.STATUS_PUBLISHED)
     post = get_object_or_404(qs)
     return render(request, 'blog/post.html', {'post': post})
+
+
+class BlogFeed(Feed):
+    """RSS feed of published blog posts at /blog/feed/."""
+
+    def get_object(self, request, *args, **kwargs):
+        return get_active_site(request)
+
+    def title(self, obj):
+        return f'{obj.name} — Blog'
+
+    def link(self, obj):
+        return '/blog/'
+
+    def description(self, obj):
+        return obj.tagline or f'Latest posts from {obj.name}'
+
+    def items(self, obj):
+        return (BlogPost.objects.filter(site=obj, status=BlogPost.STATUS_PUBLISHED)
+                .order_by('-published_at', '-created_at')[:20])
+
+    def item_title(self, item):
+        return item.title
+
+    def item_description(self, item):
+        return item.excerpt or ''
+
+    def item_link(self, item):
+        return item.url
+
+    def item_pubdate(self, item):
+        return item.published_at or item.created_at
 
 
 # ---------------------------------------------------------------------------

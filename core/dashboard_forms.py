@@ -239,6 +239,7 @@ class PageForm(BootstrapModelForm):
         fields = [
             'title', 'slug', 'page_type', 'variant', 'order', 'is_enabled',
             'inherit_site_theme', 'theme',
+            'meta_title', 'canonical_url',
             'og_title', 'og_description', 'og_image',
         ]
         widgets = {
@@ -268,10 +269,13 @@ class SectionForm(BootstrapModelForm):
         model = Section
         fields = [
             'section_type', 'layout', 'order', 'is_visible', 'heading', 'subheading',
-            'background_color', 'primary_image',
+            'background_color', 'primary_image', 'anchor_id',
         ]
         widgets = {
             'subheading': forms.Textarea(attrs={'rows': 4}),
+        }
+        labels = {
+            'anchor_id': 'Anchor link id (optional)',
         }
 
     def __init__(self, *args, **kwargs):
@@ -345,6 +349,14 @@ class SectionForm(BootstrapModelForm):
             return forms.CharField(
                 required=False, label=label, help_text=help_text,
                 widget=forms.TextInput(attrs={'type': 'color'}),
+                initial=raw if has else opt.get('default'),
+            )
+
+        if kind == 'textarea':
+            return forms.CharField(
+                required=False, label=label, help_text=help_text,
+                widget=forms.Textarea(attrs={'rows': 6, 'spellcheck': 'false',
+                                             'style': 'font-family:ui-monospace,Menlo,monospace;font-size:.85rem'}),
                 initial=raw if has else opt.get('default'),
             )
 
@@ -468,7 +480,7 @@ class BannerForm(BootstrapModelForm):
 class ProductForm(BootstrapModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'slug', 'description', 'price', 'stock', 'featured_image', 'is_active']
+        fields = ['name', 'slug', 'description', 'price', 'stock', 'featured_image', 'image_alt', 'is_active']
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
         }
@@ -488,7 +500,7 @@ class BlogPostForm(BootstrapModelForm):
         model = BlogPost
         fields = [
             'title', 'slug', 'status', 'published_at',
-            'excerpt', 'body', 'featured_image',
+            'excerpt', 'body', 'featured_image', 'image_alt',
             'meta_title', 'meta_description',
         ]
         widgets = {

@@ -301,6 +301,14 @@ class Page(models.Model):
     order = models.IntegerField(default=0)
 
     # SEO / Open Graph overrides -- leave blank to inherit from Site defaults
+    meta_title = models.CharField(
+        max_length=200, blank=True,
+        help_text='Browser tab / search-result title for this page. Defaults to the page title if left blank.',
+    )
+    canonical_url = models.URLField(
+        blank=True,
+        help_text='Canonical URL for this page (advanced SEO). Leave blank to use this page\'s own address.',
+    )
     og_title = models.CharField(
         max_length=200, blank=True,
         help_text='Social share title. Defaults to the page title if left blank.',
@@ -433,6 +441,9 @@ class Section(models.Model):
         ('recent_posts',  'Recent Blog Posts'),
         ('product_grid',  'Product Grid'),
         ('plan_grid',     'Plans / Projects Grid'),
+        ('faq',           'FAQ / Accordion'),
+        ('stats',         'Stats / Counters'),
+        ('html_embed',    'Raw HTML Embed'),
     ]
     LAYOUT_CHOICES = [
         ('layout_1', 'Layout 1'),
@@ -454,6 +465,13 @@ class Section(models.Model):
     heading = models.CharField(max_length=200, blank=True)
     subheading = models.TextField(blank=True)
     background_color = models.CharField(max_length=20, blank=True, default='')
+
+    # Optional anchor id, e.g. "pricing" -> the section can be linked as
+    # /page/#pricing for in-page jump links. Letters, numbers, and hyphens.
+    anchor_id = models.SlugField(
+        max_length=60, blank=True, default='',
+        help_text='Optional anchor for in-page links. E.g. "pricing" lets you link to #pricing.',
+    )
 
     # For sections with a primary image (hero, banner)
     primary_image = CloudinaryField('image', blank=True, null=True)
@@ -535,6 +553,10 @@ class SectionItem(models.Model):
     title = models.CharField(max_length=200, blank=True)
     text = models.TextField(blank=True)
     image = CloudinaryField('image', blank=True, null=True)
+    image_alt = models.CharField(
+        max_length=200, blank=True, default='',
+        help_text='Describes the image for screen readers and search engines. Leave blank for decorative images.',
+    )
     icon = models.CharField(max_length=50, blank=True)
     link_url = models.CharField(max_length=500, blank=True)
     link_text = models.CharField(max_length=100, blank=True)
@@ -692,6 +714,8 @@ class Product(models.Model):
     price         = models.DecimalField(max_digits=10, decimal_places=2, help_text='Price in dollars (e.g. 9.99)')
     stock         = models.PositiveIntegerField(null=True, blank=True, help_text='Leave blank for unlimited stock.')
     featured_image = CloudinaryField('featured_image', blank=True, null=True)
+    image_alt     = models.CharField(max_length=200, blank=True, default='',
+                                     help_text='Alt text for the product image (accessibility + SEO). Defaults to the product name.')
     is_active     = models.BooleanField(default=True, help_text='Visible and purchasable on the site.')
     created_at    = models.DateTimeField(auto_now_add=True)
     updated_at    = models.DateTimeField(auto_now=True)
@@ -790,6 +814,8 @@ class Plan(models.Model):
 class PlanImage(models.Model):
     plan       = models.ForeignKey(Plan, on_delete=models.CASCADE, related_name='images')
     image      = CloudinaryField('image')
+    image_alt  = models.CharField(max_length=200, blank=True, default='',
+                                  help_text='Alt text for accessibility + SEO. Defaults to the plan title.')
     order      = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -815,6 +841,8 @@ class BlogPost(models.Model):
     excerpt       = models.TextField(blank=True, help_text='Short preview shown in the post list.')
     body          = models.TextField(blank=True, help_text='Full post content (HTML allowed).')
     featured_image = CloudinaryField('featured_image', blank=True, null=True)
+    image_alt     = models.CharField(max_length=200, blank=True, default='',
+                                     help_text='Alt text for the featured image (accessibility + SEO). Defaults to the post title.')
     status        = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT, db_index=True)
     published_at  = models.DateTimeField(null=True, blank=True, db_index=True)
     meta_title    = models.CharField(max_length=200, blank=True)

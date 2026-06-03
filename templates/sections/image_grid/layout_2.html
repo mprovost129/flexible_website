@@ -34,7 +34,7 @@
                 <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="image" data-edit-type="image"
                      style="break-inside: avoid; margin-bottom: 1rem;">
                     {% if item.image %}
-                        <img src="{{ item.image.url }}" alt="{{ item.title }}"
+                        <img src="{{ item.image.url }}" alt="{{ item.image_alt|default:item.title }}"
                              class="img-fluid rounded w-100">
                     {% else %}
                         <div class="bg-secondary-subtle rounded d-flex align-items-center justify-content-center edit-img-placeholder"

@@ -2157,6 +2157,8 @@
               '<input type="file" class="sidebar-item-img-file" accept="image/*" style="display:none">' +
               '<button type="button" class="btn btn-sm btn-outline-primary w-100 mb-1 sidebar-upload-item-img">Upload image</button>' +
               '<div class="small text-danger sidebar-item-img-status"></div>' +
+              '<label class="form-label small mb-1 mt-1">Image alt text</label>' +
+              '<input type="text" class="form-control form-control-sm sidebar-item-image-alt" value="' + escapeHtml(d.image_alt || '') + '" placeholder="Describe the image (SEO &amp; accessibility)">' +
             '</div>';
         }
 
@@ -2275,6 +2277,7 @@
             var title     = shell.querySelector('.sidebar-item-title');
             var textEl    = shell.querySelector('.sidebar-item-text');
             var icon      = shell.querySelector('.sidebar-item-icon');
+            var imageAlt  = shell.querySelector('.sidebar-item-image-alt');
             var linkUrl   = shell.querySelector('.sidebar-item-link-url');
             var linkTxt   = shell.querySelector('.sidebar-item-link-text');
             var linkStyle = shell.querySelector('.sidebar-item-link-style');
@@ -2293,6 +2296,7 @@
             if (title)     chain = chain.then(field('title', title.value));
             if (textEl)    chain = chain.then(field('text', getEditorContent(shell, '.sidebar-item-text')));
             if (icon)      chain = chain.then(field('icon', icon.value));
+            if (imageAlt)  chain = chain.then(field('image_alt', imageAlt.value));
             if (linkUrl)   chain = chain.then(field('link_url', linkUrl.value));
             if (linkTxt)   chain = chain.then(field('link_text', linkTxt.value));
             if (linkStyle) chain = chain.then(field('link_style', linkStyle.value));

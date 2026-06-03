@@ -1,0 +1,21 @@
+<!-- Raw HTML embed: renders the owner-supplied markup in section.config.html.
+     Staff-entered and trusted (only the dashboard can set it). -->
+<section class="py-4"
+         {% if section.background_color %}style="background: {{ section.background_color }};"{% endif %}>
+    <div class="container">
+        {% if section.heading %}
+            <div class="edit-wrap" data-edit-model="section" data-edit-id="{{ section.id }}" data-edit-field="heading">
+                <h2 class="fw-bold mb-3 edit-content">{{ section.heading }}</h2>
+            </div>
+        {% endif %}
+        {% if section.config.html %}
+            {{ section.config.html|safe }}
+        {% elif edit_mode_active %}
+            <div class="border border-2 border-dashed rounded p-4 text-center text-body-secondary">
+                <i class="bi bi-code-slash fs-3 d-block mb-2"></i>
+                Raw HTML embed — add your embed/code in this section's settings
+                (<strong>Custom HTML</strong> field) in the dashboard.
+            </div>
+        {% endif %}
+    </div>
+</section>

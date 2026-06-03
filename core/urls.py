@@ -22,10 +22,12 @@ urlpatterns = [
     path('cbl/pages/add/',                            dashboard_views.page_create,                 name='dashboard_page_create'),
     path('cbl/pages/<int:pk>/edit/',                  dashboard_views.page_edit,                   name='dashboard_page_edit'),
     path('cbl/pages/<int:pk>/delete/',                dashboard_views.page_delete,                 name='dashboard_page_delete'),
+    path('cbl/pages/<int:pk>/duplicate/',             dashboard_views.page_duplicate,              name='dashboard_page_duplicate'),
     path('cbl/pages/<int:pk>/publish-toggle/',        dashboard_views.page_toggle_publish,         name='dashboard_page_toggle_publish'),
     path('cbl/pages/<int:page_pk>/sections/add/',     dashboard_views.section_create,              name='dashboard_section_create'),
     path('cbl/sections/<int:pk>/edit/',               dashboard_views.section_edit,                name='dashboard_section_edit'),
     path('cbl/sections/<int:pk>/delete/',             dashboard_views.section_delete,              name='dashboard_section_delete'),
+    path('cbl/sections/<int:pk>/duplicate/',          dashboard_views.section_duplicate,           name='dashboard_section_duplicate'),
     path('cbl/navigation/',                           dashboard_views.nav_list,                    name='dashboard_nav'),
     path('cbl/navigation/add/',                       dashboard_views.nav_create,                  name='dashboard_nav_create'),
     path('cbl/navigation/<int:pk>/edit/',             dashboard_views.nav_edit,                    name='dashboard_nav_edit'),
@@ -153,8 +155,10 @@ urlpatterns = [
     path('plans/',                   views.plans_list,   name='plans_list'),
     path('plans/<slug:slug>/',       views.plan_detail,  name='plan_detail'),
 
-    # Blog public routes -- must come before the generic <slug:slug> catch-all
+    # Blog public routes -- must come before the generic <slug:slug> catch-all.
+    # /blog/feed/ must precede /blog/<slug>/ so "feed" isn't read as a post slug.
     path('blog/', views.blog_list_public, name='blog_list'),
+    path('blog/feed/', views.BlogFeed(), name='blog_feed'),
     path('blog/<slug:slug>/', views.blog_post_detail, name='blog_post_detail'),
 
     # Generic page by slug -- must come last

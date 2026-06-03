@@ -16,7 +16,7 @@
                 <div class="card h-100 border-0 shadow-sm">
                     {% with img=plan.images.first %}
                     {% if img %}
-                    <img src="{{ img.image.url }}" alt="{{ plan.title }}" class="card-img-top" style="height:220px;object-fit:cover;">
+                    <img src="{{ img.image.url }}" alt="{{ img.image_alt|default:plan.title }}" class="card-img-top" style="height:220px;object-fit:cover;">
                     {% else %}
                     <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:220px">
                         <i class="bi bi-rulers text-secondary" style="font-size:2.5rem"></i>
