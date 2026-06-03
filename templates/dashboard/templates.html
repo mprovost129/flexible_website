@@ -69,11 +69,14 @@
 </div>
 
 <script>
-(function () {
+// Runs in the content block, which is parsed before Bootstrap's JS at the end
+// of <body> — defer to DOMContentLoaded so `bootstrap` is defined.
+document.addEventListener('DOMContentLoaded', function () {
     var modalEl = document.getElementById('applyTemplateModal');
-    var modal = new bootstrap.Modal(modalEl);
     var keyInput = document.getElementById('applyTemplateKey');
     var nameEl = document.getElementById('applyTemplateName');
+    if (!modalEl || typeof bootstrap === 'undefined') return;
+    var modal = new bootstrap.Modal(modalEl);
     document.querySelectorAll('.js-apply-template').forEach(function (btn) {
         btn.addEventListener('click', function () {
             keyInput.value = btn.dataset.packKey;
@@ -81,6 +84,6 @@
             modal.show();
         });
     });
-})();
+});
 </script>
 {% endblock %}
