@@ -380,6 +380,13 @@ class AllObjectsManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset()
 
+# Free-form element kinds addable to ANY section via the "Add item" picker.
+# These render through templates/sections/_item.html rather than a section's
+# own template, which is what lets any element type live in any section.
+FREE_ITEM_TYPES = {
+    'heading', 'subheading', 'text', 'button', 'link', 'image', 'icon',
+}
+
 
 class Section(models.Model):
     SECTION_TYPES = [
@@ -466,6 +473,24 @@ class Section(models.Model):
         else:
             bs_size = 4  # fallback: 3 columns
         return f'col-12 col-md-{bs_size}'
+
+    @property
+    def native_items(self):
+        """Items rendered by the section's own template (its designed slots).
+
+        These are the legacy/native items (item_type == '') plus any section
+        specific kinds. Free-form elements added via the "Add item" picker are
+        excluded here and rendered separately by `free_items`, so existing
+        sections render exactly as before.
+        """
+        return [i for i in self.items.all() if i.item_type not in FREE_ITEM_TYPES]
+
+    @property
+    def free_items(self):
+        """Free-form elements (heading, text, button, image, etc.) the user
+        added via the picker. Rendered by the universal item partial so any
+        element type can live in any section."""
+        return [i for i in self.items.all() if i.item_type in FREE_ITEM_TYPES]
 
 
 class SectionItem(models.Model):

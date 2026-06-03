@@ -1,0 +1,45 @@
+{% comment %}
+Universal renderer for a free-form SectionItem. Expects `item`.
+
+Dispatches on item.item_type so any element kind (heading, subheading, text,
+button, link, image, icon) can be rendered inside any section. Every element
+reuses the same inline-edit hooks (data-edit-model/id/field/type, cbl-icon-edit)
+as the native section templates, so click-to-edit, image upload, and icon
+picking all work with no extra JS.
+{% endcomment %}
+{% load core_extras %}
+{% if item.item_type == 'heading' %}
+    <div class="edit-wrap w-100" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+        <h2 class="fw-bold mb-0 edit-content">{{ item.title }}</h2>
+    </div>
+{% elif item.item_type == 'subheading' %}
+    <div class="edit-wrap w-100" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="title">
+        <h5 class="fw-semibold text-body-secondary mb-0 edit-content">{{ item.title }}</h5>
+    </div>
+{% elif item.item_type == 'text' %}
+    <div class="edit-wrap w-100" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="text" data-edit-type="textarea">
+        <p class="mb-0 edit-content" data-edit-value="{{ item.text }}">{{ item.text|safe }}</p>
+    </div>
+{% elif item.item_type == 'button' %}
+    <a href="{{ item.link_url|default:'#' }}"
+       class="btn {{ item.link_style|default:'btn-primary' }} {{ item.link_config|btn_size }} {{ item.link_config|btn_extra_classes }} edit-wrap"
+       data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text"
+       style="{{ item.link_config|btn_margin_style }}">{{ item.link_text|default:'Button' }}</a>
+{% elif item.item_type == 'link' %}
+    <a href="{{ item.link_url|default:'#' }}" class="link-primary fw-medium edit-wrap"
+       data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="link_text">{{ item.link_text|default:'link' }}</a>
+{% elif item.item_type == 'image' %}
+    <div class="edit-wrap" data-edit-model="item" data-edit-id="{{ item.id }}" data-edit-field="image" data-edit-type="image">
+        {% if item.image %}
+            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="img-fluid rounded">
+        {% else %}
+            <div class="bg-secondary-subtle rounded d-flex align-items-center justify-content-center edit-img-placeholder" style="aspect-ratio: 16/9; min-height: 140px;">
+                <span class="text-body-secondary small">{% if request.user.is_staff %}Click camera to upload{% else %}No image{% endif %}</span>
+            </div>
+        {% endif %}
+    </div>
+{% elif item.item_type == 'icon' %}
+    <span class="cbl-icon-edit d-inline-block" data-item-id="{{ item.id }}" title="Click to change icon">
+        <i class="bi bi-{{ item.icon|default:'star-fill' }} display-4 text-primary d-block"></i>
+    </span>
+{% endif %}

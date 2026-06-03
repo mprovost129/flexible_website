@@ -48,7 +48,7 @@
                      data-section-heading="{{ section.heading }}"
                      data-section-subheading="{{ section.subheading }}"
                      data-section-image-url="{% if section.primary_image %}{{ section.primary_image.url }}{% endif %}">
-                    {% include section.template_path %}
+                    {% include "sections/_render.html" %}
                 </div>
                 {% endwith %}
                 {% endwith %}
@@ -68,10 +68,10 @@
             {% if pt or pb or pl or pr or mt or mb or bw or br or cfg.item_style %}
             <div {% if cfg.item_style and cfg.item_style != 'none' %}class="cbl-items-{{ cfg.item_style }}"{% endif %}
                  {% if pt or pb or pl or pr or mt or mb or bw or br %}style="{% if pt %}padding-top:{{ pt }}rem;{% endif %}{% if pb %}padding-bottom:{{ pb }}rem;{% endif %}{% if pl %}padding-left:{{ pl }}rem;{% endif %}{% if pr %}padding-right:{{ pr }}rem;{% endif %}{% if mt %}margin-top:{{ mt }}rem;{% endif %}{% if mb %}margin-bottom:{{ mb }}rem;{% endif %}{% if bw and bs and bs != 'none' %}border:{{ bw }}px {{ bs }} {{ bc|default:'#dee2e6' }};{% endif %}{% if br %}border-radius:{{ br }}px;{% endif %}"{% endif %}>
-                {% include section.template_path %}
+                {% include "sections/_render.html" %}
             </div>
             {% else %}
-            {% include section.template_path %}
+            {% include "sections/_render.html" %}
             {% endif %}
             {% endwith %}
             {% endwith %}

@@ -1,0 +1,8 @@
+{% comment %}
+Single source for "render a section the way a page does": the section's own
+template, followed by any free-form elements added via the picker. Used by the
+page templates and by the live re-render after add/delete item, so both paths
+stay identical. Expects `section`.
+{% endcomment %}
+{% include section.template_path %}
+{% include "sections/_free_elements.html" %}

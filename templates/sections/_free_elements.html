@@ -1,0 +1,17 @@
+{% comment %}
+Renders the free-form elements a user added to a section via the "Add item"
+picker, in a stacked, centered block directly beneath the section's native
+content. Expects `section`. Shows nothing when there are no free elements
+(outside edit mode), so untouched sections are unaffected.
+{% endcomment %}
+{% with free=section.free_items %}
+{% if free %}
+<div class="cbl-free-elements py-3">
+    <div class="container">
+        <div class="d-flex flex-column align-items-center gap-3 text-center">
+            {% for item in free %}{% include "sections/_item.html" %}{% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endwith %}

@@ -82,9 +82,13 @@ ITEM_TEXT_FIELDS = {'title', 'text', 'icon', 'link_url', 'link_text', 'link_styl
 # Item kinds offered by the "Add item" picker on hero / CTA sections. Each maps
 # to the field defaults that make the new item render right away.
 ITEM_KIND_DEFAULTS = {
-    'button':  {'link_text': 'New Button', 'link_url': '#'},
-    'text':    {'text': 'New text - click to edit.'},
-    'heading': {'title': 'New heading'},
+    'heading':    {'title': 'New heading'},
+    'subheading': {'title': 'New subheading'},
+    'text':       {'text': 'New text - click to edit.'},
+    'button':     {'link_text': 'New Button', 'link_url': '#', 'link_style': 'btn-primary'},
+    'link':       {'link_text': 'New link', 'link_url': '#'},
+    'image':      {},  # empty image renders the upload placeholder
+    'icon':       {'icon': 'star-fill'},
 }
 
 VALID_LINK_STYLES = {
@@ -569,7 +573,7 @@ def _render_section_html(section, request):
     get `site`/`cms_site` and `request` exactly as they would on a full page.
     """
     return render_to_string(
-        section.template_path,
+        'sections/_render.html',
         {'section': section},
         request=request,
     )

@@ -176,6 +176,25 @@
     'video_embed',
   ];
 
+  // Element types offered by the "Add item" picker: [item_type, label, icon].
+  // These map 1:1 to ITEM_KIND_DEFAULTS on the server and render through
+  // templates/sections/_item.html, so any element can go in any section.
+  var ITEM_ELEMENT_TYPES = [
+    ['heading',    'Heading',    'type-h1'],
+    ['subheading', 'Subheader',  'type-h3'],
+    ['text',       'Text',       'text-paragraph'],
+    ['button',     'Button',     'hand-index'],
+    ['link',       'Link',       'link-45deg'],
+    ['image',      'Image',      'image'],
+    ['icon',       'Icon',       'star'],
+  ];
+
+  // Sections whose own template renders repeating native items (cards, images,
+  // rows). These also offer a "Default item" option in the picker.
+  var NATIVE_ITEM_SECTIONS = [
+    'feature_list', 'image_grid', 'gallery', 'testimonials', 'pricing_table',
+  ];
+
   // Available layouts per section are emitted by the server in
   // data-section-layouts (auto-detected from the template folder), so there is
   // no hardcoded layout list to keep in sync here.
@@ -195,21 +214,57 @@
     var toolbar = document.createElement('div');
     toolbar.className = 'section-toolbar';
 
-    // Add item. Hero/CTA sections can hold different element kinds, so they get
-    // a button per kind; other item sections get a single "Add item".
+    // Add item. A single "Add item" button opens a picker of element types
+    // (the same interaction as the section-type picker). Each choice POSTs an
+    // item_type the server seeds with sensible defaults; the section re-renders
+    // in place so the new element appears immediately.
     var sType = wrap.dataset.sectionType;
-    function makeAddBtn(label, kind) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'btn btn-sm btn-success section-add-item-btn';
-      b.innerHTML = '<i class="bi bi-plus-lg"></i> ' + label;
-      b.title = 'Add ' + label.toLowerCase();
-      b.addEventListener('click', function () {
-        postJson('/edit/section/' + sectionId + '/item/add/', kind ? { item_type: kind } : null)
-          .then(function (data) { swapSectionHtml(wrap, sectionId, data.html); })
-          .catch(function (err) { alert('Could not add item: ' + err.message); });
+
+    function addItemOfKind(kind) {
+      postJson('/edit/section/' + sectionId + '/item/add/', kind ? { item_type: kind } : null)
+        .then(function (data) { swapSectionHtml(wrap, sectionId, data.html); })
+        .catch(function (err) { alert('Could not add item: ' + err.message); });
+    }
+
+    function makeAddItemButton() {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn btn-sm btn-success section-add-item-btn';
+      btn.innerHTML = '<i class="bi bi-plus-lg"></i> Add item';
+      btn.title = 'Add an element to this section';
+
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        // Toggle the picker (close if already open).
+        var open = wrap.querySelector(':scope > .item-type-picker');
+        if (open) { open.remove(); return; }
+
+        var picker = document.createElement('div');
+        picker.className = 'item-type-picker section-type-picker';
+
+        // Sections that have native repeating items (cards, images, rows) get a
+        // "Default item" first; every section gets the full element palette.
+        var options = [];
+        if (NATIVE_ITEM_SECTIONS.indexOf(sType) !== -1) {
+          options.push(['', 'Default item', 'plus-square']);
+        }
+        ITEM_ELEMENT_TYPES.forEach(function (t) { options.push(t); });
+
+        options.forEach(function (opt) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'btn btn-outline-primary btn-sm m-1';
+          b.innerHTML = '<i class="bi bi-' + opt[2] + ' me-1"></i>' + opt[1];
+          b.addEventListener('click', function () {
+            picker.remove();
+            addItemOfKind(opt[0]);
+          });
+          picker.appendChild(b);
+        });
+
+        wrap.appendChild(picker);
       });
-      return b;
+      return btn;
     }
 
     // Settings (gear): opens the config popover
@@ -281,13 +336,9 @@
         .catch(function (err) { alert('Could not delete section: ' + err.message); });
     });
 
-    // "Add item" only applies to sections that render items.
-    if (sType === 'hero' || sType === 'cta_banner') {
-      toolbar.appendChild(makeAddBtn('Button', 'button'));
-      toolbar.appendChild(makeAddBtn('Text', 'text'));
-      toolbar.appendChild(makeAddBtn('Heading', 'heading'));
-    } else if (['text_block', 'video_embed'].indexOf(sType) === -1) {
-      toolbar.appendChild(makeAddBtn('Add item', ''));
+    // "Add item" applies to any section except pure single-block sections.
+    if (['text_block', 'video_embed'].indexOf(sType) === -1) {
+      toolbar.appendChild(makeAddItemButton());
     }
     toolbar.appendChild(gearBtn);
     toolbar.appendChild(visBtn);
