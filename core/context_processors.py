@@ -35,6 +35,15 @@ def site_context(request):
     if getattr(request, 'user', None) and request.user.is_authenticated and request.user.is_staff:
         edit_mode_active = request.session.get('edit_mode', True)
 
+    # A view can force edit mode on/off for its own page, independent of the
+    # staff session flag, by setting request.cbl_edit_mode_override. This is how
+    # the sandbox stays editable even when a staff user has exited edit mode on
+    # the real site. (Context processors win over view context for the same key,
+    # so the view cannot just pass edit_mode_active itself.)
+    override = getattr(request, 'cbl_edit_mode_override', None)
+    if override is not None:
+        edit_mode_active = bool(override)
+
     active_theme = site.theme if site else None
     current_page = None
     if site:

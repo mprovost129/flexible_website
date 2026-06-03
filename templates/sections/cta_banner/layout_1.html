@@ -14,7 +14,7 @@
         {% endif %}
         {% load core_extras %}
         <div class="d-flex justify-content-center gap-3 flex-wrap">
-            {% for item in section.items.all %}
+            {% for item in section.native_items %}
                 {% if item.item_type == 'heading' %}{% include "sections/_item_heading.html" %}
                 {% elif item.item_type == 'text' %}{% include "sections/_item_text.html" %}
                 {% elif item.link_text %}

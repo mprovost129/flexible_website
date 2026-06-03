@@ -18,7 +18,7 @@
             <div class="col-lg-4 text-lg-end">
                 {% load core_extras %}
                 <div class="d-grid gap-2 d-lg-inline-flex flex-lg-column">
-                    {% for item in section.items.all %}
+                    {% for item in section.native_items %}
                         {% if item.item_type == 'heading' %}{% include "sections/_item_heading.html" %}
                         {% elif item.item_type == 'text' %}{% include "sections/_item_text.html" %}
                         {% elif item.link_text %}

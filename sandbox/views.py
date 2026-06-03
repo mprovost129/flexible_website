@@ -213,6 +213,11 @@ def sandbox_home(request):
     sections = list(page.sections.prefetch_related('items').all())
     is_edit = not sandbox.is_preview
 
+    # Force the global edit_mode_active to match the sandbox's own state, since
+    # the context processor would otherwise overwrite it with the staff session
+    # flag (so exiting edit mode on the real site would disable the sandbox).
+    request.cbl_edit_mode_override = is_edit
+
     if is_edit:
         for s in sections:
             s.available_layouts = get_available_layouts(s.section_type)

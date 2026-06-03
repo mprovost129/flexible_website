@@ -15,7 +15,7 @@
                     </div>
                 {% endif %}
                 {% load core_extras %}
-                {% with items=section.items.all %}{% if items %}
+                {% with items=section.native_items %}{% if items %}
                 <div class="d-flex flex-wrap gap-3 mt-4">
                     {% for item in items %}
                     {% if item.item_type == 'heading' %}{% include "sections/_item_heading.html" %}

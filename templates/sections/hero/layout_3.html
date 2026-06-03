@@ -76,7 +76,7 @@
 
                 <!-- CTA buttons (first two items) -->
                 {% load core_extras %}
-                {% with items=section.items.all %}
+                {% with items=section.native_items %}
                 {% if items %}
                 <div class="d-flex flex-wrap justify-content-center gap-3 mt-5">
                     {% for item in items %}
