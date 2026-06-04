@@ -20,8 +20,19 @@ def get_active_site(request=None):
 
     In self-hosted mode this is always the singleton. In multi-tenant mode it
     is resolved from the request host against Site.domain.
+
+    A view may force a specific Site for the duration of one request by setting
+    `request.cbl_site_override`. The sandbox uses this so its per-session Site
+    clone (not the real singleton) drives chrome rendering and chrome editing,
+    keeping every visitor isolated from the live site. This attribute is only
+    ever set server-side, never from client input.
     """
     from .models import Site
+
+    if request is not None:
+        override = getattr(request, 'cbl_site_override', None)
+        if override is not None:
+            return override
 
     if MULTI_TENANT and request is not None:
         host = request.get_host().split(':')[0].lower()

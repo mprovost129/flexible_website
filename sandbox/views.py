@@ -12,11 +12,14 @@ so the existing sidebar and structural_edit JS work without modification.
 
 import json
 import uuid
+from functools import wraps
 
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
 from django.views.decorators.csrf import csrf_exempt
+
+from core import nav_views
 
 from core.edit_views import (
     ADDABLE_SECTION_TYPES,
@@ -184,6 +187,79 @@ def _verify_navlink(sandbox, pk):
     return NavLink.all_objects.filter(pk=pk, site_id=sandbox.site_id).first()
 
 
+def _verify_footer_column(sandbox, pk):
+    return FooterColumn.all_objects.filter(pk=pk, site_id=sandbox.site_id).first()
+
+
+def _verify_footer_link(sandbox, pk):
+    return FooterLink.all_objects.filter(pk=pk, column__site_id=sandbox.site_id).first()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Delegation: run a real /edit/ view against this session's cloned site
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Site-level chrome editing (brand, footer, navbar config, theme) has a lot of
+# validation we don't want to duplicate and let drift. Instead we reuse the real
+# nav_views endpoints, but first:
+#   1. validate the sandbox session,
+#   2. set request.cbl_sandbox so the shared _staff_check lets the call through,
+#   3. set request.cbl_site_override so get_active_site resolves the clone.
+# The real view then mutates only the throwaway clone. For endpoints that take a
+# pk (footer column/link), an `owns` guard confirms the row belongs to this
+# session's clone before delegating, so one visitor can never touch another
+# site's rows by guessing primary keys.
+
+def _delegate(real_view, owns=None):
+    @wraps(real_view)
+    def wrapper(request, *args, **kwargs):
+        sb, err = _sandbox_auth(request)
+        if err:
+            return err
+        site = Site.objects.filter(pk=sb.site_id).first()
+        if not site:
+            return JsonResponse({'error': 'Sandbox session expired. Refresh the page.'}, status=403)
+        if owns is not None and not owns(sb, kwargs):
+            return JsonResponse({'error': 'Not found in this sandbox.'}, status=404)
+        request.cbl_sandbox = True
+        request.cbl_site_override = site
+        return real_view(request, *args, **kwargs)
+    return wrapper
+
+
+def _owns_footer_column(sb, kwargs):
+    pk = kwargs.get('pk') or kwargs.get('column_pk')
+    return FooterColumn.all_objects.filter(pk=pk, site_id=sb.site_id).exists()
+
+
+def _owns_footer_link(sb, kwargs):
+    return FooterLink.all_objects.filter(pk=kwargs.get('pk'), column__site_id=sb.site_id).exists()
+
+
+# Site-scoped chrome endpoints — these resolve the site from the request, so the
+# override alone keeps them isolated to the clone (no pk guard needed).
+api_site_brand_update      = _delegate(nav_views.update_site_brand)
+api_site_chrome_update     = _delegate(nav_views.update_site_chrome)
+api_site_logo_upload       = _delegate(nav_views.update_site_logo)
+api_site_logo_remove       = _delegate(nav_views.remove_site_logo)
+api_navbar_config_update   = _delegate(nav_views.update_navbar_config)
+api_navbar_block_order     = _delegate(nav_views.update_navbar_block_order)
+api_navbar_clear           = _delegate(nav_views.clear_navbar_links)
+api_footer_clear           = _delegate(nav_views.clear_footer_content)
+api_footer_column_add      = _delegate(nav_views.add_footer_column)
+api_themes_list            = _delegate(nav_views.list_themes)
+api_set_theme              = _delegate(nav_views.set_site_theme)
+api_pages_list             = _delegate(nav_views.list_pages)
+
+# Footer endpoints that take a pk — guarded so they only touch this clone.
+api_footer_column_update   = _delegate(nav_views.update_footer_column,  owns=_owns_footer_column)
+api_footer_column_delete   = _delegate(nav_views.delete_footer_column,  owns=_owns_footer_column)
+api_footer_link_add        = _delegate(nav_views.add_footer_link,       owns=_owns_footer_column)
+api_footer_link_update     = _delegate(nav_views.update_footer_link,    owns=_owns_footer_link)
+api_footer_link_delete     = _delegate(nav_views.delete_footer_link,    owns=_owns_footer_link)
+api_footer_link_undo       = _delegate(nav_views.undo_delete_footer_link, owns=_owns_footer_link)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Visitor views
 # ─────────────────────────────────────────────────────────────────────────────
@@ -202,6 +278,11 @@ def sandbox_home(request):
     # The per-session site clone drives the navbar/brand/footer; fall back to the
     # global site for legacy sessions that predate per-session sites.
     site = Site.objects.filter(pk=sandbox.site_id).first() or get_active_site(request)
+
+    # Make the clone *the* active site for this request, so the context processor
+    # (which shadows view context) renders navbar/footer/brand/theme from the
+    # clone rather than the live singleton. Chrome edits then show up on reload.
+    request.cbl_site_override = site
 
     try:
         page = Page.objects.get(pk=sandbox.page_id)
@@ -327,30 +408,6 @@ def sandbox_toggle_preview(request):
 
 def api_noop(request, **kwargs):
     return JsonResponse({'success': True, 'sandbox_no_op': True})
-
-
-def api_sandbox_pages_list(request):
-    sb, err = _sandbox_auth(request)
-    if err:
-        return JsonResponse({'pages': []})
-    return JsonResponse({'pages': [
-        {'id': sb.page_id, 'title': 'Sandbox Page', 'slug': 'sandbox', 'url': '/sandbox/', 'published': True}
-    ]})
-
-
-def api_sandbox_themes(request):
-    from core.models import Theme
-    themes = list(Theme.objects.values('id', 'name', 'primary'))
-    return JsonResponse({'themes': themes})
-
-
-@require_POST
-def api_sandbox_set_theme(request):
-    """Apply a theme to the sandbox session's site context (session-only, not saved)."""
-    theme_id = request.POST.get('theme_id', '')
-    if theme_id:
-        request.session['sandbox_theme_id'] = theme_id
-    return JsonResponse({'success': True})
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -709,12 +766,19 @@ def api_get_item_data(request, pk):
         return JsonResponse({'error': 'Item not found'}, status=404)
     return JsonResponse({
         'id': item.pk,
+        # item_type drives which inspector fields the sidebar shows. Omitting it
+        # made every item render as a generic "card" (icon picker + image), which
+        # is why clicking a plain button surfaced an icon grid. Mirror the real
+        # /edit/item/ payload exactly so buttons show only button controls.
+        'item_type': item.item_type or '',
         'title': item.title, 'text': item.text, 'icon': item.icon,
         'link_url': item.link_url, 'link_text': item.link_text,
         'link_style': item.link_style,
         'link_config': item.link_config if isinstance(item.link_config, dict) else {},
         'image_url': item.image.url if item.image else '',
+        'image_alt': item.image_alt or '',
         'section_id': item.section_id,
+        'section_type': item.section.section_type,
     })
 
 

@@ -66,8 +66,7 @@ body.cbl-sandbox-mode #staff-toolbar {
 
 body.cbl-sandbox-mode .sidebar-new-page-btn,
 body.cbl-sandbox-mode .sidebar-delete-page,
-body.cbl-sandbox-mode .sidebar-save-seo,
-body.cbl-sandbox-mode .sidebar-save-page-design {
+body.cbl-sandbox-mode .sidebar-save-seo {
     display: none !important;
 }
 

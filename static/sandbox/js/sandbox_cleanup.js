@@ -14,13 +14,14 @@
 (function () {
     'use strict';
 
-    // Sidebar section headings to remove in sandbox mode
+    // Sidebar section headings to remove in sandbox mode. Theme and Page design
+    // are kept: they operate on the per-session site clone and work fully here.
+    // SEO / Pages / Switch template stay out — they only make sense for a
+    // multi-page, publishable site, not a single throwaway sandbox page.
     var REMOVE_HEADINGS = [
         'SEO',
         'Pages',
-        'Theme',
         'Switch template',
-        'Page design',
     ];
 
     // Button/element classes to remove even if the section heading is kept
@@ -32,9 +33,6 @@
         '.sidebar-seo-title',
         '.sidebar-seo-og-title',
         '.sidebar-seo-og-desc',
-        '.sidebar-save-page-design',
-        '.sidebar-section-spacing',
-        '.sidebar-body-bg',
     ];
 
     function cleanSidebar(body) {

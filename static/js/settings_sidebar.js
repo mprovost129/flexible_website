@@ -2150,7 +2150,12 @@
         // Render only the fields that make sense for this item's type.
         // item_type: 'button' | 'text' | 'heading' | '' (generic content card).
         var itemType  = d.item_type || '';
-        var isButton  = itemType === 'button';
+        var sectionType = d.section_type || '';
+        // Hero and CTA banners render a native item (item_type '') solely as its
+        // link, so treat those as plain buttons: button-only controls, no icon /
+        // image / title / text fields that would do nothing for them.
+        var nativeCta = itemType === '' && (sectionType === 'hero' || sectionType === 'cta_banner');
+        var isButton  = itemType === 'button' || nativeCta;
         var isText    = itemType === 'text';
         var isHeading = itemType === 'heading';
         var isGeneric = !isButton && !isText && !isHeading;

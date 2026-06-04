@@ -30,7 +30,15 @@ from .models import Page, Section, SectionItem, NavLink, FooterColumn, FooterLin
 # ---------------------------------------------------------------------------
 
 def _staff_check(request):
-    """Return a JsonResponse error if the user is not authenticated staff."""
+    """Return a JsonResponse error if the user is not authenticated staff.
+
+    A sandbox request (request.cbl_sandbox set by the sandbox views after the
+    session is validated) is allowed through: it operates on a throwaway
+    per-session Site clone, never the live site. This flag is only ever set
+    server-side, never from client input.
+    """
+    if getattr(request, 'cbl_sandbox', False):
+        return None
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Login required'}, status=403)
     if not request.user.is_staff:
@@ -302,6 +310,10 @@ def get_item_data(request, pk):
         'image_url': item.image.url if item.image else '',
         'image_alt': item.image_alt or '',
         'section_id': item.section_id,
+        # Lets the inspector treat a native CTA in a hero/cta_banner as a plain
+        # button (button-only controls), since those sections render a native
+        # item solely as its link — the icon/image/title controls do nothing.
+        'section_type': item.section.section_type,
     })
 
 

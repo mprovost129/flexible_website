@@ -19,21 +19,10 @@
     // ── Fetch interceptor ─────────────────────────────────────────────────
     // Redirect every /edit/<path> call to /sandbox/api/<path> so the existing
     // settings_sidebar.js and structural_edit.js work without modification.
+    // The sandbox URLconf decides per endpoint whether the call is handled for
+    // real (scoped to this session's site clone) or quietly no-ops.
     var _EDIT_PREFIX   = '/edit/';
     var _SANDBOX_API   = '/sandbox/api/';
-
-    // Page-level and nav/footer actions that make no sense in the sandbox -
-    // return a silent success so the sidebar doesn't show error messages.
-    var _NOOP_PREFIXES = [
-        '/sandbox/api/page/',
-        '/sandbox/api/nav-link/',
-        '/sandbox/api/footer-',
-        '/sandbox/api/site-',
-        '/sandbox/api/navbar/',
-        '/sandbox/api/footer/',
-        '/sandbox/api/site/',
-        '/sandbox/api/toggle-mode',
-    ];
 
     var _origFetch = window.fetch;
     window.fetch = function (url, opts) {
@@ -120,7 +109,9 @@
          data-section-heading="{{ section.heading }}"
          data-section-subheading="{{ section.subheading }}"
          data-section-image-url="{% if section.primary_image %}{{ section.primary_image.url }}{% endif %}">
-        {% include section.template_path %}
+        {# Match the real page: native template + any free-form elements, so
+           buttons/text/icons added via "Add item" render on first load too. #}
+        {% include "sections/_render.html" %}
     </div>
     {% endwith %}
     {% endwith %}
@@ -137,7 +128,7 @@
 {% else %}
 {# Preview mode #}
 {% for section in sections %}
-    {% include section.template_path %}
+    {% include "sections/_render.html" %}
 {% endfor %}
 {% endif %}
 

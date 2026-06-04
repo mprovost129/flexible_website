@@ -27,6 +27,12 @@ from .site_resolver import get_active_site
 
 
 def _staff_check(request):
+    # A sandbox request (request.cbl_sandbox, set by the sandbox views once the
+    # session is validated) is allowed through: paired with cbl_site_override it
+    # operates only on a throwaway per-session Site clone, never the live site.
+    # Both flags are set server-side only, never from client input.
+    if getattr(request, 'cbl_sandbox', False):
+        return None
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Login required'}, status=403)
     if not request.user.is_staff:
